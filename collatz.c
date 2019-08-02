@@ -1,0 +1,85 @@
+/**
+ * @file
+ * @brief Simple program that check convergence of the Collatz problem.
+ *
+ * @author David Barina <ibarina@fit.vutbr.cz>
+ */
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <limits.h>
+
+#define LUT_SIZE 32
+
+unsigned long g_lut[LUT_SIZE];
+
+/* 3^n, in runtime */
+unsigned long lut_rt(unsigned long n)
+{
+	unsigned long r = 1;
+
+	for (; n > 0; --n) {
+		assert( r <= ULONG_MAX / 3 );
+
+		r *= 3;
+	}
+
+	return r;
+}
+
+void init_lut()
+{
+	unsigned long a;
+
+	for (a = 0; a < LUT_SIZE; ++a) {
+		g_lut[a] = lut_rt(a);
+	}
+}
+
+/* 3^n, using the look-up table */
+static unsigned long lut(unsigned long n)
+{
+	assert( n < LUT_SIZE );
+
+	return g_lut[n];
+}
+
+/* check convergence */
+void check(unsigned long n)
+{
+	unsigned long n0 = n;
+
+	do {
+		unsigned long e;
+
+		n++;
+
+		e = __builtin_ctzl(n);
+
+		n >>= e;
+
+		assert( n <= ULONG_MAX >> 2*e );
+
+		n *= lut(e);
+
+		n--;
+
+		n >>= __builtin_ctzl(n);
+
+	} while (n >= n0);
+}
+
+int main(int argc, char *argv[])
+{
+	unsigned long n;
+	unsigned long n_max = (argc > 1) ? (unsigned long)atol(argv[1]) : (1UL<<30);
+
+	init_lut();
+
+	/* n of the form 4n+3 */
+	for (n = 3; n < n_max; n += 4) {
+		check(n);
+	}
+
+	return 0;
+}
