@@ -8,3 +8,6 @@ This approach differs significantly from the commonly used approach utilizing a 
 
 # contact
 David Barina <ibarina@fit.vutbr.cz>
+
+# license
+This project is licensed under the terms of the MIT license.
