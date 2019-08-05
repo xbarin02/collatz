@@ -66,7 +66,7 @@ void check(unsigned long n)
 		/* (n,e) pair */
 
 		/* all (n,e) below the following limits have already been checked for convergence */
-		if (e < 11 && n < 1UL<<24)
+		if (e < 7 && n < 1UL<<26)
 			return;
 
 		assert( n <= ULONG_MAX >> 2*e );
