@@ -66,7 +66,7 @@ void check(unsigned long n)
 		/* (n,e) pair */
 
 		/* all (n,e) below the following limits have already been checked for convergence */
-		if (e < 7 && n < 1UL<<27)
+		if (e < 30 && n < 1UL<<29)
 			return;
 
 		assert( n <= ULONG_MAX >> 2*e );
@@ -79,7 +79,7 @@ void check(unsigned long n)
 int main(int argc, char *argv[])
 {
 	unsigned long n;
-	unsigned long n_max = (argc > 1) ? (unsigned long)atol(argv[1]) : (1UL<<31);
+	unsigned long n_max = (argc > 1) ? (unsigned long)atol(argv[1]) : (1UL<<32);
 
 	init_lut();
 
