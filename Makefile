@@ -1,4 +1,9 @@
 CFLAGS=-std=c89 -pedantic -Wall -Wextra -march=native -O3
+BINS=collatz collatz2 collatz3
 
 .PHONY: all
-all: collatz collatz2 collatz3
+all: $(BINS)
+
+.PHONY: clean
+clean:
+	$(RM) -- $(BINS)
