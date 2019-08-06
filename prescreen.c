@@ -183,6 +183,8 @@ int main(int argc, char *argv[])
 	unsigned long n;
 	unsigned long n_sup = (argc > 1) ? (unsigned long)atol(argv[1]) : (1UL<<32);
 
+	assert( ctz128( INT128_C(1)<<0 ) == 0 );
+	assert( ctz128( INT128_C(1)<<1 ) == 1 );
 	assert( ctz128( INT128_C(1)<<15 ) == 15 );
 	assert( ctz128( INT128_C(1)<<35 ) == 35 );
 	assert( ctz128( INT128_C(1)<<65 ) == 65 );
