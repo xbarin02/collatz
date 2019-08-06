@@ -171,7 +171,7 @@ entry:
 			return;
 		}
 		assert( n <= ULONG_MAX >> 2*e );
-		if( e >= LUT_SIZE ) {
+		if ( e >= LUT_SIZE ) {
 			prescreen128(n0, n_sup, e0);
 			return;
 		}
