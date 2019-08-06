@@ -12,10 +12,11 @@
 #include "wideint.h"
 
 #define LUT_SIZE 41
+#define LUT_SIZE128 81
 
 unsigned long g_lut[LUT_SIZE];
 
-uint128_t g_lut128[LUT_SIZE];
+uint128_t g_lut128[LUT_SIZE128];
 
 /* 3^n, in runtime */
 unsigned long lut_rt(unsigned long n)
@@ -50,6 +51,9 @@ void init_lut()
 
 	for (a = 0; a < LUT_SIZE; ++a) {
 		g_lut[a] = lut_rt(a);
+	}
+
+	for (a = 0; a < LUT_SIZE128; ++a) {
 		g_lut128[a] = lut_rt128(a);
 	}
 }
@@ -64,7 +68,7 @@ static unsigned long lut(unsigned long n)
 
 static uint128_t lut128(uint128_t n)
 {
-	assert( n < LUT_SIZE );
+	assert( n < LUT_SIZE128 );
 
 	return g_lut128[n];
 }
