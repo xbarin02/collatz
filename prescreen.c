@@ -162,6 +162,12 @@ goto entry;
 
 		/* now we have (n,e) pair */
 
+#if 1
+		/* all (n,e) pairs below the following boundary have been checked in previous runs of the pre-screening */
+		if ( n < (1UL<<30) && e < 41 )
+			return;
+#endif
+
 		/* all (n,e) with n < n_sup and e < e0 have already been checked */
 		if ( (n < n_sup && e < e0) || (n < n0 && e == e0) )
 			return;
