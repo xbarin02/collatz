@@ -5,6 +5,7 @@
  * @author David Barina <ibarina@fit.vutbr.cz>
  */
 #include <stdio.h>
+#include <gmp.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <limits.h>
@@ -96,6 +97,12 @@ void check(unsigned long n)
 
 		n--;
 	} while (1);
+}
+
+/* ctz of mpz_t */
+mp_bitcnt_t ctzmpz(const mpz_t op)
+{
+	return mpz_scan1(op, 0);
 }
 
 static uint128_t ctz128(uint128_t n)
