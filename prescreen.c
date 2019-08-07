@@ -159,7 +159,10 @@ goto entry;
 		/* now we have (n,e) pair */
 #if 1
 		/* all (n,e) pairs below the following boundary have been checked in previous runs of the pre-screening */
-		/* TODO */
+		if ( mpz_cmp_ui(n, (1UL<<30)) < 0 && e < 41 ) {
+			mpz_clear(n);
+			return;
+		}
 #endif
 
 		/* all (n,e) with n < n_sup and e < e0 have already been checked */
