@@ -14,10 +14,13 @@
 
 #define LUT_SIZE 41
 #define LUT_SIZE128 81
+#define LUT_SIZEMPZ 81
 
 unsigned long g_lut[LUT_SIZE];
 
 uint128_t g_lut128[LUT_SIZE128];
+
+mpz_t g_lutmpz[LUT_SIZEMPZ];
 
 /* 3^n, in runtime */
 unsigned long lut_rt(unsigned long n)
@@ -46,6 +49,11 @@ uint128_t lut_rt128(uint128_t n)
 	return r;
 }
 
+void lut_rtmpz(mpz_t r, unsigned long int n)
+{
+	mpz_ui_pow_ui(r, 3UL, n);
+}
+
 void init_lut()
 {
 	unsigned long a;
@@ -56,6 +64,11 @@ void init_lut()
 
 	for (a = 0; a < LUT_SIZE128; ++a) {
 		g_lut128[a] = lut_rt128(a);
+	}
+
+	for (a = 0; a < LUT_SIZEMPZ; ++a) {
+		mpz_init(g_lutmpz[a]);
+		lut_rtmpz(g_lutmpz[a], a);
 	}
 }
 
