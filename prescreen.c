@@ -13,7 +13,7 @@
 #include "wideint.h"
 
 #define BOUNDARY_N (1UL<<30)
-#define BOUNDARY_E 41
+#define BOUNDARY_E 47
 
 #define LUT_SIZE 41
 #define LUT_SIZE128 81
@@ -298,6 +298,7 @@ int main(int argc, char *argv[])
 	for (e = 1; ; ++e) {
 		printf("e = %lu...\n", e);
 		/* for each odd n */
+		#pragma omp parallel for
 		for (n = 1; n < n_sup; n += 2) {
 			/* check */
 			prescreen(n, n_sup, e);
