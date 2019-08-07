@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <limits.h>
 
-#define LUT_SIZE 32
+#define LUT_SIZE 41
 
 unsigned long g_lut[LUT_SIZE];
 
