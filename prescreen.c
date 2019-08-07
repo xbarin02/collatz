@@ -14,7 +14,7 @@
 
 #define LUT_SIZE 41
 #define LUT_SIZE128 81
-#define LUT_SIZEMPZ 81
+#define LUT_SIZEMPZ 256
 
 unsigned long g_lut[LUT_SIZE];
 
@@ -206,8 +206,15 @@ goto entry;
 		if ( (n < n_sup && e < e0) || (n < n0 && e == e0) )
 			return;
 entry:
-
+		if (n > UINT128_MAX >> 2*e) {
+			prescreenmpz((unsigned long)n0, (unsigned long)n_sup, (unsigned long)e0);
+			return;
+		}
 		assert( n <= UINT128_MAX >> 2*e );
+		if ( e >= LUT_SIZE128 ) {
+			prescreenmpz((unsigned long)n0, (unsigned long)n_sup, (unsigned long)e0);
+			return;
+		}
 		n *= lut128(e);
 
 		n--;
