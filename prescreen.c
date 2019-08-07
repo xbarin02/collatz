@@ -113,9 +113,9 @@ void check(unsigned long n)
 }
 
 /* ctz of mpz_t */
-mp_bitcnt_t ctzmpz(const mpz_t op)
+mp_bitcnt_t ctzmpz(const mpz_t n)
 {
-	return mpz_scan1(op, 0);
+	return mpz_scan1(n, 0);
 }
 
 static uint128_t ctz128(uint128_t n)
@@ -130,6 +130,49 @@ static uint128_t ctz128(uint128_t n)
 		default:
 			abort();
 	}
+}
+
+void prescreenmpz(unsigned long n0, unsigned long n_sup, unsigned long e0)
+{
+	mpz_t n;
+	mp_bitcnt_t e;
+
+	mpz_init_set_ui(n, n0);
+
+	assert( sizeof(mp_bitcnt_t) >= sizeof(unsigned long) );
+	e = (mp_bitcnt_t)e0;
+
+goto entry;
+	do {
+		mpz_fdiv_q_2exp(n, n, ctzmpz(n));
+
+		if (mpz_cmp_ui(n, 1UL) == 0) {
+			mpz_clear(n);
+			return;
+		}
+
+		mpz_add_ui(n, n, 1UL);
+
+		e = ctzmpz(n);
+		mpz_fdiv_q_2exp(n, n, e);
+
+		/* now we have (n,e) pair */
+#if 1
+		/* all (n,e) pairs below the following boundary have been checked in previous runs of the pre-screening */
+		/* TODO */
+#endif
+
+		/* all (n,e) with n < n_sup and e < e0 have already been checked */
+		if ( (mpz_cmp_ui(n, n_sup) < 0 && e < (mp_bitcnt_t)e0) || (mpz_cmp_ui(n, n0) < 0 && e == (mp_bitcnt_t)e0) ) {
+			mpz_clear(n);
+			return;
+		}
+entry:
+
+		mpz_mul(n, n, g_lutmpz[e]);
+
+		mpz_sub_ui(n, n, 1UL);
+	} while (1);
 }
 
 void prescreen128(uint128_t n, uint128_t n_sup, uint128_t e)
