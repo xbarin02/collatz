@@ -12,6 +12,9 @@
 
 #include "wideint.h"
 
+#define BOUNDARY_N (1UL<<30)
+#define BOUNDARY_E 41
+
 #define LUT_SIZE 41
 #define LUT_SIZE128 81
 #define LUT_SIZEMPZ 256
@@ -159,7 +162,7 @@ goto entry;
 		/* now we have (n,e) pair */
 #if 1
 		/* all (n,e) pairs below the following boundary have been checked in previous runs of the pre-screening */
-		if ( mpz_cmp_ui(n, (1UL<<30)) < 0 && e < 41 ) {
+		if ( mpz_cmp_ui(n, BOUNDARY_N) < 0 && e < BOUNDARY_E ) {
 			mpz_clear(n);
 			return;
 		}
@@ -198,7 +201,7 @@ goto entry;
 		/* now we have (n,e) pair */
 #if 1
 		/* all (n,e) pairs below the following boundary have been checked in previous runs of the pre-screening */
-		if ( n < (1UL<<30) && e < 41 ) /* these constants should be promoted to uint128_t */
+		if ( n < BOUNDARY_N && e < BOUNDARY_E ) /* these constants should be promoted to uint128_t */
 			return;
 #endif
 
@@ -242,7 +245,7 @@ goto entry;
 
 #if 1
 		/* all (n,e) pairs below the following boundary have been checked in previous runs of the pre-screening */
-		if ( n < (1UL<<30) && e < 41 )
+		if ( n < BOUNDARY_N && e < BOUNDARY_E )
 			return;
 #endif
 
