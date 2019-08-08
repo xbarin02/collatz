@@ -50,7 +50,7 @@ void check(unsigned long n)
 		n >>= __builtin_ctzl(n);
 
 		/* the following test is slow, consider to omit it */
-#if 1
+#if 0
 		/* 6n+2 < n0 (all numbers below n0 have already been checked) */
 		if (n < n0 && n%3 == 1)
 			return;
