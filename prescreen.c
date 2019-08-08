@@ -142,7 +142,6 @@ goto entry;
 			return;
 		}
 entry:
-
 		mpz_mul(n, n, g_lutmpz[e]);
 
 		mpz_sub_ui(n, n, 1UL);
