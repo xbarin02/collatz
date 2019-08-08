@@ -250,13 +250,6 @@ int main(int argc, char *argv[])
 	assert( sizeof(unsigned long)*CHAR_BIT == 64 );
 	assert( sizeof(uint128_t)*CHAR_BIT == 128 );
 
-	assert( ctz128( INT128_C(1)<<0 ) == 0 );
-	assert( ctz128( INT128_C(1)<<1 ) == 1 );
-	assert( ctz128( INT128_C(1)<<15 ) == 15 );
-	assert( ctz128( INT128_C(1)<<35 ) == 35 );
-	assert( ctz128( INT128_C(1)<<65 ) == 65 );
-	assert( ctz128( INT128_C(1)<<127 ) == 127 );
-
 	init_lut();
 
 	/* for each e */
