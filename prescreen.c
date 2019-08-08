@@ -114,8 +114,11 @@ void prescreenmpz(unsigned long n0, unsigned long n_sup, unsigned long e0)
 	assert( sizeof(mp_bitcnt_t) >= sizeof(unsigned long) );
 	e = (mp_bitcnt_t)e0;
 
-goto entry;
 	do {
+		mpz_mul(n, n, g_lutmpz[e]);
+
+		mpz_sub_ui(n, n, 1UL);
+
 		mpz_fdiv_q_2exp(n, n, mpz_ctz(n));
 
 		if (mpz_cmp_ui(n, 1UL) == 0) {
@@ -141,10 +144,6 @@ goto entry;
 			mpz_clear(n);
 			return;
 		}
-entry:
-		mpz_mul(n, n, g_lutmpz[e]);
-
-		mpz_sub_ui(n, n, 1UL);
 	} while (1);
 }
 
@@ -153,8 +152,17 @@ void prescreen128(uint128_t n, uint128_t n_sup, uint128_t e)
 	uint128_t n0 = n;
 	uint128_t e0 = e;
 
-goto entry;
 	do {
+		/* we are unable to compute the next step in 128-bit arithmetic */
+		if ( (n > UINT128_MAX >> 2*e) || (e >= LUT_SIZE128) ) {
+			prescreenmpz((unsigned long)n0, (unsigned long)n_sup, (unsigned long)e0);
+			return;
+		}
+
+		n *= lut128(e);
+
+		n--;
+
 		n >>= __builtin_ctzx(n);
 
 		if (n == 1)
@@ -174,16 +182,6 @@ goto entry;
 		/* all (n,e) with n < n_sup and e < e0 have already been checked */
 		if ( (n < n_sup && e < e0) || (n < n0 && e == e0) )
 			return;
-entry:
-		/* we are unable to compute the next step in 128-bit arithmetic */
-		if ( (n > UINT128_MAX >> 2*e) || (e >= LUT_SIZE128) ) {
-			prescreenmpz((unsigned long)n0, (unsigned long)n_sup, (unsigned long)e0);
-			return;
-		}
-
-		n *= lut128(e);
-
-		n--;
 	} while (1);
 }
 
@@ -192,8 +190,17 @@ void prescreen(unsigned long n, unsigned long n_sup, unsigned long e)
 	unsigned long n0 = n;
 	unsigned long e0 = e;
 
-goto entry;
 	do {
+		/* we are unable to compute the next step in 64-bit arithmetic */
+		if ( (n > ULONG_MAX >> 2*e) || (e >= LUT_SIZE) ) {
+			prescreen128(n0, n_sup, e0);
+			return;
+		}
+
+		n *= lut(e);
+
+		n--;
+
 		n >>= __builtin_ctzl(n);
 
 		if (n == 1)
@@ -213,16 +220,6 @@ goto entry;
 		/* all (n,e) with n < n_sup and e < e0 have already been checked */
 		if ( (n < n_sup && e < e0) || (n < n0 && e == e0) )
 			return;
-entry:
-		/* we are unable to compute the next step in 64-bit arithmetic */
-		if ( (n > ULONG_MAX >> 2*e) || (e >= LUT_SIZE) ) {
-			prescreen128(n0, n_sup, e0);
-			return;
-		}
-
-		n *= lut(e);
-
-		n--;
 	} while (1);
 }
 
