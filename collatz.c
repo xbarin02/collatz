@@ -50,6 +50,8 @@ void check(unsigned long n)
 
 		n >>= e;
 
+		/* (n,e) pair */
+
 		assert( n <= ULONG_MAX >> 2*e );
 
 		assert( e < LUT_SIZE );
@@ -59,7 +61,6 @@ void check(unsigned long n)
 		n--;
 
 		n >>= __builtin_ctzl(n);
-
 	} while (n >= n0);
 }
 
