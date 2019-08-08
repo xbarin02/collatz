@@ -23,7 +23,7 @@ unsigned long g_lut[LUT_SIZE];
 
 uint128_t g_lutx[LUT_SIZE128];
 
-mpz_t g_lutmpz[LUT_SIZEMPZ];
+mpz_t g_mpz_lut[LUT_SIZEMPZ];
 
 /* 3^n, in runtime */
 unsigned long lut_rt(unsigned long n)
@@ -70,8 +70,8 @@ void init_lut()
 	}
 
 	for (a = 0; a < LUT_SIZEMPZ; ++a) {
-		mpz_init(g_lutmpz[a]);
-		mpz_pow3(g_lutmpz[a], a);
+		mpz_init(g_mpz_lut[a]);
+		mpz_pow3(g_mpz_lut[a], a);
 	}
 }
 
@@ -115,7 +115,7 @@ void mpz_prescreen(unsigned long n0, unsigned long n_sup, unsigned long e0)
 	e = (mp_bitcnt_t)e0;
 
 	do {
-		mpz_mul(n, n, g_lutmpz[e]);
+		mpz_mul(n, n, g_mpz_lut[e]);
 
 		mpz_sub_ui(n, n, 1UL);
 
