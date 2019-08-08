@@ -9,6 +9,9 @@
 #include <assert.h>
 #include <limits.h>
 
+#define BOUNDARY_N (1UL<<34)
+#define BOUNDARY_E 64
+
 #define LUT_SIZE 41
 
 unsigned long g_lut[LUT_SIZE];
@@ -51,6 +54,10 @@ void check(unsigned long n)
 		n >>= e;
 
 		/* (n,e) pair */
+
+		/* all (n,e) below the following limits have already been checked for convergence */
+		if (e < BOUNDARY_E && n < BOUNDARY_N)
+			return;
 
 		assert( n <= ULONG_MAX >> 2*e );
 
