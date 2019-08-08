@@ -272,7 +272,9 @@ int main(int argc, char *argv[])
 {
 	unsigned long e;
 	unsigned long n;
-	unsigned long n_sup = (argc > 1) ? (unsigned long)atol(argv[1]) : (1UL<<32);
+	unsigned long n_sup = 1UL << (
+		(argc > 1) ? (unsigned long)atol(argv[1])
+		: 32 );
 
 	assert( sizeof(unsigned long)*CHAR_BIT == 64 );
 	assert( sizeof(uint128_t)*CHAR_BIT == 128 );

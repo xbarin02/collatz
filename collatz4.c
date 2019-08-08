@@ -82,7 +82,7 @@ void check(unsigned long n)
 int main(int argc, char *argv[])
 {
 	unsigned long n;
-	unsigned long n_max = 1UL << (
+	unsigned long n_sup = 1UL << (
 		(argc > 1) ? (unsigned long)atol(argv[1])
 		: 32 );
 
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 	/* trajectory of all numbers of the form 2m+1 passes (in finitely many steps) through some 6n+2 > 2m+1 */
 	/* therefore, check only the numbers the form 6n+2, in order from the smallest one to the largest one */
 	#pragma omp parallel for
-	for (n = 6+2; n < n_max; n += 6) {
+	for (n = 6+2; n < n_sup; n += 6) {
 		check(n);
 	}
 
