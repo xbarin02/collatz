@@ -176,14 +176,12 @@ goto entry;
 		if ( (n < n_sup && e < e0) || (n < n0 && e == e0) )
 			return;
 entry:
-		if (n > UINT128_MAX >> 2*e) {
+		/* we are unable to compute the next step in 128-bit arithmetic */
+		if ( (n > UINT128_MAX >> 2*e) || (e >= LUT_SIZE128) ) {
 			prescreenmpz((unsigned long)n0, (unsigned long)n_sup, (unsigned long)e0);
 			return;
 		}
-		if ( e >= LUT_SIZE128 ) {
-			prescreenmpz((unsigned long)n0, (unsigned long)n_sup, (unsigned long)e0);
-			return;
-		}
+
 		n *= lut128(e);
 
 		n--;
@@ -217,14 +215,12 @@ goto entry;
 		if ( (n < n_sup && e < e0) || (n < n0 && e == e0) )
 			return;
 entry:
-		if ( n > ULONG_MAX >> 2*e) {
+		/* we are unable to compute the next step in 64-bit arithmetic */
+		if ( (n > ULONG_MAX >> 2*e) || (e >= LUT_SIZE) ) {
 			prescreen128(n0, n_sup, e0);
 			return;
 		}
-		if ( e >= LUT_SIZE ) {
-			prescreen128(n0, n_sup, e0);
-			return;
-		}
+
 		n *= lut(e);
 
 		n--;
