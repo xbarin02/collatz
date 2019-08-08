@@ -8,11 +8,3 @@ all: $(BINS)
 .PHONY: clean
 clean:
 	$(RM) -- $(BINS)
-
-.PHONY: collatz4-pgo
-collatz4-pgo:
-	$(RM) -- collatz4 collatz4.o collatz4.gcda
-	CFLAGS=-fprofile-generate LDFLAGS=-fprofile-generate $(MAKE) collatz4
-	./collatz4 32
-	$(RM) -- collatz4 collatz4.o
-	CFLAGS="-fprofile-use -fprofile-correction" LDFLAGS=-fprofile-use $(MAKE) collatz4
