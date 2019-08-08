@@ -21,7 +21,7 @@
 
 unsigned long g_lut[LUT_SIZE];
 
-uint128_t g_lut128[LUT_SIZE128];
+uint128_t g_lutx[LUT_SIZE128];
 
 mpz_t g_lutmpz[LUT_SIZEMPZ];
 
@@ -66,7 +66,7 @@ void init_lut()
 	}
 
 	for (a = 0; a < LUT_SIZE128; ++a) {
-		g_lut128[a] = lut_rt128(a);
+		g_lutx[a] = lut_rt128(a);
 	}
 
 	for (a = 0; a < LUT_SIZEMPZ; ++a) {
@@ -83,11 +83,11 @@ static unsigned long lut(unsigned long n)
 	return g_lut[n];
 }
 
-static uint128_t lut128(uint128_t n)
+static uint128_t lutx(uint128_t n)
 {
 	assert( n < LUT_SIZE128 );
 
-	return g_lut128[n];
+	return g_lutx[n];
 }
 
 /* ctz of mpz_t */
@@ -104,7 +104,7 @@ static uint128_t __builtin_ctzx(uint128_t n)
 		return __builtin_ctzl((unsigned long)n);
 }
 
-void prescreenmpz(unsigned long n0, unsigned long n_sup, unsigned long e0)
+void mpz_prescreen(unsigned long n0, unsigned long n_sup, unsigned long e0)
 {
 	mpz_t n;
 	mp_bitcnt_t e;
@@ -147,7 +147,7 @@ void prescreenmpz(unsigned long n0, unsigned long n_sup, unsigned long e0)
 	} while (1);
 }
 
-void prescreen128(uint128_t n, uint128_t n_sup, uint128_t e)
+void prescreenx(uint128_t n, uint128_t n_sup, uint128_t e)
 {
 	uint128_t n0 = n;
 	uint128_t e0 = e;
@@ -155,11 +155,11 @@ void prescreen128(uint128_t n, uint128_t n_sup, uint128_t e)
 	do {
 		/* we are unable to compute the next step in 128-bit arithmetic */
 		if ( (n > UINT128_MAX >> 2*e) || (e >= LUT_SIZE128) ) {
-			prescreenmpz((unsigned long)n0, (unsigned long)n_sup, (unsigned long)e0);
+			mpz_prescreen((unsigned long)n0, (unsigned long)n_sup, (unsigned long)e0);
 			return;
 		}
 
-		n *= lut128(e);
+		n *= lutx(e);
 
 		n--;
 
@@ -193,7 +193,7 @@ void prescreen(unsigned long n, unsigned long n_sup, unsigned long e)
 	do {
 		/* we are unable to compute the next step in 64-bit arithmetic */
 		if ( (n > ULONG_MAX >> 2*e) || (e >= LUT_SIZE) ) {
-			prescreen128(n0, n_sup, e0);
+			prescreenx(n0, n_sup, e0);
 			return;
 		}
 
