@@ -96,7 +96,7 @@ mp_bitcnt_t mpz_ctz(const mpz_t n)
 	return mpz_scan1(n, 0);
 }
 
-static uint128_t ctz128(uint128_t n)
+static uint128_t __builtin_ctzx(uint128_t n)
 {
 	if ((unsigned long)n == 0)
 		return (sizeof(unsigned long) * CHAR_BIT) + __builtin_ctzl((unsigned long)(n >> (sizeof(unsigned long) * CHAR_BIT)));
@@ -156,14 +156,14 @@ void prescreen128(uint128_t n, uint128_t n_sup, uint128_t e)
 
 goto entry;
 	do {
-		n >>= ctz128(n);
+		n >>= __builtin_ctzx(n);
 
 		if (n == 1)
 			return;
 
 		n++;
 
-		e = ctz128(n);
+		e = __builtin_ctzx(n);
 		n >>= e;
 
 		/* now we have (n,e) pair */
