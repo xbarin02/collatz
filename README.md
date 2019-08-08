@@ -12,17 +12,17 @@ Moreover, the convergence for all *(n,e)* pairs below a certain limit can be pre
 
 ## Results
 
-Checking the convergence for all numbers below *2<sup>32</sup>* on Intel Xeon E5-2680 v4 @ 2.40GHz (single-threaded program) takes less than two seconds:
+Checking the convergence for all numbers below *2<sup>32</sup>* on Intel Xeon E5-2680 v4 @ 2.40GHz (single-threaded program) takes less than one seconds:
 
     $ \time ./collatz4 32
-    1.33user 0.00system 0:01.33elapsed 99%CPU (0avgtext+0avgdata 1016maxresident)k
-    0inputs+0outputs (0major+62minor)pagefaults 0swaps
+    0.72user 0.00system 0:00.72elapsed 99%CPU (0avgtext+0avgdata 1676maxresident)k
+    0inputs+0outputs (0major+88minor)pagefaults 0swaps
 
-Verifying the convergence of all numbers below *2<sup>38</sup>* using all 56 cores takes less than six seconds:
+Verifying the convergence of all numbers below *2<sup>38</sup>* using all 56 cores takes less than five seconds:
 
     $ OMP_NUM_THREADS=56 \time ./collatz4 38
-    241.06user 0.05system 0:05.44elapsed 4427%CPU (0avgtext+0avgdata 6244maxresident)k
-    24inputs+0outputs (0major+361minor)pagefaults 0swaps
+    173.79user 0.00system 0:04.55elapsed 3813%CPU (0avgtext+0avgdata 2160maxresident)k
+    0inputs+0outputs (0major+402minor)pagefaults 0swaps
 
 ## Contact
 David Barina <ibarina@fit.vutbr.cz>
