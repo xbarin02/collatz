@@ -91,7 +91,7 @@ static uint128_t lut128(uint128_t n)
 }
 
 /* ctz of mpz_t */
-mp_bitcnt_t ctzmpz(const mpz_t n)
+mp_bitcnt_t mpz_ctz(const mpz_t n)
 {
 	return mpz_scan1(n, 0);
 }
@@ -116,7 +116,7 @@ void prescreenmpz(unsigned long n0, unsigned long n_sup, unsigned long e0)
 
 goto entry;
 	do {
-		mpz_fdiv_q_2exp(n, n, ctzmpz(n));
+		mpz_fdiv_q_2exp(n, n, mpz_ctz(n));
 
 		if (mpz_cmp_ui(n, 1UL) == 0) {
 			mpz_clear(n);
@@ -125,7 +125,7 @@ goto entry;
 
 		mpz_add_ui(n, n, 1UL);
 
-		e = ctzmpz(n);
+		e = mpz_ctz(n);
 		mpz_fdiv_q_2exp(n, n, e);
 
 		/* now we have (n,e) pair */
@@ -180,7 +180,6 @@ entry:
 			prescreenmpz((unsigned long)n0, (unsigned long)n_sup, (unsigned long)e0);
 			return;
 		}
-		assert( n <= UINT128_MAX >> 2*e );
 		if ( e >= LUT_SIZE128 ) {
 			prescreenmpz((unsigned long)n0, (unsigned long)n_sup, (unsigned long)e0);
 			return;
@@ -222,7 +221,6 @@ entry:
 			prescreen128(n0, n_sup, e0);
 			return;
 		}
-		assert( n <= ULONG_MAX >> 2*e );
 		if ( e >= LUT_SIZE ) {
 			prescreen128(n0, n_sup, e0);
 			return;
