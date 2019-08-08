@@ -82,7 +82,9 @@ void check(unsigned long n)
 int main(int argc, char *argv[])
 {
 	unsigned long n;
-	unsigned long n_max = (argc > 1) ? (unsigned long)atol(argv[1]) : (1UL<<32);
+	unsigned long n_max = 1UL << (
+		(argc > 1) ? (unsigned long)atol(argv[1])
+		: 32 );
 
 	init_lut();
 
