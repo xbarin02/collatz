@@ -26,7 +26,7 @@ uint128_t g_lutx[LUT_SIZE128];
 mpz_t g_mpz_lut[LUT_SIZEMPZ];
 
 /* 3^n, in runtime */
-unsigned long lut_rt(unsigned long n)
+unsigned long pow3(unsigned long n)
 {
 	unsigned long r = 1;
 
@@ -39,7 +39,7 @@ unsigned long lut_rt(unsigned long n)
 	return r;
 }
 
-uint128_t lut_rt128(uint128_t n)
+uint128_t pow3x(uint128_t n)
 {
 	uint128_t r = 1;
 
@@ -62,11 +62,11 @@ void init_lut()
 	unsigned long a;
 
 	for (a = 0; a < LUT_SIZE; ++a) {
-		g_lut[a] = lut_rt(a);
+		g_lut[a] = pow3(a);
 	}
 
 	for (a = 0; a < LUT_SIZE128; ++a) {
-		g_lutx[a] = lut_rt128(a);
+		g_lutx[a] = pow3x(a);
 	}
 
 	for (a = 0; a < LUT_SIZEMPZ; ++a) {
