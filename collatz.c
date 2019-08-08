@@ -67,12 +67,14 @@ void check(unsigned long n)
 int main(int argc, char *argv[])
 {
 	unsigned long n;
-	unsigned long n_max = (argc > 1) ? (unsigned long)atol(argv[1]) : (1UL<<30);
+	unsigned long n_sup = 1UL << (
+		(argc > 1) ? (unsigned long)atol(argv[1])
+		: 32 );
 
 	init_lut();
 
 	/* n of the form 4n+3 */
-	for (n = 3; n < n_max; n += 4) {
+	for (n = 3; n < n_sup; n += 4) {
 		check(n);
 	}
 
