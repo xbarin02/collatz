@@ -90,31 +90,6 @@ static uint128_t lut128(uint128_t n)
 	return g_lut128[n];
 }
 
-/* check convergence */
-void check(unsigned long n)
-{
-	unsigned long n0 = n/2;
-
-	do {
-		unsigned long e;
-
-		n >>= __builtin_ctzl(n);
-
-		/* 6n+2 < n0 (all numbers below n0 have already been checked) */
-		if (n < n0 && n%3 == 1)
-			return;
-
-		n++;
-
-		e = __builtin_ctzl(n);
-		n >>= e;
-		assert( n <= ULONG_MAX >> 2*e );
-		n *= lut(e);
-
-		n--;
-	} while (1);
-}
-
 /* ctz of mpz_t */
 mp_bitcnt_t ctzmpz(const mpz_t n)
 {
@@ -160,13 +135,12 @@ goto entry;
 		mpz_fdiv_q_2exp(n, n, e);
 
 		/* now we have (n,e) pair */
-#if 1
+
 		/* all (n,e) pairs below the following boundary have been checked in previous runs of the pre-screening */
 		if ( mpz_cmp_ui(n, BOUNDARY_N) < 0 && e < BOUNDARY_E ) {
 			mpz_clear(n);
 			return;
 		}
-#endif
 
 		/* all (n,e) with n < n_sup and e < e0 have already been checked */
 		if ( (mpz_cmp_ui(n, n_sup) < 0 && e < (mp_bitcnt_t)e0) || (mpz_cmp_ui(n, n0) < 0 && e == (mp_bitcnt_t)e0) ) {
@@ -199,11 +173,10 @@ goto entry;
 		n >>= e;
 
 		/* now we have (n,e) pair */
-#if 1
+
 		/* all (n,e) pairs below the following boundary have been checked in previous runs of the pre-screening */
 		if ( n < BOUNDARY_N && e < BOUNDARY_E ) /* these constants should be promoted to uint128_t */
 			return;
-#endif
 
 		/* all (n,e) with n < n_sup and e < e0 have already been checked */
 		if ( (n < n_sup && e < e0) || (n < n0 && e == e0) )
@@ -243,11 +216,9 @@ goto entry;
 
 		/* now we have (n,e) pair */
 
-#if 1
 		/* all (n,e) pairs below the following boundary have been checked in previous runs of the pre-screening */
 		if ( n < BOUNDARY_N && e < BOUNDARY_E )
 			return;
-#endif
 
 		/* all (n,e) with n < n_sup and e < e0 have already been checked */
 		if ( (n < n_sup && e < e0) || (n < n0 && e == e0) )
@@ -287,14 +258,6 @@ int main(int argc, char *argv[])
 	assert( ctz128( INT128_C(1)<<127 ) == 127 );
 
 	init_lut();
-#if 0
-	/* trajectory of all numbers of the form 2l+0 passes (in finitely many steps) through some 2m+1 < 2l+0 */
-	/* trajectory of all numbers of the form 2m+1 passes (in finitely many steps) through some 6n+2 > 2m+1 */
-	/* therefore, check only the numbers the form 6n+2, in order from the smallest one to the largest one */
-	for (n = 6+2; n < n_max; n += 6) {
-		check(n);
-	}
-#endif
 
 	/* for each e */
 	for (e = 1; ; ++e) {
