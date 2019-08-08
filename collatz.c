@@ -9,12 +9,12 @@
 #include <assert.h>
 #include <limits.h>
 
-#define LUT_SIZE 32
+#define LUT_SIZE 41
 
 unsigned long g_lut[LUT_SIZE];
 
-/* 3^n, in runtime */
-unsigned long lut_rt(unsigned long n)
+/* 3^n */
+unsigned long pow3(unsigned long n)
 {
 	unsigned long r = 1;
 
@@ -32,16 +32,8 @@ void init_lut()
 	unsigned long a;
 
 	for (a = 0; a < LUT_SIZE; ++a) {
-		g_lut[a] = lut_rt(a);
+		g_lut[a] = pow3(a);
 	}
-}
-
-/* 3^n, using the look-up table */
-static unsigned long lut(unsigned long n)
-{
-	assert( n < LUT_SIZE );
-
-	return g_lut[n];
 }
 
 /* check convergence */
@@ -60,7 +52,9 @@ void check(unsigned long n)
 
 		assert( n <= ULONG_MAX >> 2*e );
 
-		n *= lut(e);
+		assert( e < LUT_SIZE );
+
+		n *= g_lut[e];
 
 		n--;
 
