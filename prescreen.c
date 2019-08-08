@@ -52,7 +52,7 @@ uint128_t lut_rt128(uint128_t n)
 	return r;
 }
 
-void lut_rtmpz(mpz_t r, unsigned long n)
+static void mpz_pow3(mpz_t r, unsigned long n)
 {
 	mpz_ui_pow_ui(r, 3UL, n);
 }
@@ -71,7 +71,7 @@ void init_lut()
 
 	for (a = 0; a < LUT_SIZEMPZ; ++a) {
 		mpz_init(g_lutmpz[a]);
-		lut_rtmpz(g_lutmpz[a], a);
+		mpz_pow3(g_lutmpz[a], a);
 	}
 }
 
