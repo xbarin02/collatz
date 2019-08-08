@@ -25,7 +25,7 @@ uint128_t g_lutx[LUT_SIZE128];
 
 mpz_t g_mpz_lut[LUT_SIZEMPZ];
 
-/* 3^n, in runtime */
+/* 3^n */
 unsigned long pow3(unsigned long n)
 {
 	unsigned long r = 1;
@@ -39,6 +39,7 @@ unsigned long pow3(unsigned long n)
 	return r;
 }
 
+/* 3^n */
 uint128_t pow3x(uint128_t n)
 {
 	uint128_t r = 1;
@@ -52,11 +53,13 @@ uint128_t pow3x(uint128_t n)
 	return r;
 }
 
+/* 3^n */
 static void mpz_pow3(mpz_t r, unsigned long n)
 {
 	mpz_ui_pow_ui(r, 3UL, n);
 }
 
+/* init lookup tables */
 void init_lut()
 {
 	unsigned long a;
@@ -75,12 +78,13 @@ void init_lut()
 	}
 }
 
-/* ctz of mpz_t */
+/* count trailing zeros */
 static mp_bitcnt_t mpz_ctz(const mpz_t n)
 {
 	return mpz_scan1(n, 0);
 }
 
+/* count trailing zeros */
 static uint128_t __builtin_ctzx(uint128_t n)
 {
 	if ((unsigned long)n == 0)
