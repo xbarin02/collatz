@@ -52,7 +52,7 @@ uint128_t lut_rt128(uint128_t n)
 	return r;
 }
 
-void lut_rtmpz(mpz_t r, unsigned long int n)
+void lut_rtmpz(mpz_t r, unsigned long n)
 {
 	mpz_ui_pow_ui(r, 3UL, n);
 }
@@ -91,7 +91,7 @@ static uint128_t lutx(uint128_t n)
 }
 
 /* ctz of mpz_t */
-mp_bitcnt_t mpz_ctz(const mpz_t n)
+static mp_bitcnt_t mpz_ctz(const mpz_t n)
 {
 	return mpz_scan1(n, 0);
 }
