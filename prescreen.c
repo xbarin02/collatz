@@ -75,21 +75,6 @@ void init_lut()
 	}
 }
 
-/* 3^n */
-static unsigned long lut(unsigned long n)
-{
-	assert( n < LUT_SIZE );
-
-	return g_lut[n];
-}
-
-static uint128_t lutx(uint128_t n)
-{
-	assert( n < LUT_SIZE128 );
-
-	return g_lutx[n];
-}
-
 /* ctz of mpz_t */
 static mp_bitcnt_t mpz_ctz(const mpz_t n)
 {
@@ -159,7 +144,7 @@ void prescreenx(uint128_t n, uint128_t n_sup, uint128_t e)
 			return;
 		}
 
-		n *= lutx(e);
+		n *= g_lutx[e];
 
 		n--;
 
@@ -197,7 +182,7 @@ void prescreen(unsigned long n, unsigned long n_sup, unsigned long e)
 			return;
 		}
 
-		n *= lut(e);
+		n *= g_lut[e];
 
 		n--;
 
