@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
 	/* trajectory of all numbers of the form 2l+0 passes (in finitely many steps) through some 2m+1 < 2l+0 */
 	/* trajectory of all numbers of the form 2m+1 passes (in finitely many steps) through some 6n+2 > 2m+1 */
 	/* therefore, check only the numbers the form 6n+2, in order from the smallest one to the largest one */
+	#pragma omp parallel for
 	for (n = 6+2; n < n_max; n += 6) {
 		check(n);
 	}
