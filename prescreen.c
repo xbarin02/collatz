@@ -98,16 +98,10 @@ mp_bitcnt_t ctzmpz(const mpz_t n)
 
 static uint128_t ctz128(uint128_t n)
 {
-	switch (sizeof(uint128_t)) {
-		case 2*sizeof(unsigned long): {
-			if ((unsigned long)n == 0)
-				return (sizeof(unsigned long) * CHAR_BIT) + __builtin_ctzl((unsigned long)(n >> (sizeof(unsigned long) * CHAR_BIT)));
-			else
-				return __builtin_ctzl((unsigned long)n);
-		}
-		default:
-			abort();
-	}
+	if ((unsigned long)n == 0)
+		return (sizeof(unsigned long) * CHAR_BIT) + __builtin_ctzl((unsigned long)(n >> (sizeof(unsigned long) * CHAR_BIT)));
+	else
+		return __builtin_ctzl((unsigned long)n);
 }
 
 void prescreenmpz(unsigned long n0, unsigned long n_sup, unsigned long e0)
