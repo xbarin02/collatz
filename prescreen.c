@@ -138,6 +138,7 @@ void prescreenx_ex(uint128_t n0, uint128_t n_sup, uint128_t e0, uint128_t n, uin
 	do {
 		/* we are unable to compute the next step in 128-bit arithmetic */
 		if ( (n > UINT128_MAX >> 2*e) || (e >= LUT_SIZE128) ) {
+			/* NOTE: importantly, all these (initial) arguments fit into unsigned long type */
 			mpz_prescreen((unsigned long)n0, (unsigned long)n_sup, (unsigned long)e0);
 			return;
 		}
