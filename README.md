@@ -15,14 +15,20 @@ Moreover, the convergence for all *(n,e)* pairs below a certain limit can be pre
 Checking the convergence for all numbers below *2<sup>32</sup>* on Intel Xeon E5-2680 v4 @ 2.40GHz (single-threaded program) takes less than one second:
 
     $ \time ./collatz4 32
-    0.72user 0.00system 0:00.72elapsed 99%CPU (0avgtext+0avgdata 1676maxresident)k
-    0inputs+0outputs (0major+88minor)pagefaults 0swaps
+    0.76user 0.00system 0:00.76elapsed 99%CPU (0avgtext+0avgdata 1708maxresident)k
+    0inputs+0outputs (0major+87minor)pagefaults 0swaps
 
-Verifying the convergence of all numbers below *2<sup>38</sup>* using all 56 cores takes less than five seconds:
+Verifying the convergence of all numbers below *2<sup>38</sup>* using all 56 cores takes less than two seconds:
 
     $ OMP_NUM_THREADS=56 \time ./collatz4 38
-    173.79user 0.00system 0:04.55elapsed 3813%CPU (0avgtext+0avgdata 2160maxresident)k
-    0inputs+0outputs (0major+402minor)pagefaults 0swaps
+    102.37user 0.05system 0:01.86elapsed 5504%CPU (0avgtext+0avgdata 2160maxresident)k
+    0inputs+0outputs (0major+288minor)pagefaults 0swaps
+
+Verifying the convergence of all numbers below *2<sup>40</sup>* using all 56 cores takes less than 20 seconds:
+
+    $ OMP_NUM_THREADS=56 \time ./collatz4 40
+    727.07user 0.01system 0:19.03elapsed 3819%CPU (0avgtext+0avgdata 2160maxresident)k
+    0inputs+0outputs (0major+374minor)pagefaults 0swaps
 
 ## Contact
 David Barina <ibarina@fit.vutbr.cz>

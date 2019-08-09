@@ -12,8 +12,8 @@
 
 #include "wideint.h"
 
-#define BOUNDARY_N (1UL<<34)
-#define BOUNDARY_E 67
+#define BOUNDARY_N (1UL<<36)
+#define BOUNDARY_E 50
 
 #define LUT_SIZE 41
 #define LUT_SIZE128 81
