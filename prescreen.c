@@ -112,11 +112,6 @@ void mpz_prescreen(unsigned long n0, unsigned long n_sup, unsigned long e0)
 
 		mpz_fdiv_q_2exp(n, n, mpz_ctz(n));
 
-		if (mpz_cmp_ui(n, 1UL) == 0) {
-			mpz_clear(n);
-			return;
-		}
-
 		mpz_add_ui(n, n, 1UL);
 
 		e = mpz_ctz(n);
@@ -156,9 +151,6 @@ void prescreenx(uint128_t n, uint128_t n_sup, uint128_t e)
 
 		n >>= __builtin_ctzx(n);
 
-		if (n == 1)
-			return;
-
 		n++;
 
 		e = __builtin_ctzx(n);
@@ -193,9 +185,6 @@ void prescreen(unsigned long n, unsigned long n_sup, unsigned long e)
 		n--;
 
 		n >>= __builtin_ctzl(n);
-
-		if (n == 1)
-			return;
 
 		n++;
 
