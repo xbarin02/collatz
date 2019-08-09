@@ -42,19 +42,10 @@ void init_lut()
 /* check convergence */
 void check(unsigned long n)
 {
-	unsigned long n0 = n/2;
-
 	do {
 		unsigned long e;
 
 		n >>= __builtin_ctzl(n);
-
-		/* the following test is slow, consider to omit it */
-#if 0
-		/* 6n+2 < n0 (all numbers below n0 have already been checked) */
-		if (n < n0 && n%3 == 1)
-			return;
-#endif
 
 		n++;
 
