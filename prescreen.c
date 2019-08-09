@@ -104,6 +104,8 @@ void mpz_prescreen(unsigned long n0, unsigned long n_sup, unsigned long e0)
 	e = (mp_bitcnt_t)e0;
 
 	do {
+		assert( e < LUT_SIZEMPZ );
+
 		mpz_mul(n, n, g_mpz_lut[e]);
 
 		mpz_sub_ui(n, n, 1UL);
