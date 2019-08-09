@@ -168,6 +168,38 @@ void prescreenx(uint128_t n, uint128_t n_sup, uint128_t e)
 	} while (1);
 }
 
+void prescreenx_ex(uint128_t n0, uint128_t n_sup, uint128_t e0, uint128_t n, uint128_t e)
+{
+	do {
+		/* we are unable to compute the next step in 128-bit arithmetic */
+		if ( (n > UINT128_MAX >> 2*e) || (e >= LUT_SIZE128) ) {
+			mpz_prescreen((unsigned long)n0, (unsigned long)n_sup, (unsigned long)e0);
+			return;
+		}
+
+		n *= g_lutx[e];
+
+		n--;
+
+		n >>= __builtin_ctzx(n);
+
+		n++;
+
+		e = __builtin_ctzx(n);
+		n >>= e;
+
+		/* now we have (n,e) pair */
+
+		/* all (n,e) pairs below the following boundary have been checked in previous runs of the pre-screening */
+		if ( n < BOUNDARY_N && e < BOUNDARY_E ) /* these constants should be promoted to uint128_t */
+			return;
+
+		/* all (n,e) with n < n_sup and e < e0 have already been checked */
+		if ( (n < n_sup && e < e0) || (n < n0 && e == e0) )
+			return;
+	} while (1);
+}
+
 void prescreen(unsigned long n, unsigned long n_sup, unsigned long e)
 {
 	unsigned long n0 = n;
@@ -176,7 +208,11 @@ void prescreen(unsigned long n, unsigned long n_sup, unsigned long e)
 	do {
 		/* we are unable to compute the next step in 64-bit arithmetic */
 		if ( (n > ULONG_MAX >> 2*e) || (e >= LUT_SIZE) ) {
+#if 0
 			prescreenx(n0, n_sup, e0);
+#else
+			prescreenx_ex(n0, n_sup, e0, n, e);
+#endif
 			return;
 		}
 
