@@ -8,7 +8,7 @@ The trick is that, when calculating the function iterates, we switch between two
 Powers for small exponents in that lookup table are therefore precalculated, which leads to some acceleration.
 This approach differs significantly from the commonly used approach utilizing a space-time tradeoff using huge lookup tables.
 The switching between two domains effectively reformulates the Collatz function to a mapping between pairs *(n,e)*, where *n* is an odd number and *e* is an exponent of three.
-Importantly, the convergence for all *(n,e)* pairs below a certain limit can be precalculated, leading to significant speedup.
+Importantly, the convergence for all *(n,e)* pairs below a certain limit can be precalculated, leading to significant speedup. Mathematical details on this approach are given in [this MSE question]( https://math.stackexchange.com/questions/3311547/alternative-formulation-of-the-collatz-problem).
 
 ## Results
 
