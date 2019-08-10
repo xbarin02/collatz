@@ -10,7 +10,7 @@
 #include <limits.h>
 
 #define BOUNDARY_N (1UL<<39)
-#define BOUNDARY_E 34
+#define BOUNDARY_E 36
 
 #define LUT_SIZE 41
 
