@@ -42,8 +42,6 @@ void init_lut()
 /* check convergence */
 void check(unsigned long n)
 {
-	unsigned long n0 = n;
-
 	do {
 		unsigned long e;
 
@@ -68,7 +66,7 @@ void check(unsigned long n)
 		n--;
 
 		n >>= __builtin_ctzl(n);
-	} while (n >= n0);
+	} while (1);
 }
 
 int main(int argc, char *argv[])

@@ -50,6 +50,7 @@ void check(unsigned long n)
 		n++;
 
 		e = __builtin_ctzl(n);
+
 		n >>= e;
 
 		/* (n,e) pair */
