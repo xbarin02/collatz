@@ -9,6 +9,8 @@
 #ifdef __GNUC__
 
 #pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-pedantic"
 typedef unsigned __int128 uint128_t;
 #pragma GCC diagnostic pop
@@ -17,6 +19,8 @@ typedef unsigned __int128 uint128_t;
 #define UINT128_MAX ( ~UINT128_C(0) )
 
 #pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-pedantic"
 typedef __int128 int128_t;
 #pragma GCC diagnostic pop
