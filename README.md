@@ -30,6 +30,11 @@ Verifying the convergence of all numbers below *2<sup>40</sup>* using all 56 cor
     408.79user 0.00system 0:07.49elapsed 5455%CPU (0avgtext+0avgdata 2188maxresident)k
     0inputs+0outputs (0major+337minor)pagefaults 0swaps
 
+Block below *2<sup>46</sup>* using all 56 cores in about 15 minutes (using 128-bit integer extension in GCC):
+    OMP_NUM_THREADS=56 \time ./collatz4_128 46
+    36712.82user 0.02system 13:16.24elapsed 4610%CPU (0avgtext+0avgdata 2280maxresident)k
+    0inputs+0outputs (0major+1219minor)pagefaults 0swaps
+
 ## Contact
 David Barina <ibarina@fit.vutbr.cz>
 
