@@ -43,7 +43,7 @@ void init_lut()
 void check(unsigned long n)
 {
 	do {
-		unsigned long e;
+		int e;
 
 		n >>= __builtin_ctzl(n);
 
