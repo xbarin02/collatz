@@ -85,7 +85,7 @@ static mp_bitcnt_t mpz_ctz(const mpz_t n)
 }
 
 /* count trailing zeros */
-static uint128_t __builtin_ctzx(uint128_t n)
+static int __builtin_ctzx(uint128_t n)
 {
 	if ((unsigned long)n == 0)
 		return (sizeof(unsigned long) * CHAR_BIT) + __builtin_ctzl((unsigned long)(n >> (sizeof(unsigned long) * CHAR_BIT)));
@@ -93,14 +93,14 @@ static uint128_t __builtin_ctzx(uint128_t n)
 		return __builtin_ctzl((unsigned long)n);
 }
 
-void mpz_prescreen(unsigned long n0, unsigned long n_sup, unsigned long e0)
+void mpz_prescreen(unsigned long n0, unsigned long n_sup, int e0)
 {
 	mpz_t n;
 	mp_bitcnt_t e;
 
 	mpz_init_set_ui(n, n0);
 
-	assert( sizeof(mp_bitcnt_t) >= sizeof(unsigned long) );
+	assert( sizeof(mp_bitcnt_t) >= sizeof(int) );
 	e = (mp_bitcnt_t)e0;
 
 	do {
@@ -133,13 +133,13 @@ void mpz_prescreen(unsigned long n0, unsigned long n_sup, unsigned long e0)
 	} while (1);
 }
 
-void prescreenx_ex(uint128_t n0, uint128_t n_sup, uint128_t e0, uint128_t n, uint128_t e)
+void prescreenx_ex(uint128_t n0, uint128_t n_sup, int e0, uint128_t n, int e)
 {
 	do {
 		/* we are unable to compute the next step in 128-bit arithmetic */
 		if ( (n > UINT128_MAX >> 2*e) || (e >= LUT_SIZE128) ) {
 			/* NOTE: importantly, all these (initial) arguments fit into unsigned long type */
-			mpz_prescreen((unsigned long)n0, (unsigned long)n_sup, (unsigned long)e0);
+			mpz_prescreen((unsigned long)n0, (unsigned long)n_sup, e0);
 			return;
 		}
 
@@ -166,10 +166,10 @@ void prescreenx_ex(uint128_t n0, uint128_t n_sup, uint128_t e0, uint128_t n, uin
 	} while (1);
 }
 
-void prescreen(unsigned long n, unsigned long n_sup, unsigned long e)
+void prescreen(unsigned long n, unsigned long n_sup, int e)
 {
 	unsigned long n0 = n;
-	unsigned long e0 = e;
+	int e0 = e;
 
 	do {
 		/* we are unable to compute the next step in 64-bit arithmetic */
@@ -203,7 +203,7 @@ void prescreen(unsigned long n, unsigned long n_sup, unsigned long e)
 
 int main(int argc, char *argv[])
 {
-	unsigned long e;
+	int e;
 	unsigned long n;
 	unsigned long n_sup = 1UL << (
 		(argc > 1) ? (unsigned long)atol(argv[1])
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
 
 	/* for each e */
 	for (e = 1; ; ++e) {
-		printf("e = %lu...\n", e);
+		printf("e = %i...\n", e);
 		/* for each odd n */
 		#pragma omp parallel for
 		for (n = 1; n < n_sup; n += 2) {
