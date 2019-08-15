@@ -57,7 +57,10 @@ void check(unsigned long n0)
 		/* all (n,1) below the following limits have already been checked for convergence */
 		if (e == 1 && n < n0)
 			return;
-
+#if 1
+		if (e < 11 && n < (1UL<<43))
+			return;
+#endif
 	} while (1);
 }
 
