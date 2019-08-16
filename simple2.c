@@ -1,7 +1,16 @@
+/**
+ * @file
+ * @brief Simple program that check convergence of the Collatz problem.
+ *
+ * @author David Barina <ibarina@fit.vutbr.cz>
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <limits.h>
+
+#define BOUNDARY_N (1UL<<43)
+#define BOUNDARY_E 12
 
 #define LUT_SIZE 41
 
@@ -30,6 +39,7 @@ void init_lut()
 	}
 }
 
+/* check convergence */
 void check(unsigned long n0)
 {
 	unsigned long n = n0;
@@ -54,10 +64,8 @@ void check(unsigned long n0)
 
 		n >>= e;
 
-#if 1
-		if (e < 12 && n < (1UL<<43))
+		if (e < BOUNDARY_E && n < BOUNDARY_N)
 			return;
-#endif
 
 		/* all (n,1) below the following limits have already been checked for convergence */
 		if (e == 1 && n < n0)
