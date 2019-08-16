@@ -83,6 +83,7 @@ int main(int argc, char *argv[])
 	init_lut();
 
 	/* n of the form 4n+3 */
+	#pragma omp parallel for
 	for (n = 3; n < n_sup; n += 4) {
 		check(n);
 	}
