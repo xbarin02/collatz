@@ -87,7 +87,10 @@ void check_ex(unsigned long n, int e, unsigned long n0)
 		n--;
 
 		n >>= __builtin_ctzl(n);
-
+#if 1
+		if (n < n0)
+			return;
+#endif
 		n++;
 
 		e = __builtin_ctzl(n);
