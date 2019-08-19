@@ -154,7 +154,7 @@ void check(unsigned long n)
 			return;
 
 		if (n > ULONG_MAX >> 2*e || e >= LUT_SIZE) {
-			checkx_ex((uint128_t)n, (uint128_t)e);
+			checkx_ex((uint128_t)n, e);
 			return;
 		}
 

@@ -71,14 +71,14 @@ static int __builtin_ctzx(uint128_t n)
 }
 
 /* declare */
-void checkx_ex(uint128_t n, int e);
+void checkx_ex(uint128_t n, int e, unsigned long n0);
 
-void check_ex(unsigned long n, int e)
+void check_ex(unsigned long n, int e, unsigned long n0)
 {
 	do {
 		/* switch back to 128-bit implementation */
 		if (n > ULONG_MAX >> 2*e || e >= LUT_SIZE) {
-			checkx_ex((uint128_t)n, e);
+			checkx_ex((uint128_t)n, e, n0);
 			return;
 		}
 
@@ -101,7 +101,7 @@ void check_ex(unsigned long n, int e)
 	} while (1);
 }
 
-void checkx_ex(uint128_t n, int e)
+void checkx_ex(uint128_t n, int e, unsigned long n0)
 {
 	do {
 		assert( n <= UINT128_MAX >> 2*e );
@@ -113,6 +113,9 @@ void checkx_ex(uint128_t n, int e)
 		n--;
 
 		n >>= __builtin_ctzx(n);
+
+		if (n < n0)
+			return;
 
 		n++;
 
@@ -127,7 +130,7 @@ void checkx_ex(uint128_t n, int e)
 
 		/* at this point, if hi_part(n) == 0 and e < LUT_SIZE, we could switch back to 64-bit implementation */
 		if ( (unsigned long)(n>>64) == 0 && e < LUT_SIZE ) {
-			check_ex((unsigned long)n, e);
+			check_ex((unsigned long)n, e, n0);
 			return;
 		}
 	} while (1);
@@ -136,6 +139,8 @@ void checkx_ex(uint128_t n, int e)
 /* check convergence */
 void check(unsigned long n)
 {
+	unsigned long n0 = n;
+
 	do {
 		int e;
 
@@ -152,7 +157,7 @@ void check(unsigned long n)
 			return;
 
 		if (n > ULONG_MAX >> 2*e || e >= LUT_SIZE) {
-			checkx_ex((uint128_t)n, (uint128_t)e);
+			checkx_ex((uint128_t)n, e, n0);
 			return;
 		}
 
@@ -161,7 +166,7 @@ void check(unsigned long n)
 		n--;
 
 		n >>= __builtin_ctzl(n);
-	} while (1);
+	} while (n >= n0);
 }
 
 int main(int argc, char *argv[])
