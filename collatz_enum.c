@@ -157,6 +157,8 @@ int main(int argc, char *argv[])
 
 	init_lut();
 
+	assert( 2*sizeof(unsigned long) == sizeof(uint128_t) );
+
 	n.ull = UINT128_C(1)<<64;
 	assert(n.ul[0] == 0 && n.ul[1] == 1);
 
