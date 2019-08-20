@@ -97,7 +97,7 @@ void check(uint128_u n)
 		if (e < BOUNDARY_E && n.ul[0] < BOUNDARY_N)
 			return;
 
-		/* switch tp 128-bit arithmetic */
+		/* switch to 128-bit arithmetic */
 		if (n.ul[0] > ULONG_MAX >> 2*e || e >= LUT_SIZE) {
 			goto checkx_ex;
 		}
@@ -125,10 +125,11 @@ checkx:
 
 		/* (n,e) pair */
 
+		/* all (n,e) below the following limits have already been checked for convergence */
 		if (e < BOUNDARY_E && n.ull < BOUNDARY_N)
 			return;
 
-		/* switch to 64-bit implementation */
+		/* switch to 64-bit arithmetic */
 		if ( n.ul[1] == 0 && e < LUT_SIZE ) {
 			goto check_ex;
 		}
