@@ -12,8 +12,8 @@
 
 #include "wideint.h"
 
-#define BOUNDARY_N (1UL<<42)
-#define BOUNDARY_E 15
+#define BOUNDARY_N (1UL<<44)
+#define BOUNDARY_E 13
 
 #define LUT_SIZE 41
 #define LUT_SIZE128 81
@@ -260,6 +260,8 @@ int main(int argc, char *argv[])
 	/* for each e */
 	for (e = 1; ; ++e) {
 		printf("e = %i...\n", e);
+		if (e < BOUNDARY_E && n_sup <= BOUNDARY_N)
+		    continue;
 		/* for each odd n */
 		#pragma omp parallel for
 		for (n = 1; n < n_sup; n += 2) {
