@@ -263,6 +263,8 @@ int main(int argc, char *argv[])
 		/* for each odd n */
 		#pragma omp parallel for
 		for (n = 1; n < n_sup; n += 2) {
+			if (n < BOUNDARY_N && e < BOUNDARY_E)
+				continue;
 			/* check */
 			prescreen(n, n_sup, e);
 		}
