@@ -81,6 +81,9 @@ void check(uint128_u n)
 	uint128_u n0 = n;
 	int e;
 
+	if (n.ul[1] != 0)
+		goto checkx;
+
 	do {
 		n.ul[0]++;
 
@@ -106,9 +109,12 @@ void check(uint128_u n)
 		n.ul[0]--;
 
 		n.ul[0] >>= __builtin_ctzl(n.ul[0]);
-	} while (n.ul[0] >= n0.ul[0]);
 
-	return;
+		if (n.ul[0] < n0.ul[0])
+			return;
+	} while (1);
+
+checkx:
 
 	do {
 		n.ull++;
@@ -136,7 +142,10 @@ void check(uint128_u n)
 		n.ull--;
 
 		n.ull >>= __builtin_ctzx(n.ull);
-	} while (n.ull >= n0.ull);
+
+		if (n.ull < n0.ull)
+			return;
+	} while (1);
 }
 
 int main(int argc, char *argv[])
