@@ -9,8 +9,8 @@
 #include <assert.h>
 #include <limits.h>
 
-#define BOUNDARY_N (1UL<<43)
-#define BOUNDARY_E 12
+#define BOUNDARY_N (1UL<<44)
+#define BOUNDARY_E 14
 
 #define LUT_SIZE 41
 
