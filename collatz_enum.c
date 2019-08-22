@@ -66,10 +66,13 @@ void init_lut()
 	}
 }
 
+#define likely(x)       __builtin_expect((x),1)
+#define unlikely(x)     __builtin_expect((x),0)
+
 /* count trailing zeros */
 static int __builtin_ctzx(uint128_t n)
 {
-	if ((unsigned long)n == 0)
+	if (/*likely*/((unsigned long)n == 0))
 		return (sizeof(unsigned long) * CHAR_BIT) + __builtin_ctzl((unsigned long)(n >> (sizeof(unsigned long) * CHAR_BIT)));
 	else
 		return __builtin_ctzl((unsigned long)n);
@@ -98,7 +101,7 @@ void check(uint128_u n)
 			return;
 
 		/* switch to 128-bit arithmetic */
-		if (n.ul[0] > ULONG_MAX >> 2*e || e >= LUT_SIZE) {
+		if (/*likely*/(n.ul[0] > ULONG_MAX >> 2*e || e >= LUT_SIZE)) {
 			goto checkx_ex;
 		}
 
