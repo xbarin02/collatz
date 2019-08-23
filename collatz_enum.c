@@ -113,7 +113,7 @@ void check(uint128_u n)
 
 		n.ul[0] >>= __builtin_ctzl(n.ul[0]);
 
-		if (n.ul[0] < n0.ul[0])
+		if (n.ul[0] < n0.ul[0] && likely(n0.ul[1] == 0))
 			return;
 	} while (1);
 
