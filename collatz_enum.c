@@ -87,7 +87,11 @@ void check(uint128_u n)
 		/* (n,e) pair */
 
 		/* all (n,e) below the following limits have already been checked for convergence */
+#if 0
 		if (/*e < BOUNDARY_E &&*/ n.ul[0] < BOUNDARY_N_ATLEAST_E64)
+#else
+		if (e < BOUNDARY_E && n.ul[0] < BOUNDARY_N)
+#endif
 			return;
 
 		/* switch to 128-bit arithmetic */
@@ -119,7 +123,11 @@ checkx:
 		/* (n,e) pair */
 
 		/* all (n,e) below the following limits have already been checked for convergence */
+#if 1
 		if (/*e < BOUNDARY_E &&*/ n.ull < BOUNDARY_N_ATLEAST_E128)
+#else
+		if (e < BOUNDARY_E && n.ull < BOUNDARY_N)
+#endif
 			return;
 
 		/* switch to 64-bit arithmetic */
