@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
 	uint128_t n_sup;
 	unsigned long task_id = (argc > 1) ? (unsigned long)atol(argv[1]) : 0;
 
-	printf("TAKS_SIZE %lu\n", (unsigned long)TASK_SIZE);
+	printf("TASK_SIZE %lu\n", (unsigned long)TASK_SIZE);
 	printf("TASK_ID %lu\n", task_id);
 
 	n.ull = UINT128_C(1)<<64;
