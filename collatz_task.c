@@ -78,6 +78,9 @@ static void check(uint128_u n)
 		goto checkx;
 
 	do {
+		if (n.ul[0] <= (87UL<<60))
+			return;
+
 		n.ul[0]++;
 
 		e = __builtin_ctzl(n.ul[0]);
@@ -114,6 +117,10 @@ static void check(uint128_u n)
 checkx:
 
 	do {
+#if 0
+		if (n.ull <= UINT128_C(87UL<<60))
+			return;
+#endif
 		n.ull++;
 
 		e = __builtin_ctzx(n.ull);
