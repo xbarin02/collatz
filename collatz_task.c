@@ -69,7 +69,7 @@ void init_lut()
 }
 
 /* check convergence */
-void check(uint128_u n)
+static void check(uint128_u n)
 {
 	uint128_u n0 = n;
 	int e;
