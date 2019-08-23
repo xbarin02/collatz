@@ -78,7 +78,7 @@ static void check(uint128_u n)
 		goto checkx;
 
 	do {
-		if (n.ul[0] <= (87UL<<60))
+		if (n.ul[0] <= (87UL<<60)) /* FIXME: overflow */
 			return;
 
 		n.ul[0]++;
