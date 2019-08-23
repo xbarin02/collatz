@@ -137,7 +137,7 @@ checkx:
 
 	checkx_ex:
 
-		assert( n.ull <= UINT128_MAX >> 2*e && e < LUT_SIZE128 );
+		assert( n.ull <= UINT128_MAX >> 2*e && e < LUT_SIZE128 && "overflow" );
 
 		n.ull *= g_lutu[e].ull;
 
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 	uint128_t n_sup;
 	unsigned long task_id = (argc > 1) ? (unsigned long)atol(argv[1]) : 0;
 
-	printf("task id %lu\n", task_id);
+	printf("TASK_ID %lu\n", task_id);
 
 	n.ull = UINT128_C(1)<<64;
 	assert( n.ul[0] == 0 && n.ul[1] == 1 && "unsupported endianity" );
@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
 	n.ull = ( UINT128_C(task_id) << TASK_SIZE ) + 3;
 	n_sup = ( UINT128_C(task_id) << TASK_SIZE ) + 3 + (1UL << TASK_SIZE);
 
-	printf("range 0x%016lx:%016lx .. 0x%016lx:%016lx\n", n.ul[1], n.ul[0], (unsigned long)(n_sup>>64), (unsigned long)n_sup);
+	printf("RANGE 0x%016lx:%016lx .. 0x%016lx:%016lx\n", n.ul[1], n.ul[0], (unsigned long)(n_sup>>64), (unsigned long)n_sup);
 
 	init_lut();
 
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 		check(n);
 	}
 
-	printf("done\n");
+	printf("HALTED\n");
 
 	return 0;
 }

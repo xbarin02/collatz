@@ -1,6 +1,6 @@
 CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -fopenmp
 LDLIBS+=-lgmp
-BINS=collatz collatz_128 collatz_128_2 collatz_enum collatz4 collatz4_128 simple2 prescreen
+BINS=collatz collatz_128 collatz_128_2 collatz_enum collatz_task collatz4 collatz4_128 simple2 prescreen
 
 .PHONY: all
 all: $(BINS)
