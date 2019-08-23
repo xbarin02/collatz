@@ -12,6 +12,8 @@
 #include "wideint.h"
 
 #define BOUNDARY_N (1UL<<44)
+#define BOUNDARY_N_ATLEAST_E64 (1UL<<35)
+#define BOUNDARY_N_ATLEAST_E128 (1UL<<32)
 #define BOUNDARY_E 14
 
 #define LUT_SIZE 41
@@ -85,7 +87,7 @@ void check(uint128_u n)
 		/* (n,e) pair */
 
 		/* all (n,e) below the following limits have already been checked for convergence */
-		if (e < BOUNDARY_E && n.ul[0] < BOUNDARY_N)
+		if (/*e < BOUNDARY_E &&*/ n.ul[0] < BOUNDARY_N_ATLEAST_E64)
 			return;
 
 		/* switch to 128-bit arithmetic */
@@ -117,7 +119,7 @@ checkx:
 		/* (n,e) pair */
 
 		/* all (n,e) below the following limits have already been checked for convergence */
-		if (e < BOUNDARY_E && n.ull < BOUNDARY_N)
+		if (/*e < BOUNDARY_E &&*/ n.ull < BOUNDARY_N_ATLEAST_E128)
 			return;
 
 		/* switch to 64-bit arithmetic */
