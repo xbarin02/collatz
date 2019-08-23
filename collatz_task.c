@@ -78,8 +78,9 @@ static void check(uint128_u n)
 		goto checkx;
 
 	do {
-		if (n.ul[0] <= (87UL<<60)) /* FIXME: overflow */
-			return;
+		/*if (n.ul[0] <= (87UL<<60))*/ /* FIXME: overflow */
+		/* all unsigned long numbers are below this limit */
+		return;
 
 		n.ul[0]++;
 
@@ -117,8 +118,8 @@ static void check(uint128_u n)
 checkx:
 
 	do {
-#if 0
-		if (n.ull <= UINT128_C(87UL<<60))
+#if 1
+		if (n.ull <= UINT128_C(87)<<60)
 			return;
 #endif
 		n.ull++;
