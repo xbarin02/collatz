@@ -84,15 +84,6 @@ static mp_bitcnt_t mpz_ctz(const mpz_t n)
 	return mpz_scan1(n, 0);
 }
 
-/* count trailing zeros */
-static int __builtin_ctzx(uint128_t n)
-{
-	if ((unsigned long)n == 0)
-		return (sizeof(unsigned long) * CHAR_BIT) + __builtin_ctzl((unsigned long)(n >> (sizeof(unsigned long) * CHAR_BIT)));
-	else
-		return __builtin_ctzl((unsigned long)n);
-}
-
 void mpz_prescreen(unsigned long n0, unsigned long n_sup, int e0)
 {
 	mpz_t n;

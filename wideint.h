@@ -29,6 +29,18 @@ typedef __int128 int128_t;
 #define INT128_MAX ( ((INT128_C(1)<<(128-2))-1)*2+1 )
 #define INT128_MIN ( -INT128_MAX - 1 )
 
+#include <limits.h>
+
+/* count trailing zeros */
+__attribute__ ((unused))
+static int __builtin_ctzx(uint128_t n)
+{
+	if ((unsigned long)n == 0)
+		return (sizeof(unsigned long) * CHAR_BIT) + __builtin_ctzl((unsigned long)(n >> (sizeof(unsigned long) * CHAR_BIT)));
+	else
+		return __builtin_ctzl((unsigned long)n);
+}
+
 #else
 #	error "Unsupported compiler"
 #endif
