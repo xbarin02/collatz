@@ -106,8 +106,10 @@ void mpz_prescreen(unsigned long n0, unsigned long n_sup, int e0)
 		mpz_fdiv_q_2exp(n, n, mpz_ctz(n));
 
 		/* now we have a single n */
-		if (mpz_cmp(n, bound_n) < 0)
+		if (mpz_cmp(n, bound_n) < 0) {
+			mpz_clear(n);
 			return;
+		}
 
 		mpz_add_ui(n, n, 1UL);
 
