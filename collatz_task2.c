@@ -11,11 +11,6 @@
 
 #include "wideint.h"
 
-#define BOUNDARY_N (1UL<<44)
-#define BOUNDARY_N_ATLEAST_E64 (1UL<<36)
-#define BOUNDARY_N_ATLEAST_E128 (1UL<<33)
-#define BOUNDARY_E 16
-
 #define LUT_SIZE 41
 #define LUT_SIZE128 81
 
@@ -25,20 +20,6 @@ typedef union {
 } uint128_u;
 
 uint128_u g_lutu[LUT_SIZE128];
-
-/* 3^n */
-unsigned long pow3(unsigned long n)
-{
-	unsigned long r = 1;
-
-	for (; n > 0; --n) {
-		assert( r <= ULONG_MAX / 3 );
-
-		r *= 3;
-	}
-
-	return r;
-}
 
 /* 3^n */
 uint128_t pow3x(uint128_t n)
@@ -58,12 +39,7 @@ void init_lut()
 {
 	unsigned long a;
 
-	for (a = 0; a < LUT_SIZE; ++a) {
-		g_lutu[a].ul[1] = 0;
-		g_lutu[a].ul[0] = pow3(a);
-	}
-
-	for (; a < LUT_SIZE128; ++a) {
+	for (a = 0; a < LUT_SIZE128; ++a) {
 		g_lutu[a].ull = pow3x(a);
 	}
 }
@@ -73,52 +49,6 @@ static void check(uint128_u n)
 {
 	uint128_u n0 = n;
 	int e;
-
-	if (n.ul[1] != 0)
-		goto checkx;
-
-	do {
-		/*if (n.ul[0] <= (87UL<<60))*/ /* FIXME: overflow */
-		/* all unsigned long numbers are below this limit */
-		return;
-
-		n.ul[0]++;
-
-		e = __builtin_ctzl(n.ul[0]);
-
-		n.ul[0] >>= e;
-
-		/* (n,e) pair */
-
-		/* all (n,e) below the following limits have already been checked for convergence */
-#if 0
-		if (/*e < BOUNDARY_E &&*/ n.ul[0] < BOUNDARY_N_ATLEAST_E64)
-			return;
-#endif
-#if 0
-		if (e < BOUNDARY_E && n.ul[0] < BOUNDARY_N)
-			return;
-#endif
-
-		/* switch to 128-bit arithmetic */
-		if (n.ul[0] > ULONG_MAX >> 2*e || e >= LUT_SIZE) {
-			goto checkx_ex;
-		}
-
-	check_ex:
-		/* HACK */ return;
-
-		n.ul[0] *= g_lutu[e].ul[0];
-
-		n.ul[0]--;
-
-		n.ul[0] >>= __builtin_ctzl(n.ul[0]);
-
-		if (n.ul[0] < n0.ul[0] && n0.ul[1] == 0)
-			return;
-	} while (1);
-
-checkx:
 
 	do {
 #if 1
@@ -132,25 +62,12 @@ checkx:
 		n.ull >>= e;
 
 		/* (n,e) pair */
-
-		/* all (n,e) below the following limits have already been checked for convergence */
-#if 0
-		if (/*e < BOUNDARY_E &&*/ n.ull < BOUNDARY_N_ATLEAST_E128)
-			return;
-#endif
-#if 0
-		if (e < BOUNDARY_E && n.ull < BOUNDARY_N)
-			return;
-#endif
-
+#if 1
 		/* switch to 64-bit arithmetic */
 		if ( n.ul[1] == 0 && e < LUT_SIZE ) {
-			/* HACK */ return;
-			goto check_ex;
+			return;
 		}
-
-	checkx_ex:
-
+#endif
 		assert( n.ull <= UINT128_MAX >> 2*e && e < LUT_SIZE128 && "overflow" );
 
 		n.ull *= g_lutu[e].ull;
@@ -158,6 +75,8 @@ checkx:
 		n.ull--;
 
 		n.ull >>= __builtin_ctzx(n.ull);
+
+		/* now we have a single n */
 
 		if (n.ull < n0.ull)
 			return;
