@@ -64,7 +64,7 @@ static void check(uint128_u n)
 		/* (n,e) pair */
 #if 1
 		/* switch to 64-bit arithmetic */
-		if ( n.ul[1] == 0 && e < LUT_SIZE ) {
+		if ( n.ull < UINT128_C(1)<<64 && e < LUT_SIZE ) {
 			return;
 		}
 #endif
