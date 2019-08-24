@@ -149,6 +149,8 @@ void prescreen_ex(unsigned long n0, unsigned long n_sup, int e0, unsigned long n
 		n >>= __builtin_ctzl(n);
 
 		/* now we have a single n */
+		if (1 /* every unsigned long < 87<<60 */)
+			return;
 
 		n++;
 
