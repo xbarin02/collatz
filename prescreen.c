@@ -226,6 +226,8 @@ void prescreen(unsigned long n, unsigned long n_sup, int e)
 
 		n >>= __builtin_ctzl(n);
 
+		/* now we have a single n */
+
 		n++;
 
 		e = __builtin_ctzl(n);
