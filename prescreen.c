@@ -17,7 +17,7 @@
 
 #define LUT_SIZE 41
 #define LUT_SIZE128 81
-#define LUT_SIZEMPZ 256
+#define LUT_SIZEMPZ 512
 
 unsigned long g_lut[LUT_SIZE];
 
@@ -84,6 +84,8 @@ static mp_bitcnt_t mpz_ctz(const mpz_t n)
 	return mpz_scan1(n, 0);
 }
 
+mpz_t bound_n;
+
 void mpz_prescreen(unsigned long n0, unsigned long n_sup, int e0)
 {
 	mpz_t n;
@@ -104,6 +106,8 @@ void mpz_prescreen(unsigned long n0, unsigned long n_sup, int e0)
 		mpz_fdiv_q_2exp(n, n, mpz_ctz(n));
 
 		/* now we have a single n */
+		if (mpz_cmp(n, bound_n) < 0)
+			return;
 
 		mpz_add_ui(n, n, 1UL);
 
@@ -258,6 +262,9 @@ int main(int argc, char *argv[])
 
 	init_lut();
 
+	mpz_init_set_ui(bound_n, 87UL);
+	mpz_mul_2exp(bound_n, bound_n, (mp_bitcnt_t)60);
+
 	/* for each e */
 	for (e = 1; ; ++e) {
 		printf("e = %i...\n", e);
@@ -272,6 +279,8 @@ int main(int argc, char *argv[])
 			prescreen(n, n_sup, e);
 		}
 	}
+
+	mpz_clear(bound_n);
 
 	return 0;
 }
