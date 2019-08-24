@@ -103,6 +103,8 @@ void mpz_prescreen(unsigned long n0, unsigned long n_sup, int e0)
 
 		mpz_fdiv_q_2exp(n, n, mpz_ctz(n));
 
+		/* now we have a single n */
+
 		mpz_add_ui(n, n, 1UL);
 
 		e = mpz_ctz(n);
@@ -142,6 +144,8 @@ void prescreen_ex(unsigned long n0, unsigned long n_sup, int e0, unsigned long n
 
 		n >>= __builtin_ctzl(n);
 
+		/* now we have a single n */
+
 		n++;
 
 		e = __builtin_ctzl(n);
@@ -174,6 +178,10 @@ void prescreenx_ex(uint128_t n0, uint128_t n_sup, int e0, uint128_t n, int e)
 		n--;
 
 		n >>= __builtin_ctzx(n);
+
+		/* now we have a single n */
+		if (n <= UINT128_C(87)<<60)
+			return;
 
 		n++;
 
