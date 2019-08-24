@@ -46,7 +46,7 @@ static void check(uint128_t n)
 	int e;
 
 	do {
-#if 0
+#if 1
 		/* Christian Hercher, Uber die Lange nicht-trivialer Collatz-Zyklen, Artikel in der Zeitschrift "Die Wurzel" Hefte 6 und 7/2018 */
 		if (n <= UINT128_C(87)<<60)
 			return;
