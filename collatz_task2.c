@@ -15,7 +15,6 @@
 #define LUT_SIZE128 81
 
 typedef union {
-	unsigned long ul[2];
 	uint128_t ull;
 } uint128_u;
 
@@ -94,8 +93,6 @@ int main(int argc, char *argv[])
 	printf("TASK_SIZE %lu\n", (unsigned long)TASK_SIZE);
 	printf("TASK_ID %lu\n", task_id);
 
-	n.ull = UINT128_C(1)<<64;
-	assert( n.ul[0] == 0 && n.ul[1] == 1 && "unsupported endianity" );
 	assert( 2*sizeof(unsigned long) == sizeof(uint128_t) && "unsupported memory model" );
 
 	/* start at */
@@ -103,7 +100,7 @@ int main(int argc, char *argv[])
 	n.ull = ( UINT128_C(task_id) << TASK_SIZE ) + 3;
 	n_sup = ( UINT128_C(task_id) << TASK_SIZE ) + 3 + (1UL << TASK_SIZE);
 
-	printf("RANGE 0x%016lx:%016lx .. 0x%016lx:%016lx\n", n.ul[1], n.ul[0], (unsigned long)(n_sup>>64), (unsigned long)n_sup);
+	printf("RANGE 0x%016lx:%016lx .. 0x%016lx:%016lx\n", (unsigned long)(n.ull>>64), (unsigned long)n.ull, (unsigned long)(n_sup>>64), (unsigned long)n_sup);
 
 	init_lut();
 
