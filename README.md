@@ -25,7 +25,7 @@ The program is single-threaded and uses 128-bit arithmetic.
     0inputs+0outputs (0major+69minor)pagefaults 0swaps
 
 Testing *2<sup>40</sup>* numbers starting from *2<sup>68</sup>* takes approximatelly 1 hour and 14 minutes on the same machine.
-This gives the throughput about *3.99 &times 10<sup>9</sup>* 128-bit numbers per seconds.
+This gives the throughput about *3.99 &times; 10<sup>9</sup>* 128-bit numbers per seconds.
 The program is still single-threaded.
 
     $ \time ./collatz_task 268435456
