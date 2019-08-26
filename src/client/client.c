@@ -108,6 +108,8 @@ int main(int argc, char *argv[])
 			struct sockaddr_in server_addr;
 			uint32_t nh, nl; /* high and low part of the uint64_t assignment */
 			uint64_t n;
+			char buffer[4096];
+			int r;
 
 			if (fd < 0) {
 				/* errno is set appropriately */
@@ -138,6 +140,10 @@ int main(int argc, char *argv[])
 			printf("thread %i: got assignment %lu\n", tid, (unsigned long)n);
 
 			/* TODO spawn sub-process */
+			sprintf(buffer, "%s %lu", taskpath, (unsigned long)n);
+
+			r = system(buffer);
+
 			/* TODO send the result back to server */
 
 			close(fd);
