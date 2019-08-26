@@ -104,6 +104,8 @@ int main(int argc, char *argv[])
 		do {
 			int fd = socket(AF_INET, SOCK_STREAM, 0);
 			struct sockaddr_in server_addr;
+			uint32_t nh, nl; /* high and low part of the uint64_t assignment */
+			uint64_t n;
 
 			if (fd < 0) {
 				/* errno is set appropriately */
@@ -122,7 +124,17 @@ int main(int argc, char *argv[])
 			/* give me the assignment */
 			write_(fd, "REQ", 4);
 
-			/* TODO get assignment from server */
+			/* get assignment from server */
+			read_(fd, (void *)&nh, 4);
+			nh = ntohl(nh);
+			read_(fd, (void *)&nl, 4);
+			nl = ntohl(nl);
+			n = ((uint64_t)nh << 32) + nl;
+
+			assert( sizeof(unsigned long) == sizeof(uint64_t) );
+
+			printf("thread %i: got assignment %lu\n", tid, (unsigned long)n);
+
 			/* TODO spawn sub-process */
 			/* TODO send the result back to server */
 
