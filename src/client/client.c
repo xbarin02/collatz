@@ -104,7 +104,6 @@ int main(int argc, char *argv[])
 		do {
 			int fd = socket(AF_INET, SOCK_STREAM, 0);
 			struct sockaddr_in server_addr;
-			char buffer[4096];
 
 			if (fd < 0) {
 				/* errno is set appropriately */
@@ -121,8 +120,7 @@ int main(int argc, char *argv[])
 			}
 
 			/* give me the assignment */
-			strcpy(buffer, "REQ");
-			write_(fd, buffer, strlen(buffer)+1);
+			write_(fd, "REQ", 4);
 
 			/* TODO get assignment from server */
 			/* TODO spawn sub-process */
