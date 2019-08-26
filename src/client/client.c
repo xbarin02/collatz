@@ -144,6 +144,11 @@ int main(int argc, char *argv[])
 
 			r = system(buffer);
 
+			if (r == -1) {
+				fprintf(stderr, "thread %i: system: %s\n", taskpath);
+				abort();
+			}
+
 			/* TODO send the result back to server */
 
 			close(fd);
