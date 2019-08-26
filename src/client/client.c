@@ -25,6 +25,8 @@ int threads_get_thread_id()
 const char *servername = "pcbarina2.fit.vutbr.cz";
 const uint16_t serverport = 5006;
 
+const char *taskpath = "../task/task";
+
 void init_sockaddr(struct sockaddr_in *name, const char *hostname, uint16_t port)
 {
 	struct hostent *hostinfo;
