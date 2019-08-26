@@ -46,12 +46,12 @@ void init_sockaddr(struct sockaddr_in *name, const char *hostname, uint16_t port
 	name->sin_addr = *(struct in_addr *) hostinfo->h_addr_list[0];
 }
 
-ssize_t write_(int fd, const void *buf, size_t count)
+ssize_t write_(int fd, const char *buf, size_t count)
 {
 	ssize_t written = 0;
 
 	while ((size_t)written < count) {
-		ssize_t t = write(fd, buf, count);
+		ssize_t t = write(fd, buf+written, count);
 		if (-1 == t) {
 			/* errno is set appropriately */
 			perror("write");
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 			}
 
 			/* give me the assignment */
-			strcpy(buffer, "ASSIGNMENT");
+			strcpy(buffer, "REQUEST");
 			write_(fd, buffer, strlen(buffer)+1);
 
 			/* TODO get assignment from server */
