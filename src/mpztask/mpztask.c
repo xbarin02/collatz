@@ -15,8 +15,7 @@
 #define TASK_SIZE 40
 
 #define LUT_SIZE 41
-#define LUT_SIZE128 81
-#define LUT_SIZEMPZ 256
+#define LUT_SIZEMPZ 512
 
 mpz_t g_mpz_lut[LUT_SIZEMPZ];
 
