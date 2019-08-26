@@ -1,6 +1,6 @@
 CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 $(EXTRA_CFLAGS)
 LDLIBS+=$(EXTRA_LDLIBS)
-BINS=collatz_task
+BINS=task
 
 .PHONY: all
 all: $(BINS)
