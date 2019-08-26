@@ -11,6 +11,7 @@
 #include <arpa/inet.h>
 #include <strings.h>
 #include <string.h>
+#include <errno.h>
 
 int threads_get_thread_id()
 {
@@ -22,6 +23,7 @@ int threads_get_thread_id()
 }
 
 const char *servername = "pcbarina2.fit.vutbr.cz";
+const uint16_t serverport = 5006;
 
 void init_sockaddr(struct sockaddr_in *name, const char *hostname, uint16_t port)
 {
@@ -69,9 +71,14 @@ int main(int argc, char *argv[])
 
 	printf("starting %u worker threads...\n", threads);
 
+	fflush(stdout);
+	fflush(stderr);
+
 	#pragma omp parallel num_threads(threads)
 	{
-		printf("thread %i started\n", threads_get_thread_id());
+		int tid = threads_get_thread_id();
+
+		printf("thread %i: started\n", tid);
 
 		do {
 			int fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -80,15 +87,15 @@ int main(int argc, char *argv[])
 
 			if (fd < 0) {
 				/* errno is set appropriately */
-				perror("socket");
+				fprintf(stderr, "thread %i: socket: %s\n", tid, strerror(errno));
 				abort();
 			}
 
-			init_sockaddr(&server_addr, servername, 5006);
+			init_sockaddr(&server_addr, servername, serverport);
 
 			if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
 				/* errno is set appropriately */
-				perror("connect");
+				fprintf(stderr, "thread %i: connect: %s\n", tid, strerror(errno));
 				abort();
 			}
 
