@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 				abort();
 			}
 
-			printf("thread %i: task result: %i\n", tid, WEXITSTATUS(r));
+			printf("thread %i: task result: %i %i %i\n", tid, r, WIFEXITED(r), WEXITSTATUS(r));
 
 			/* TODO send the result back to server */
 
