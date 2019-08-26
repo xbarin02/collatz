@@ -1,6 +1,7 @@
-CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 $(EXTRA_CFLAGS)
-LDLIBS+=$(EXTRA_LDLIBS)
-BINS=client
+CFLAGS += -std=c89 -pedantic -Wall -Wextra -fopenmp -march=native -O3 $(EXTRA_CFLAGS)
+LDFLAGS += -fopenmp $(EXTRA_LDFLAGS)
+LDLIBS += $(EXTRA_LDLIBS)
+BINS = client
 
 .PHONY: all
 all: $(BINS)
