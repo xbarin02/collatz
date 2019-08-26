@@ -51,16 +51,37 @@ ssize_t write_(int fd, const char *buf, size_t count)
 	ssize_t written = 0;
 
 	while ((size_t)written < count) {
-		ssize_t t = write(fd, buf+written, count);
-		if (-1 == t) {
+		ssize_t t = write(fd, buf+written, count - written);
+
+		if (t < 0) {
 			/* errno is set appropriately */
 			perror("write");
 			abort();
 		}
+
 		written += t;
 	}
 
 	return written;
+}
+
+ssize_t read_(int fd, char *buf, size_t count)
+{
+	ssize_t readen = 0; /* read was already taken */
+
+	while ((size_t)readen < count) {
+		ssize_t t = read(fd, buf + readen, count - readen);
+
+		if (t < 0) {
+			/*  errno is set appropriately */
+			perror("read");
+			abort();
+		}
+
+		readen += t;
+	}
+
+	return readen;
 }
 
 int main(int argc, char *argv[])
@@ -100,7 +121,7 @@ int main(int argc, char *argv[])
 			}
 
 			/* give me the assignment */
-			strcpy(buffer, "REQUEST");
+			strcpy(buffer, "REQ");
 			write_(fd, buffer, strlen(buffer)+1);
 
 			/* TODO get assignment from server */
