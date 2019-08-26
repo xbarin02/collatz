@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 			r = system(buffer);
 
 			if (r == -1) {
-				fprintf(stderr, "thread %i: system: %s\n", taskpath);
+				fprintf(stderr, "thread %i: system: %s\n", tid, taskpath);
 				abort();
 			}
 
