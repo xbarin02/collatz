@@ -1,3 +1,4 @@
+#define _XOPEN_SOURCE
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -148,6 +149,8 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "thread %i: system: %s\n", taskpath);
 				abort();
 			}
+
+			printf("thread %i: task result: %i\n", tid, WEXITSTATUS(r));
 
 			/* TODO send the result back to server */
 
