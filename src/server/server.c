@@ -137,7 +137,7 @@ int read_message(int fd)
 
 	if (strcmp(msg, "REQ") == 0) {
 		/* requested assignment */
-		unsigned long n = rand();
+		unsigned long n = rand()%256;
 
 		printf("assignment requested: %lu\n", n);
 
@@ -167,6 +167,7 @@ int main(/*int argc, char *argv[]*/)
 	int reuse = 1;
 
 	signal(SIGINT, sigint_handler);
+	signal(SIGTERM, sigint_handler);
 
 	if (fd < 0) {
 		perror("socket");
