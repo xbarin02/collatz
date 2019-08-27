@@ -143,18 +143,23 @@ int read_message(int fd)
 
 		assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
-		write_assignment_no(fd, (uint64_t)n);
+		if (write_assignment_no(fd, (uint64_t)n) < 0) {
+			return -1;
+		}
 	} else if (strcmp(msg, "RET") == 0) {
 		unsigned long n;
 		/* returning assignment */
 
 		assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
-		read_assignment_no(fd, (uint64_t *)&n);
+		if (read_assignment_no(fd, (uint64_t *)&n) < 0) {
+			return -1;
+		}
 
 		printf("assignment returned: %lu\n", n);
 	} else {
 		printf("%s: unknown client message!\n", msg);
+		return -1;
 	}
 
 	return 0;
@@ -203,9 +208,11 @@ int main(/*int argc, char *argv[]*/)
 			}
 		}
 
-		printf("connected\n");
+		printf("client connected\n");
 
-		read_message(cl_fd);
+		if (read_message(cl_fd) < 0) {
+			fprintf(stderr, "client <--> server communication failure!\n");
+		}
 
 		close(cl_fd);
 
