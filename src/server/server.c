@@ -131,8 +131,19 @@ int read_assignment_no(int fd, uint64_t *n)
 
 #define MAP_SIZE (ASSIGNMENTS_NO>>3)
 
+#define IS_ASSIGNED(n) ( ( g_map_assigned[ (n)>>3 ] >> ((n)&7) ) & 1 )
+
+#define SET_COMPLETE(n) ( g_map_complete[(n)>>3] |= (1<<((n)&7)) )
+
+size_t g_lowest_unassigned = 0; /* bit index, not byte */
+
 unsigned char *g_map_assigned;
 unsigned char *g_map_complete;
+
+void set_complete(unsigned long n)
+{
+	SET_COMPLETE(n);
+}
 
 void *open_map(const char *path)
 {
@@ -196,6 +207,8 @@ int read_message(int fd)
 		}
 
 		printf("assignment returned: %lu\n", n);
+
+		set_complete(n);
 	} else {
 		printf("%s: unknown client message!\n", msg);
 		return -1;
@@ -204,22 +217,22 @@ int read_message(int fd)
 	return 0;
 }
 
-#define IS_ASSIGNED(n) ( ( g_map_assigned[ (n)>>3 ] >> ((n)&7) ) & 1 )
 
 int main(/*int argc, char *argv[]*/)
 {
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
 	struct sockaddr_in server_addr;
 	int reuse = 1;
-	size_t lowest_unassigned = 0; /* bit index, not byte */
 
 	printf("starting server...\n");
 
 	g_map_assigned = open_map("assigned.map");
 	g_map_complete = open_map("complete.map");
 
-	for (lowest_unassigned = 0; IS_ASSIGNED(lowest_unassigned); ++lowest_unassigned)
+	for (g_lowest_unassigned = 0; IS_ASSIGNED(g_lowest_unassigned); ++g_lowest_unassigned)
 		;
+
+	printf("INFO: lowest unassigned = %lu\n", (unsigned long)g_lowest_unassigned);
 
 	signal(SIGINT, sigint_handler);
 	signal(SIGTERM, sigint_handler);
