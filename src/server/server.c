@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -10,6 +11,9 @@
 #include <assert.h>
 #include <signal.h>
 #include <errno.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
 
 const uint16_t serverport = 5006;
 
@@ -122,6 +126,38 @@ int read_assignment_no(int fd, uint64_t *n)
 	return 0;
 }
 
+/* 2^32 assignments */
+#define ASSIGNMENTS_NO (1UL<<32)
+
+void *g_map_assigned;
+
+void *open_map_assigned()
+{
+	int fd = open("assigned.map", O_RDWR | O_CREAT, 0600);
+	void *ptr;
+
+	if (fd < 0) {
+		perror("open");
+		abort();
+	}
+
+	if (ftruncate(fd, (ASSIGNMENTS_NO>>3)) < 0) {
+		perror("ftruncate");
+		abort();
+	}
+
+	ptr = mmap(NULL, (ASSIGNMENTS_NO>>3), PROT_READ | PROT_WRITE, MAP_SHARED /*| MAP_POPULATE*/, fd, 0);
+
+	if (ptr == MAP_FAILED) {
+		perror("mmap");
+		abort();
+	}
+
+	close(fd);
+
+	return ptr;
+}
+
 int read_message(int fd)
 {
 	char msg[4];
@@ -170,6 +206,10 @@ int main(/*int argc, char *argv[]*/)
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
 	struct sockaddr_in server_addr;
 	int reuse = 1;
+
+	printf("starting server...\n");
+
+	g_map_assigned = open_map_assigned();
 
 	signal(SIGINT, sigint_handler);
 	signal(SIGTERM, sigint_handler);
@@ -223,6 +263,8 @@ int main(/*int argc, char *argv[]*/)
 	printf("closing server socket...\n");
 
 	close(fd);
+
+	munmap(g_map_assigned, (ASSIGNMENTS_NO>>3));
 
 	return 0;
 }
