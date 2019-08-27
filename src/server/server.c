@@ -132,10 +132,12 @@ int read_assignment_no(int fd, uint64_t *n)
 #define MAP_SIZE (ASSIGNMENTS_NO>>3)
 
 #define IS_ASSIGNED(n) ( ( g_map_assigned[ (n)>>3 ] >> ((n)&7) ) & 1 )
+#define IS_COMPLETE(n) ( ( g_map_complete[ (n)>>3 ] >> ((n)&7) ) & 1 )
 
 #define SET_COMPLETE(n) ( g_map_complete[(n)>>3] |= (1<<((n)&7)) )
 
 size_t g_lowest_unassigned = 0; /* bit index, not byte */
+size_t g_lowest_incomplete = 0;
 
 unsigned char *g_map_assigned;
 unsigned char *g_map_complete;
@@ -217,7 +219,6 @@ int read_message(int fd)
 	return 0;
 }
 
-
 int main(/*int argc, char *argv[]*/)
 {
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -232,7 +233,11 @@ int main(/*int argc, char *argv[]*/)
 	for (g_lowest_unassigned = 0; IS_ASSIGNED(g_lowest_unassigned); ++g_lowest_unassigned)
 		;
 
+	for (g_lowest_incomplete = 0; IS_COMPLETE(g_lowest_incomplete); ++g_lowest_incomplete)
+		;
+
 	printf("INFO: lowest unassigned = %lu\n", (unsigned long)g_lowest_unassigned);
+	printf("INFO: lowest incomplete = %lu\n", (unsigned long)g_lowest_incomplete);
 
 	signal(SIGINT, sigint_handler);
 	signal(SIGTERM, sigint_handler);

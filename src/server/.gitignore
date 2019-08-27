@@ -1,3 +1,4 @@
 server
 *~
 *.gcda
+*.map
