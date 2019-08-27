@@ -144,6 +144,10 @@ unsigned char *g_map_complete;
 
 void set_complete(unsigned long n)
 {
+	if (IS_COMPLETE(n)) {
+		printf("INFO: assignment %lu was already complete (duplicate result)\n", n);
+	}
+
 	SET_COMPLETE(n);
 }
 
@@ -189,7 +193,7 @@ int read_message(int fd)
 
 	if (strcmp(msg, "REQ") == 0) {
 		/* requested assignment */
-		unsigned long n = rand()%256;
+		unsigned long n = g_lowest_unassigned++;
 
 		printf("assignment requested: %lu\n", n);
 
