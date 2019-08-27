@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
 
 			while (open_socket_and_request_assignment(&n) < 0) {
 				fprintf(stderr, "thread %i: open_socket_and_request_assignment failed\n", tid);
-				sleep(60);
+				sleep(30);
 			}
 
 			printf("thread %i: got assignment %lu\n", tid, n);
@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
 
 			while (open_socket_and_return_assignment(n) < 0) {
 				fprintf(stderr, "thread %i: open_socket_and_return_assignment failed\n", tid);
-				sleep(60);
+				sleep(30);
 			}
 		} while (1);
 	}
