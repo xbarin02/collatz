@@ -292,8 +292,11 @@ int main(/*int argc, char *argv[]*/)
 
 	close(fd);
 
-	munmap(g_map_assigned, (ASSIGNMENTS_NO>>3));
-	munmap(g_map_complete, (ASSIGNMENTS_NO>>3));
+	msync(g_map_assigned, MAP_SIZE, MS_SYNC);
+	msync(g_map_complete, MAP_SIZE, MS_SYNC);
+
+	munmap(g_map_assigned, MAP_SIZE);
+	munmap(g_map_complete, MAP_SIZE);
 
 	return 0;
 }
