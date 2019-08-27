@@ -42,7 +42,6 @@ int init_sockaddr(struct sockaddr_in *name, const char *hostname, uint16_t port)
 	hostinfo = gethostbyname(hostname);
 
 	if (hostinfo == NULL) {
-		fprintf(stderr, "gethostbyname failed: %s\n", servername);
 		return -1;
 	}
 
@@ -60,7 +59,6 @@ ssize_t write_(int fd, const char *buf, size_t count)
 
 		if (t < 0) {
 			/* errno is set appropriately */
-			perror("write");
 			return -1;
 		}
 
@@ -79,7 +77,6 @@ ssize_t read_(int fd, char *buf, size_t count)
 
 		if (t < 0) {
 			/*  errno is set appropriately */
-			perror("read");
 			return -1;
 		}
 
@@ -114,6 +111,47 @@ int read_assignment_no(int fd, unsigned long *assignment)
 	return 0;
 }
 
+int request_assignment(int fd, unsigned long *n)
+{
+	/* give me the assignment */
+	if (write_(fd, "REQ", 4) < 0) {
+		return -1;
+	}
+
+	/* get assignment from server */
+	if (read_assignment_no(fd, n) < 0) {
+		return -1;
+	}
+
+	return 0;
+}
+
+int open_socket_to_server()
+{
+	int fd;
+	struct sockaddr_in server_addr;
+
+	fd = socket(AF_INET, SOCK_STREAM, 0);
+
+	if (fd < 0) {
+		/* errno is set appropriately */
+		return -1;
+	}
+
+	if (init_sockaddr(&server_addr, servername, serverport) < 0 ) {
+		close(fd);
+		return -1;
+	}
+
+	if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
+		/* errno is set appropriately */
+		close(fd);
+		return -1;
+	}
+
+	return fd;
+}
+
 int main(int argc, char *argv[])
 {
 	int threads = (argc > 1) ? atoi(argv[1]) : 1;
@@ -133,39 +171,20 @@ int main(int argc, char *argv[])
 
 		do {
 			int fd;
-			struct sockaddr_in server_addr;
 			unsigned long n;
 			char buffer[4096];
 			int r;
 
-			fd = socket(AF_INET, SOCK_STREAM, 0);
+			fd = open_socket_to_server();
 
 			if (fd < 0) {
-				/* errno is set appropriately */
-				fprintf(stderr, "thread %i: socket: %s\n", tid, strerror(errno));
-				abort();
-			}
-
-			if (init_sockaddr(&server_addr, servername, serverport) < 0 ) {
-				fprintf(stderr, "thread %i: init_sockaddr failed\n", tid);
-				abort();
-			}
-
-			if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
-				/* errno is set appropriately */
-				fprintf(stderr, "thread %i: connect: %s\n", tid, strerror(errno));
+				fprintf(stderr, "thread %i: open_socket_to_server failed\n", tid);
 				abort();
 			}
 
 			/* give me the assignment */
-			if (write_(fd, "REQ", 4) < 0) {
-				fprintf(stderr, "thread %i: write_ failed\n", tid);
-				abort();
-			}
-
-			/* get assignment from server */
-			if (read_assignment_no(fd, &n) < 0) {
-				fprintf(stderr, "thread %i: read_assignment_no failed\n", tid);
+			if (request_assignment(fd, &n) < 0) {
+				fprintf(stderr, "thread %i: request_assignment failed\n", tid);
 				abort();
 			}
 
@@ -193,6 +212,7 @@ int main(int argc, char *argv[])
 				printf("thread %i: task failed\n", tid);
 			}
 
+			/* open_socket_to_server -> close */
 			close(fd);
 		} while (1);
 	}
