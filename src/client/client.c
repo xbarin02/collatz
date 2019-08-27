@@ -86,40 +86,73 @@ ssize_t read_(int fd, char *buf, size_t count)
 	return readen;
 }
 
-int read_assignment_no(int fd, unsigned long *assignment)
+int read_assignment_no(int fd, uint64_t *n)
 {
-	uint32_t nh, nl; /* high and low part of the uint64_t assignment */
-	uint64_t n;
+	uint32_t nh, nl;
 
 	if (read_(fd, (void *)&nh, 4) < 0) {
 		return -1;
 	}
-	nh = ntohl(nh);
+
 	if (read_(fd, (void *)&nl, 4) < 0) {
 		return -1;
 	}
+
+	nh = ntohl(nh);
 	nl = ntohl(nl);
 
-	n = ((uint64_t)nh << 32) + nl;
+	assert( n != NULL );
 
-	assert( sizeof(unsigned long) == sizeof(uint64_t) );
+	*n = ((uint64_t)nh << 32) + nl;
 
-	assert( assignment != NULL );
+	return 0;
+}
 
-	*assignment = (unsigned long)n;
+int write_assignment_no(int fd, uint64_t n)
+{
+	uint32_t nh, nl;
+
+	nh = (uint32_t)(n >> 32);
+	nl = (uint32_t)(n);
+
+	nh = htonl(nh);
+	nl = ntohl(nl);
+
+	if (write_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (write_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
 
 	return 0;
 }
 
 int request_assignment(int fd, unsigned long *n)
 {
-	/* give me the assignment */
 	if (write_(fd, "REQ", 4) < 0) {
 		return -1;
 	}
 
-	/* get assignment from server */
-	if (read_assignment_no(fd, n) < 0) {
+	assert( sizeof(uint64_t) == sizeof(unsigned long) );
+
+	if (read_assignment_no(fd, (uint64_t *)n) < 0) {
+		return -1;
+	}
+
+	return 0;
+}
+
+int return_assignment(int fd, unsigned long n)
+{
+	if (write_(fd, "RET", 4) < 0) {
+		return -1;
+	}
+
+	assert( sizeof(uint64_t) == sizeof(unsigned long) );
+
+	if (write_assignment_no(fd, (uint64_t)n) < 0) {
 		return -1;
 	}
 
@@ -189,6 +222,26 @@ int open_socket_and_request_assignment(unsigned long *n)
 
 	/* give me the assignment */
 	if (request_assignment(fd, n) < 0) {
+		close(fd);
+		return -1;
+	}
+
+	close(fd);
+
+	return 0;
+}
+
+int open_socket_and_return_assignment(unsigned long n)
+{
+	int fd;
+
+	fd = open_socket_to_server();
+
+	if (fd < 0) {
+		return -1;
+	}
+
+	if (return_assignment(fd, n) < 0) {
 		close(fd);
 		return -1;
 	}
