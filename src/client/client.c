@@ -284,7 +284,10 @@ int main(int argc, char *argv[])
 				continue;
 			}
 
-			/* TODO send the result back to server */
+			while (open_socket_and_return_assignment(n) < 0) {
+				fprintf(stderr, "thread %i: open_socket_and_return_assignment failed\n", tid);
+				sleep(60);
+			}
 		} while (1);
 	}
 
