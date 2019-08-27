@@ -61,7 +61,7 @@ ssize_t write_(int fd, const char *buf, size_t count)
 			/* errno is set appropriately */
 			return -1;
 		}
-		if (t == 0 && written + t != count) {
+		if (t == 0 && (size_t)(written + t) != count) {
 			/* zero indicates nothing was written */
 			return -1;
 		}
@@ -83,7 +83,7 @@ ssize_t read_(int fd, char *buf, size_t count)
 			/*  errno is set appropriately */
 			return -1;
 		}
-		if (t == 0 && readen + t != count) {
+		if (t == 0 && (size_t)(readen + t) != count) {
 			/* zero indicates end of file */
 			return -1;
 		}
