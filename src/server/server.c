@@ -11,6 +11,8 @@
 #include <signal.h>
 #include <errno.h>
 
+const uint16_t serverport = 5006;
+
 static volatile int quit = 0;
 
 void sigint_handler(int i)
@@ -19,9 +21,6 @@ void sigint_handler(int i)
 
 	quit = 1;
 }
-
-
-const uint16_t serverport = 5006;
 
 int init_sockaddr(struct sockaddr_in *name, uint16_t port)
 {
@@ -101,6 +100,28 @@ int write_assignment_no(int fd, uint64_t n)
 	return 0;
 }
 
+int read_assignment_no(int fd, uint64_t *n)
+{
+	uint32_t nh, nl;
+
+	if (read_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (read_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+
+	nh = ntohl(nh);
+	nl = ntohl(nl);
+
+	assert( n != NULL );
+
+	*n = ((uint64_t)nh << 32) + nl;
+
+	return 0;
+}
+
 int read_message(int fd)
 {
 	char msg[4];
@@ -118,11 +139,22 @@ int read_message(int fd)
 		/* requested assignment */
 		unsigned long n = rand();
 
-		printf("assignment requested\n");
+		printf("assignment requested: %lu\n", n);
 
 		assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
 		write_assignment_no(fd, (uint64_t)n);
+	} else if (strcmp(msg, "RET") == 0) {
+		unsigned long n;
+		/* returning assignment */
+
+		assert( sizeof(uint64_t) == sizeof(unsigned long) );
+
+		read_assignment_no(fd, (uint64_t *)&n);
+
+		printf("assignment returned: %lu\n", n);
+	} else {
+		printf("%s: unknown client message!\n", msg);
 	}
 
 	return 0;
