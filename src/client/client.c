@@ -89,6 +89,31 @@ ssize_t read_(int fd, char *buf, size_t count)
 	return readen;
 }
 
+int read_assignment_no(int fd, unsigned long *assignment)
+{
+	uint32_t nh, nl; /* high and low part of the uint64_t assignment */
+	uint64_t n;
+
+	if (read_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+	nh = ntohl(nh);
+	if (read_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+	nl = ntohl(nl);
+
+	n = ((uint64_t)nh << 32) + nl;
+
+	assert( sizeof(unsigned long) == sizeof(uint64_t) );
+
+	assert( assignment != NULL );
+
+	*assignment = (unsigned long)n;
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	int threads = (argc > 1) ? atoi(argv[1]) : 1;
@@ -109,8 +134,7 @@ int main(int argc, char *argv[])
 		do {
 			int fd;
 			struct sockaddr_in server_addr;
-			uint32_t nh, nl; /* high and low part of the uint64_t assignment */
-			uint64_t n;
+			unsigned long n;
 			char buffer[4096];
 			int r;
 
@@ -140,27 +164,25 @@ int main(int argc, char *argv[])
 			}
 
 			/* get assignment from server */
-			read_(fd, (void *)&nh, 4);
-			nh = ntohl(nh);
-			read_(fd, (void *)&nl, 4);
-			nl = ntohl(nl);
-			n = ((uint64_t)nh << 32) + nl;
+			if (read_assignment_no(fd, &n) < 0) {
+				fprintf(stderr, "thread %i: read_assignment_no failed\n", tid);
+				abort();
+			}
 
-			assert( sizeof(unsigned long) == sizeof(uint64_t) );
+			printf("thread %i: got assignment %lu\n", tid, n);
 
-			printf("thread %i: got assignment %lu\n", tid, (unsigned long)n);
+			if (sprintf(buffer, "%s %lu", taskpath, n) < 0) {
+				fprintf(stderr, "thread %i: sprintf failed\n", tid);
+				abort();
+			}
 
 			/* spawn sub-process */
-			sprintf(buffer, "%s %lu", taskpath, (unsigned long)n);
-
 			r = system(buffer);
 
 			if (r == -1) {
 				fprintf(stderr, "thread %i: system: %s\n", tid, taskpath);
 				abort();
 			}
-
-			printf("thread %i: task result: %i %i %i (debug)\n", tid, r, WIFEXITED(r), WEXITSTATUS(r));
 
 			if (WIFEXITED(r)) {
 				/* the child terminated normally */
