@@ -271,10 +271,9 @@ int main(int argc, char *argv[])
 		do {
 			unsigned long n;
 
-			if (open_socket_and_request_assignment(&n) < 0) {
+			while (open_socket_and_request_assignment(&n) < 0) {
 				fprintf(stderr, "thread %i: open_socket_and_request_assignment failed\n", tid);
 				sleep(60);
-				continue;
 			}
 
 			printf("thread %i: got assignment %lu\n", tid, n);
