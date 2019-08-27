@@ -129,11 +129,14 @@ int read_assignment_no(int fd, uint64_t *n)
 /* 2^32 assignments */
 #define ASSIGNMENTS_NO (1UL<<32)
 
-void *g_map_assigned;
+#define MAP_SIZE (ASSIGNMENTS_NO>>3)
 
-void *open_map_assigned()
+unsigned char *g_map_assigned;
+unsigned char *g_map_complete;
+
+void *open_map(const char *path)
 {
-	int fd = open("assigned.map", O_RDWR | O_CREAT, 0600);
+	int fd = open(path, O_RDWR | O_CREAT, 0600);
 	void *ptr;
 
 	if (fd < 0) {
@@ -141,12 +144,12 @@ void *open_map_assigned()
 		abort();
 	}
 
-	if (ftruncate(fd, (ASSIGNMENTS_NO>>3)) < 0) {
+	if (ftruncate(fd, MAP_SIZE) < 0) {
 		perror("ftruncate");
 		abort();
 	}
 
-	ptr = mmap(NULL, (ASSIGNMENTS_NO>>3), PROT_READ | PROT_WRITE, MAP_SHARED /*| MAP_POPULATE*/, fd, 0);
+	ptr = mmap(NULL, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED /*| MAP_POPULATE*/, fd, 0);
 
 	if (ptr == MAP_FAILED) {
 		perror("mmap");
@@ -201,15 +204,22 @@ int read_message(int fd)
 	return 0;
 }
 
+#define IS_ASSIGNED(n) ( ( g_map_assigned[ (n)>>3 ] >> ((n)&7) ) & 1 )
+
 int main(/*int argc, char *argv[]*/)
 {
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
 	struct sockaddr_in server_addr;
 	int reuse = 1;
+	size_t lowest_unassigned = 0; /* bit index, not byte */
 
 	printf("starting server...\n");
 
-	g_map_assigned = open_map_assigned();
+	g_map_assigned = open_map("assigned.map");
+	g_map_complete = open_map("complete.map");
+
+	for (lowest_unassigned = 0; IS_ASSIGNED(lowest_unassigned); ++lowest_unassigned)
+		;
 
 	signal(SIGINT, sigint_handler);
 	signal(SIGTERM, sigint_handler);
@@ -265,6 +275,7 @@ int main(/*int argc, char *argv[]*/)
 	close(fd);
 
 	munmap(g_map_assigned, (ASSIGNMENTS_NO>>3));
+	munmap(g_map_complete, (ASSIGNMENTS_NO>>3));
 
 	return 0;
 }
