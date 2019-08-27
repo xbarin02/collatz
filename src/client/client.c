@@ -152,6 +152,31 @@ int open_socket_to_server()
 	return fd;
 }
 
+int run_assignment(unsigned long n)
+{
+	int r;
+	char buffer[4096];
+
+	if (sprintf(buffer, "%s %lu", taskpath, n) < 0) {
+		return -1;
+	}
+
+	/* spawn sub-process */
+	r = system(buffer);
+
+	if (r == -1) {
+		return -1;
+	}
+
+	if (WIFEXITED(r)) {
+		/* the child terminated normally */
+		return 0;
+
+	} else {
+		return -1;
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	int threads = (argc > 1) ? atoi(argv[1]) : 1;
@@ -172,8 +197,6 @@ int main(int argc, char *argv[])
 		do {
 			int fd;
 			unsigned long n;
-			char buffer[4096];
-			int r;
 
 			fd = open_socket_to_server();
 
@@ -190,27 +213,12 @@ int main(int argc, char *argv[])
 
 			printf("thread %i: got assignment %lu\n", tid, n);
 
-			if (sprintf(buffer, "%s %lu", taskpath, n) < 0) {
-				fprintf(stderr, "thread %i: sprintf failed\n", tid);
+			if (run_assignment(n) < 0) {
+				fprintf(stderr, "thread %i: run_assignment failed\n", tid);
 				abort();
 			}
 
-			/* spawn sub-process */
-			r = system(buffer);
-
-			if (r == -1) {
-				fprintf(stderr, "thread %i: system: %s\n", tid, taskpath);
-				abort();
-			}
-
-			if (WIFEXITED(r)) {
-				/* the child terminated normally */
-				printf("thread %i: task result: %i\n", tid, WEXITSTATUS(r));
-				/* TODO send the result back to server */
-
-			} else {
-				printf("thread %i: task failed\n", tid);
-			}
+			/* TODO send the result back to server */
 
 			/* open_socket_to_server -> close */
 			close(fd);
