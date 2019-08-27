@@ -28,7 +28,7 @@ const uint16_t serverport = 5006;
 
 const char *taskpath = "../task/task";
 
-void init_sockaddr(struct sockaddr_in *name, const char *hostname, uint16_t port)
+int init_sockaddr(struct sockaddr_in *name, const char *hostname, uint16_t port)
 {
 	struct hostent *hostinfo;
 
@@ -43,10 +43,12 @@ void init_sockaddr(struct sockaddr_in *name, const char *hostname, uint16_t port
 
 	if (hostinfo == NULL) {
 		fprintf(stderr, "gethostbyname failed: %s\n", servername);
-		abort();
+		return -1;
 	}
 
 	name->sin_addr = *(struct in_addr *) hostinfo->h_addr_list[0];
+
+	return 0;
 }
 
 ssize_t write_(int fd, const char *buf, size_t count)
@@ -59,7 +61,7 @@ ssize_t write_(int fd, const char *buf, size_t count)
 		if (t < 0) {
 			/* errno is set appropriately */
 			perror("write");
-			abort();
+			return -1;
 		}
 
 		written += t;
@@ -78,7 +80,7 @@ ssize_t read_(int fd, char *buf, size_t count)
 		if (t < 0) {
 			/*  errno is set appropriately */
 			perror("read");
-			abort();
+			return -1;
 		}
 
 		readen += t;
@@ -105,12 +107,14 @@ int main(int argc, char *argv[])
 		printf("thread %i: started\n", tid);
 
 		do {
-			int fd = socket(AF_INET, SOCK_STREAM, 0);
+			int fd;
 			struct sockaddr_in server_addr;
 			uint32_t nh, nl; /* high and low part of the uint64_t assignment */
 			uint64_t n;
 			char buffer[4096];
 			int r;
+
+			fd = socket(AF_INET, SOCK_STREAM, 0);
 
 			if (fd < 0) {
 				/* errno is set appropriately */
@@ -118,7 +122,10 @@ int main(int argc, char *argv[])
 				abort();
 			}
 
-			init_sockaddr(&server_addr, servername, serverport);
+			if (init_sockaddr(&server_addr, servername, serverport) < 0 ) {
+				fprintf(stderr, "thread %i: init_sockaddr failed\n", tid);
+				abort();
+			}
 
 			if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
 				/* errno is set appropriately */
@@ -127,7 +134,10 @@ int main(int argc, char *argv[])
 			}
 
 			/* give me the assignment */
-			write_(fd, "REQ", 4);
+			if (write_(fd, "REQ", 4) < 0) {
+				fprintf(stderr, "thread %i: write_ failed\n", tid);
+				abort();
+			}
 
 			/* get assignment from server */
 			read_(fd, (void *)&nh, 4);
