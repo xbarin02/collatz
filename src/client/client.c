@@ -177,6 +177,27 @@ int run_assignment(unsigned long n)
 	}
 }
 
+int open_socket_and_request_assignment(unsigned long *n)
+{
+	int fd;
+
+	fd = open_socket_to_server();
+
+	if (fd < 0) {
+		return -1;
+	}
+
+	/* give me the assignment */
+	if (request_assignment(fd, n) < 0) {
+		close(fd);
+		return -1;
+	}
+
+	close(fd);
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	int threads = (argc > 1) ? atoi(argv[1]) : 1;
@@ -195,33 +216,22 @@ int main(int argc, char *argv[])
 		printf("thread %i: started\n", tid);
 
 		do {
-			int fd;
 			unsigned long n;
 
-			fd = open_socket_to_server();
-
-			if (fd < 0) {
-				fprintf(stderr, "thread %i: open_socket_to_server failed\n", tid);
-				abort();
-			}
-
-			/* give me the assignment */
-			if (request_assignment(fd, &n) < 0) {
-				fprintf(stderr, "thread %i: request_assignment failed\n", tid);
-				abort();
+			if (open_socket_and_request_assignment(&n) < 0) {
+				fprintf(stderr, "thread %i: open_socket_and_request_assignment failed\n", tid);
+				sleep(60);
+				continue;
 			}
 
 			printf("thread %i: got assignment %lu\n", tid, n);
 
 			if (run_assignment(n) < 0) {
 				fprintf(stderr, "thread %i: run_assignment failed\n", tid);
-				abort();
+				continue;
 			}
 
 			/* TODO send the result back to server */
-
-			/* open_socket_to_server -> close */
-			close(fd);
 		} while (1);
 	}
 
