@@ -14,10 +14,19 @@ function die() {
 }
 
 LOCKFILE=/tmp/collatz.lock
+LOGFILE=/tmp/collatz.log
 
 function release_lock() {
 	rm -f -- "${LOCKFILE}"
 }
+
+function bye() {
+	release_lock
+	die "intterrupted"
+}
+
+trap bye INT
+trap bye TERM
 
 if ! (set -o noclobber ; echo > "${LOCKFILE}"); then
 	die "client already running (or orphaned '${LOCKFILE}')"
@@ -28,7 +37,7 @@ CLIENT=./client
 
 if test -x "${CLIENT}"; then
 	echo "executing '${CLIENT}' with ${THREADS} worker threads..."
-	if \nice -n 19 "${CLIENT}" "${THREADS}"; then
+	if \nice -n 19 "${CLIENT}" "${THREADS}" 2> "${LOGFILE}".err > "${LOGFILE}".out; then
 		echo "shutting down ..."
 	else
 		release_lock
