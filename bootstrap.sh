@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd collatz-$(hostname)
+
 cd src
 
 make -C task
