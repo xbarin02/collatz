@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
 
 			printf("thread %i: got assignment %lu\n", tid, (unsigned long)n);
 
-			/* TODO spawn sub-process */
+			/* spawn sub-process */
 			sprintf(buffer, "%s %lu", taskpath, (unsigned long)n);
 
 			r = system(buffer);
@@ -150,9 +150,16 @@ int main(int argc, char *argv[])
 				abort();
 			}
 
-			printf("thread %i: task result: %i %i %i\n", tid, r, WIFEXITED(r), WEXITSTATUS(r));
+			printf("thread %i: task result: %i %i %i (debug)\n", tid, r, WIFEXITED(r), WEXITSTATUS(r));
 
-			/* TODO send the result back to server */
+			if (WIFEXITED(r)) {
+				/* the child terminated normally */
+				printf("thread %i: task result: %i\n", tid, WEXITSTATUS(r));
+				/* TODO send the result back to server */
+
+			} else {
+				printf("thread %i: task failed\n", tid);
+			}
 
 			close(fd);
 		} while (1);
