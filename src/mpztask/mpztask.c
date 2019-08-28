@@ -64,10 +64,7 @@ void mpz_check(unsigned long nh, unsigned long nl)
 	do {
 		/* Christian Hercher, Uber die Lange nicht-trivialer Collatz-Zyklen, Artikel in der Zeitschrift "Die Wurzel" Hefte 6 und 7/2018 */
 		if (mpz_cmp(n, n_max) <= 0) {
-			mpz_clear(n);
-			mpz_clear(n0);
-			mpz_clear(n_max);
-			return;
+			break;
 		}
 
 		/* n++ */
@@ -83,10 +80,7 @@ void mpz_check(unsigned long nh, unsigned long nl)
 		/* switch to 64-bit arithmetic */
 		if (mpz_cmp_ui(n, ULONG_MAX) <= 0 && e < LUT_SIZE) {
 			/* when the result of n*3^e and thus also odd_part(n*3^e-1) fits the 64-bit unsigned long, it is surely less than 87*2^60 */
-			mpz_clear(n);
-			mpz_clear(n0);
-			mpz_clear(n_max);
-			return;
+			break;
 		}
 
 		assert( e < LUT_SIZEMPZ && "overflow" );
@@ -103,12 +97,15 @@ void mpz_check(unsigned long nh, unsigned long nl)
 		/* now we have a single n */
 
 		if (mpz_cmp(n, n0) < 0) {
-			mpz_clear(n);
-			mpz_clear(n0);
-			mpz_clear(n_max);
-			return;
+			break;
 		}
 	} while (1);
+
+	mpz_clear(n);
+	mpz_clear(n0);
+	mpz_clear(n_max);
+
+	return;
 }
 
 int main(int argc, char *argv[])
