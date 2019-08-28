@@ -6,7 +6,7 @@
 #define WIDEINT_WIDEINT_H_
 
 /* all GNU compilers */
-#ifdef __GNUC__
+#if defined(__GNUC__)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
@@ -43,6 +43,6 @@ static int __builtin_ctzx(uint128_t n)
 
 #else
 #	error "Unsupported compiler"
-#endif /* __GNUC__*/
+#endif /* defined(__GNUC__) */
 
 #endif /* WIDEINT_WIDEINT_H_ */
