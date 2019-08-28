@@ -22,7 +22,7 @@ function release_lock() {
 
 function bye() {
 	release_lock
-	die "intterrupted"
+	die "interrupted"
 }
 
 trap bye INT
