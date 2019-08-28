@@ -301,7 +301,8 @@ void set_complete_range_from_hercher()
 		if (n < n_max) {
 			SET_ASSIGNED(n);
 			SET_COMPLETE(n);
-		}
+		} else
+			break;
 	}
 
 }
