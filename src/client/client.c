@@ -23,6 +23,8 @@ int threads_get_thread_id()
 #endif
 }
 
+#define REQUEST_LOWEST_INCOMPLETE 0
+
 const char *servername = "pcbarina2.fit.vutbr.cz";
 const uint16_t serverport = 5006;
 
@@ -139,9 +141,15 @@ int write_assignment_no(int fd, uint64_t n)
 
 int request_assignment(int fd, unsigned long *n)
 {
+#if (REQUEST_LOWEST_INCOMPLETE == 1)
+	if (write_(fd, "req", 4) < 0) {
+		return -1;
+	}
+#else
 	if (write_(fd, "REQ", 4) < 0) {
 		return -1;
 	}
+#endif
 
 	assert( sizeof(uint64_t) == sizeof(unsigned long) );
 

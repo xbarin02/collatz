@@ -149,12 +149,31 @@ void set_complete(unsigned long n)
 		printf("INFO: assignment %lu was already complete (duplicate result)\n", n);
 	}
 
+	if (!IS_ASSIGNED(n)) {
+		printf("WARNING: assignment %lu was not assigned\n", n);
+	}
+
 	SET_COMPLETE(n);
+
+	/* advance g_lowest_incomplete pointer */
+	if (n == g_lowest_incomplete) {
+		for (; IS_COMPLETE(g_lowest_incomplete); ++g_lowest_incomplete)
+			;
+	}
 }
 
 unsigned long get_assignment()
 {
 	unsigned long n = g_lowest_unassigned++;
+
+	SET_ASSIGNED(n);
+
+	return n;
+}
+
+unsigned long get_missed_assignment()
+{
+	unsigned long n = g_lowest_incomplete;
 
 	SET_ASSIGNED(n);
 
@@ -225,6 +244,17 @@ int read_message(int fd)
 		printf("assignment returned: %lu\n", n);
 
 		set_complete(n);
+	} else if (strcmp(msg, "req") == 0) {
+		/* requested lowest incomplete assignment */
+		unsigned long n = get_missed_assignment();
+
+		printf("assignment requested: %lu (lowest incomplete)\n", n);
+
+		assert( sizeof(uint64_t) == sizeof(unsigned long) );
+
+		if (write_assignment_no(fd, (uint64_t)n) < 0) {
+			return -1;
+		}
 	} else {
 		printf("%s: unknown client message!\n", msg);
 		return -1;
