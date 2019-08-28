@@ -326,7 +326,7 @@ int main(/*int argc, char *argv[]*/)
 	message(INFO "lowest unassigned = %lu\n", (unsigned long)g_lowest_unassigned);
 	message(INFO "lowest incomplete = %lu\n", (unsigned long)g_lowest_incomplete);
 
-	message(INFO "*** all numbers below 2^%lu are convergent ***\n", 40 + g_lowest_incomplete);
+	message(INFO "*** all numbers below %lu * 2^%lu are convergent ***\n", g_lowest_incomplete, 40);
 
 	signal(SIGINT, sigint_handler);
 	signal(SIGTERM, sigint_handler);
