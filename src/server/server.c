@@ -14,6 +14,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <time.h>
+#include <stdarg.h>
 
 const uint16_t serverport = 5006;
 
@@ -24,6 +26,33 @@ void sigint_handler(int i)
 	(void)i;
 
 	quit = 1;
+}
+
+#define ERR "ERROR: "
+#define WARN "WARNING: "
+#define DBG "DEBUG: "
+#define INFO "INFO: "
+
+int message(const char *format, ...)
+{
+	va_list ap;
+	time_t now = time(NULL);
+	char buf[26];
+	int n;
+
+	ctime_r(&now, buf);
+
+	buf[strlen(buf)-1] = 0;
+
+	n = printf("[%s] ", buf);
+
+	va_start(ap, format);
+	n += vprintf(format, ap);
+	va_end(ap);
+
+	fflush(stdout);
+
+	return n;
 }
 
 int init_sockaddr(struct sockaddr_in *name, uint16_t port)
@@ -146,11 +175,11 @@ unsigned char *g_map_complete;
 void set_complete(unsigned long n)
 {
 	if (IS_COMPLETE(n)) {
-		printf("INFO: assignment %lu was already complete (duplicate result)\n", n);
+		message(INFO "assignment %lu was already complete (duplicate result)\n", n);
 	}
 
 	if (!IS_ASSIGNED(n)) {
-		printf("WARNING: assignment %lu was not assigned\n", n);
+		message(WARN "assignment %lu was not assigned\n", n);
 	}
 
 	SET_COMPLETE(n);
@@ -224,7 +253,7 @@ int read_message(int fd)
 		/* requested assignment */
 		unsigned long n = get_assignment();
 
-		printf("assignment requested: %lu\n", n);
+		message(INFO "assignment requested: %lu\n", n);
 
 		assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
@@ -241,14 +270,14 @@ int read_message(int fd)
 			return -1;
 		}
 
-		printf("assignment returned: %lu\n", n);
+		message(INFO "assignment returned: %lu\n", n);
 
 		set_complete(n);
 	} else if (strcmp(msg, "req") == 0) {
 		/* requested lowest incomplete assignment */
 		unsigned long n = get_missed_assignment();
 
-		printf("assignment requested: %lu (lowest incomplete)\n", n);
+		message(INFO "assignment requested: %lu (lowest incomplete)\n", n);
 
 		assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
@@ -256,7 +285,7 @@ int read_message(int fd)
 			return -1;
 		}
 	} else {
-		printf("%s: unknown client message!\n", msg);
+		message(ERR "%s: unknown client message!\n", msg);
 		return -1;
 	}
 
@@ -269,7 +298,7 @@ int main(/*int argc, char *argv[]*/)
 	struct sockaddr_in server_addr;
 	int reuse = 1;
 
-	printf("starting server...\n");
+	message(INFO "starting server...\n");
 
 	g_map_assigned = open_map("assigned.map");
 	g_map_complete = open_map("complete.map");
@@ -280,8 +309,8 @@ int main(/*int argc, char *argv[]*/)
 	for (g_lowest_incomplete = 0; IS_COMPLETE(g_lowest_incomplete); ++g_lowest_incomplete)
 		;
 
-	printf("INFO: lowest unassigned = %lu\n", (unsigned long)g_lowest_unassigned);
-	printf("INFO: lowest incomplete = %lu\n", (unsigned long)g_lowest_incomplete);
+	message(INFO "lowest unassigned = %lu\n", (unsigned long)g_lowest_unassigned);
+	message(INFO "lowest incomplete = %lu\n", (unsigned long)g_lowest_incomplete);
 
 	signal(SIGINT, sigint_handler);
 	signal(SIGTERM, sigint_handler);
@@ -308,7 +337,7 @@ int main(/*int argc, char *argv[]*/)
 		abort();
 	}
 
-	printf("listening...\n");
+	message(INFO "listening...\n");
 
 	while (1) {
 		int cl_fd = accept(fd, NULL, NULL);
@@ -320,10 +349,10 @@ int main(/*int argc, char *argv[]*/)
 			}
 		}
 
-		printf("client connected\n");
+		message(INFO "client connected\n");
 
 		if (read_message(cl_fd) < 0) {
-			fprintf(stderr, "client <--> server communication failure!\n");
+			message(ERR "client <--> server communication failure!\n");
 		}
 
 		close(cl_fd);
@@ -332,7 +361,7 @@ int main(/*int argc, char *argv[]*/)
 			break;
 	}
 
-	printf("closing server socket...\n");
+	message(INFO "closing server socket...\n");
 
 	close(fd);
 
