@@ -61,8 +61,8 @@ static void check(uint128_t n)
 
 		/* now we have an (n,e) pair */
 
-		/* switch to 64-bit arithmetic */
-		if ( n < UINT128_C(1)<<64 && e < LUT_SIZE ) {
+		/* if ( n < 2^64 && e < LUT_SIZE ) then switch to 64-bit arithmetic */
+		if ( (unsigned long)(n>>64) == 0 && e < LUT_SIZE ) {
 			/* when the result of n*3^e and thus also odd_part(n*3^e-1) fits the 64-bit unsigned long, it is surely less than 87*2^60 */
 			return;
 		}
