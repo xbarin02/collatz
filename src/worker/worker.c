@@ -66,6 +66,7 @@ static mp_bitcnt_t mpz_ctz(const mpz_t n)
 static int check(uint128_t n)
 {
 	uint128_t n0 = n;
+	const uint128_t n_max = UINT128_C(87) << 60;
 	int e;
 
 	if (n == UINT128_MAX) {
@@ -74,7 +75,7 @@ static int check(uint128_t n)
 
 	do {
 		/* Christian Hercher, Uber die Lange nicht-trivialer Collatz-Zyklen, Artikel in der Zeitschrift "Die Wurzel" Hefte 6 und 7/2018 */
-		if (n <= UINT128_C(87) << 60) {
+		if (n <= n_max) {
 			return 0;
 		}
 
@@ -85,12 +86,6 @@ static int check(uint128_t n)
 		n >>= e;
 
 		/* now we have an (n,e) pair */
-
-		/* if ( n < 2^64 && e < LUT_SIZE64 ) then switch to 64-bit arithmetic */
-		if ((unsigned long)(n >> 64) == 0 && e < LUT_SIZE64) {
-			/* when the result of n*3^e and thus also odd_part(n*3^e-1) fits the 64-bit unsigned long, it is surely less than 87*2^60 */
-			return 0;
-		}
 
 		if (n > UINT128_MAX >> 2*e || e >= LUT_SIZE128) {
 			return 1;
@@ -145,12 +140,6 @@ static void mpz_check(unsigned long nh, unsigned long nl)
 		mpz_fdiv_q_2exp(n, n, e);
 
 		/* now we have an (n,e) pair */
-
-		/* switch to 64-bit arithmetic */
-		if (mpz_cmp_ui(n, ULONG_MAX) <= 0 && e < LUT_SIZE64) {
-			/* when the result of n*3^e and thus also odd_part(n*3^e-1) fits the 64-bit unsigned long, it is surely less than 87*2^60 */
-			break;
-		}
 
 		assert( e < LUT_SIZEMPZ && "overflow" );
 
