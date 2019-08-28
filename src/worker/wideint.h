@@ -43,6 +43,6 @@ static int __builtin_ctzx(uint128_t n)
 
 #else
 #	error "Unsupported compiler"
-#endif
+#endif /* __GNUC__*/
 
 #endif /* WIDEINT_WIDEINT_H_ */
