@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd collatz-$(hostname)
+cd collatz-$(hostname -s)
 
 cd src
 
