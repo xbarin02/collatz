@@ -65,8 +65,7 @@ static mp_bitcnt_t mpz_ctz(const mpz_t n)
 /* check convergence */
 static int check(uint128_t n)
 {
-	uint128_t n0 = n;
-	const uint128_t n_max = UINT128_C(87) << 60;
+	const uint128_t n0 = n;
 	int e;
 
 	if (n == UINT128_MAX) {
@@ -74,11 +73,6 @@ static int check(uint128_t n)
 	}
 
 	do {
-		/* Christian Hercher, Uber die Lange nicht-trivialer Collatz-Zyklen, Artikel in der Zeitschrift "Die Wurzel" Hefte 6 und 7/2018 */
-		if (n <= n_max) {
-			return 0;
-		}
-
 		n++;
 
 		e = __builtin_ctzx(n);
@@ -110,7 +104,6 @@ static void mpz_check(unsigned long nh, unsigned long nl)
 {
 	mpz_t n;
 	mpz_t n0;
-	mpz_t n_max;
 	mp_bitcnt_t e;
 
 	/* n = nh * 2^64 + nl */
@@ -118,19 +111,10 @@ static void mpz_check(unsigned long nh, unsigned long nl)
 	mpz_mul_2exp(n, n, (mp_bitcnt_t)64);
 	mpz_add_ui(n, n, nl);
 
-	/* n_max = 87 * 2^60 */
-	mpz_init_set_ui(n_max, 87UL);
-	mpz_mul_2exp(n_max, n_max, (mp_bitcnt_t)60);
-
 	/* n0 = n */
 	mpz_init_set(n0, n);
 
 	do {
-		/* Christian Hercher, Uber die Lange nicht-trivialer Collatz-Zyklen, Artikel in der Zeitschrift "Die Wurzel" Hefte 6 und 7/2018 */
-		if (mpz_cmp(n, n_max) <= 0) {
-			break;
-		}
-
 		/* n++ */
 		mpz_add_ui(n, n, 1UL);
 
@@ -161,7 +145,6 @@ static void mpz_check(unsigned long nh, unsigned long nl)
 
 	mpz_clear(n);
 	mpz_clear(n0);
-	mpz_clear(n_max);
 
 	return;
 }
