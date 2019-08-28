@@ -320,6 +320,10 @@ int main(/*int argc, char *argv[]*/)
 	g_map_assigned = open_map("assigned.map");
 	g_map_complete = open_map("complete.map");
 
+#if 0
+	set_complete_range_from_hercher();
+#endif
+
 	for (g_lowest_unassigned = 0; IS_ASSIGNED(g_lowest_unassigned); ++g_lowest_unassigned)
 		;
 
