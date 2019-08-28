@@ -41,6 +41,7 @@ static void mpz_pow3(mpz_t r, unsigned long n)
 	mpz_ui_pow_ui(r, 3UL, n);
 }
 
+/* init lookup tables */
 void init_lut()
 {
 	unsigned long a;
