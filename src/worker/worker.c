@@ -177,6 +177,9 @@ static void mpz_check(unsigned long nh, unsigned long nl)
 	return;
 }
 
+#define likely(x)       __builtin_expect((x),1)
+#define unlikely(x)     __builtin_expect((x),0)
+
 int main(int argc, char *argv[])
 {
 	uint128_t n;
@@ -197,7 +200,7 @@ int main(int argc, char *argv[])
 	init_lut();
 
 	for (; n < n_sup; n += 4) {
-		if (check(n)) {
+		if (unlikely(check(n))) {
 			/* the function cannot verify the convergence using 128-bit arithmetic, use libgmp */
 			mpz_check((unsigned long)(n>>64), (unsigned long)n);
 		}
