@@ -4,7 +4,7 @@ cd collatz-$(hostname -s)
 
 cd src
 
-make -C task
+make -C worker
 make -C client
 
 cd client
