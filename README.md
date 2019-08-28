@@ -16,7 +16,7 @@ Testing *2<sup>40</sup>* numbers from 0 up to *2<sup>40</sup>* takes approximate
 This corresponds to the throughput *8.67 &times; 10<sup>10</sup>* numbers per seconds.
 The program is single-threaded and uses 128-bit arithmetic.
 
-    $ \time ./task 0
+    $ \time ./worker 0
     TASK_SIZE 40
     TASK_ID 0
     RANGE 0x0000000000000000:0000000000000003 .. 0x0000000000000000:0000010000000003
@@ -28,7 +28,7 @@ Testing *2<sup>40</sup>* numbers starting from *2<sup>68</sup>* takes approximat
 This gives the throughput about *3.99 &times; 10<sup>9</sup>* 128-bit numbers per seconds.
 The program is still single-threaded.
 
-    $ \time ./task 268435456
+    $ \time ./worker 268435456
     TASK_SIZE 40
     TASK_ID 268435456
     RANGE 0x0000000000000010:0000000000000003 .. 0x0000000000000010:0000010000000003
@@ -40,4 +40,4 @@ The program is still single-threaded.
 David Barina <ibarina@fit.vutbr.cz>
 
 ## License
-This project is licensed under the terms of the MIT license.
+This project is licensed under the terms of the [MIT license](LICENSE.md).
