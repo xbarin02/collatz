@@ -292,6 +292,20 @@ int read_message(int fd)
 	return 0;
 }
 
+void set_complete_range_from_hercher()
+{
+	size_t n;
+	size_t n_max = 91226112; /* = ( 87 * 2^60 ) / 2^40 */
+
+	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+		if (n < n_max) {
+			SET_ASSIGNED(n);
+			SET_COMPLETE(n);
+		}
+	}
+
+}
+
 int main(/*int argc, char *argv[]*/)
 {
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
