@@ -155,6 +155,8 @@ int read_assignment_no(int fd, uint64_t *n)
 	return 0;
 }
 
+#define TASK_SIZE 40
+
 /* 2^32 assignments */
 #define ASSIGNMENTS_NO (1UL<<32)
 
@@ -295,7 +297,7 @@ int read_message(int fd)
 void set_complete_range_from_hercher()
 {
 	size_t n;
-	size_t n_max = 91226112; /* = ( 87 * 2^60 ) / 2^40 */
+	size_t n_max = 91226112; /* = ( 87 * 2^60 ) / 2^TASK_SIZE */
 
 	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 		if (n < n_max) {
@@ -327,7 +329,8 @@ int main(/*int argc, char *argv[]*/)
 	message(INFO "lowest unassigned = %lu\n", (unsigned long)g_lowest_unassigned);
 	message(INFO "lowest incomplete = %lu\n", (unsigned long)g_lowest_incomplete);
 
-	message(INFO "*** all numbers below %lu * 2^%lu are convergent ***\n", g_lowest_incomplete, 40);
+	message(INFO "*** all numbers below %lu * 2^%lu are convergent ***\n", g_lowest_incomplete, TASK_SIZE);
+	message(INFO "*** all numbers below %lu * 2^%lu are convergent ***\n", g_lowest_incomplete>>20, TASK_SIZE+20);
 
 	signal(SIGINT, sigint_handler);
 	signal(SIGTERM, sigint_handler);
