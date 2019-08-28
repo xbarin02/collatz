@@ -26,7 +26,7 @@ typedef __int128 int128_t;
 #pragma GCC diagnostic pop
 
 #define INT128_C(n) ( (int128_t)n )
-#define INT128_MAX ( ((INT128_C(1)<<(128-2))-1)*2+1 )
+#define INT128_MAX ( (int128_t)(UINT128_MAX >> 1) )
 #define INT128_MIN ( -INT128_MAX - 1 )
 
 #include <limits.h>
