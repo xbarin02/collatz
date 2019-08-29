@@ -2,8 +2,8 @@
 
 cd collatz-$(hostname -s)/src
 
-make -C worker
-make -C client
+make -C worker clean all
+make -C client clean all
 
 cd client
 
