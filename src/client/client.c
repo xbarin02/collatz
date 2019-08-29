@@ -305,10 +305,10 @@ int main(int argc, char *argv[])
 				sleep(15);
 			}
 
+			printf("thread %i: got assignment %lu\n", tid, n);
+
 			if (quit)
 				break;
-
-			printf("thread %i: got assignment %lu\n", tid, n);
 
 			if (run_assignment(n) < 0) {
 				fprintf(stderr, "thread %i: run_assignment failed\n", tid);
@@ -319,6 +319,9 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "thread %i: open_socket_and_return_assignment failed\n", tid);
 				sleep(15);
 			}
+
+			if (quit)
+				break;
 		} while (1);
 	}
 
