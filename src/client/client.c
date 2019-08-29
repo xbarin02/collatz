@@ -321,13 +321,16 @@ int main(int argc, char *argv[])
 
 			while (open_socket_and_request_assignment(&n) < 0) {
 				fprintf(stderr, "thread %i: open_socket_and_request_assignment failed\n", tid);
+				fflush(stderr);
 				sleep(15);
 			}
 
 			printf("thread %i: got assignment %lu\n", tid, n);
+			fflush(stdout);
 
 			if (run_assignment(n) < 0) {
 				fprintf(stderr, "thread %i: run_assignment failed\n", tid);
+				fflush(stderr);
 				if (one_shot)
 					break;
 				continue;
@@ -335,6 +338,7 @@ int main(int argc, char *argv[])
 
 			while (open_socket_and_return_assignment(n) < 0) {
 				fprintf(stderr, "thread %i: open_socket_and_return_assignment failed\n", tid);
+				fflush(stderr);
 				sleep(15);
 			}
 
