@@ -13,6 +13,16 @@
 #include <strings.h>
 #include <string.h>
 #include <errno.h>
+#include <signal.h>
+
+static volatile int quit = 0;
+
+void sigint_handler(int i)
+{
+	(void)i;
+
+	quit = 1;
+}
 
 int threads_get_thread_id()
 {
@@ -278,6 +288,9 @@ int main(int argc, char *argv[])
 	fflush(stdout);
 	fflush(stderr);
 
+	signal(SIGINT, sigint_handler);
+	signal(SIGTERM, sigint_handler);
+
 	#pragma omp parallel num_threads(threads)
 	{
 		int tid = threads_get_thread_id();
@@ -292,6 +305,9 @@ int main(int argc, char *argv[])
 				sleep(15);
 			}
 
+			if (quit)
+				break;
+
 			printf("thread %i: got assignment %lu\n", tid, n);
 
 			if (run_assignment(n) < 0) {
@@ -305,6 +321,8 @@ int main(int argc, char *argv[])
 			}
 		} while (1);
 	}
+
+	printf("client has been halted\n");
 
 	return 0;
 }
