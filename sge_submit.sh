@@ -23,7 +23,8 @@ echo "TMP=${TMP}"
 mkdir -p -- "$TMP"
 pushd -- "$TMP"
 
-SRCDIR=/mnt/matylda1/ibarina/sge/collatz/
+SRCDIR=${SGE_O_WORKDIR}/
+echo "SRCDIR=$SRCDIR"
 
 cp -r "${SRCDIR}" .
 
