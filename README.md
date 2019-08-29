@@ -7,7 +7,6 @@ This repository contains computer programs implementing a completely new approac
 The trick is that, when calculating the function iterates, we switch between two domains in such a way that we can always use the count trailing zeros (ctz) operation and a small lookup table with powers of three.
 Powers for small exponents in that lookup table are therefore precalculated, which leads to some acceleration.
 This approach differs significantly from the commonly used approach utilizing a space-time tradeoff using huge lookup tables.
-The switching between two domains effectively reformulates the Collatz function to a mapping between pairs *(n,e)*, where *n* is an odd number and *e* is an exponent of three.
 Mathematical details on this approach are given in [this MSE question](https://math.stackexchange.com/questions/3311547/alternative-formulation-of-the-collatz-problem).
 
 ## Results
