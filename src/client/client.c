@@ -279,9 +279,28 @@ int open_socket_and_return_assignment(unsigned long n)
 
 int main(int argc, char *argv[])
 {
-	int threads = (argc > 1) ? atoi(argv[1]) : 1;
+	int threads;
+	int opt;
+	int one_shot = 0;
+
+	while ((opt = getopt(argc, argv, "1")) != -1) {
+		switch (opt) {
+			case '1':
+				one_shot = 1;
+				break;
+			default:
+				fprintf(stderr, "Usage: %s [-1] num_threads\n", argv[0]);
+				return EXIT_FAILURE;
+		}
+	}
+
+	threads = (optind < argc) ? atoi(argv[optind]) : 1;
 
 	assert(threads > 0);
+
+	if (one_shot) {
+		printf("one shot mode activated!\n");
+	}
 
 	printf("starting %u worker threads...\n", threads);
 
@@ -309,6 +328,8 @@ int main(int argc, char *argv[])
 
 			if (run_assignment(n) < 0) {
 				fprintf(stderr, "thread %i: run_assignment failed\n", tid);
+				if (one_shot)
+					break;
 				continue;
 			}
 
@@ -316,10 +337,13 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "thread %i: open_socket_and_return_assignment failed\n", tid);
 				sleep(15);
 			}
+
+			if (one_shot)
+				break;
 		}
 	}
 
 	printf("client has been halted\n");
 
-	return 0;
+	return EXIT_SUCCESS;
 }
