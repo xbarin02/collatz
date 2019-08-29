@@ -15,8 +15,6 @@ set -e
 export LANG=C
 
 echo "hostname=$(hostname)"
-echo "pwd=$(pwd)"
-echo "TMPDIR=$TMPDIR"
 TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
 
 mkdir -p -- "$TMP"
