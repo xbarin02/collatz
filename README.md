@@ -1,6 +1,8 @@
 # collatz
 Simple tools that check convergence of the Collatz problem.
 
+[![Build Status](https://travis-ci.com/xbarin02/collatz.svg?branch=master)](https://travis-ci.com/xbarin02/collatz)
+
 ## Details
 
 This repository contains computer programs implementing a completely new approach to calculating the Collatz function.
