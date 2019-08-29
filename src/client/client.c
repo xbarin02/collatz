@@ -307,9 +307,6 @@ int main(int argc, char *argv[])
 
 			printf("thread %i: got assignment %lu\n", tid, n);
 
-			if (quit)
-				break;
-
 			if (run_assignment(n) < 0) {
 				fprintf(stderr, "thread %i: run_assignment failed\n", tid);
 				continue;
