@@ -20,8 +20,17 @@ function release_lock() {
 	rm -f -- "${LOCKFILE}"
 }
 
-function bye() {
+function remove_logs() {
+	rm -f -- "${LOGFILE}".{err,out}
+}
+
+function cleanup() {
 	release_lock
+	remove_logs
+}
+
+function bye() {
+	cleanup
 	die "interrupted"
 }
 
@@ -37,16 +46,16 @@ CLIENT=./client
 
 if test -x "${CLIENT}"; then
 	echo "executing '${CLIENT}' with ${THREADS} worker threads..."
-	if \nice -n 19 "${CLIENT}" "${THREADS}" 2> "${LOGFILE}".err > "${LOGFILE}".out; then
+	if nice -n 19 "${CLIENT}" "${THREADS}" 2> "${LOGFILE}".err > "${LOGFILE}".out; then
 		echo "shutting down ..."
 	else
-		release_lock
+		cleanup
 		die "'${CLIENT}' failure"
 	fi
 else
-	release_lock
+	cleanup
 	die "cannot execute '${CLIENT}'"
 fi
 
-release_lock
+cleanup
 echo "successfully finished"
