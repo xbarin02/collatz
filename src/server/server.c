@@ -181,7 +181,8 @@ void set_complete(unsigned long n)
 	}
 
 	if (!IS_ASSIGNED(n)) {
-		message(WARN "assignment %lu was not assigned\n", n);
+		message(WARN "assignment %lu was not assigned, discarting the result!\n", n);
+		return;
 	}
 
 	SET_COMPLETE(n);
