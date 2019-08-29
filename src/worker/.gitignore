@@ -2,3 +2,4 @@ worker
 *~
 *.gcda
 *.txt
+*.pdf

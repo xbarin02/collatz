@@ -12,7 +12,7 @@
 
 #include "wideint.h"
 
-#define TASK_SIZE 40
+#define TASK_SIZE 32
 
 #define LUT_SIZE64 41
 #define LUT_SIZE128 81
