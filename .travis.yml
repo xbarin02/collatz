@@ -1,0 +1,6 @@
+language: C
+sudo: false
+script:
+  - make -C src/worker
+  - make -C src/client
+  - make -C src/server
