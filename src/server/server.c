@@ -374,8 +374,6 @@ int main(/*int argc, char *argv[]*/)
 			}
 		}
 
-		/* message(INFO "client connected\n"); */
-
 		if (read_message(cl_fd) < 0) {
 			message(ERR "client <--> server communication failure!\n");
 		}
