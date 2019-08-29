@@ -15,4 +15,4 @@ set format x "2^{%.0f}"
 set xrange [0:64]
 set xtics ("2^{32}" 0,"2^{40}" 8,"2^{48}" 16,"2^{56}" 24,"2^{64}" 32,"2^{72}" 40,"2^{80}" 48,"2^{88}" 56,"2^{96}" 64)
 
-plot "usertime-32-dabler.txt" using ($1):($3) with lines linewidth 2 title "time per block"
+plot "usertime-32.txt" using ($1):($3) with lines linewidth 2 title "time per block"
