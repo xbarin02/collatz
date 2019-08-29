@@ -18,20 +18,18 @@ echo "hostname=$(hostname)"
 echo "pwd=$(pwd)"
 echo "TMPDIR=$TMPDIR"
 TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
-echo "TMP=${TMP}"
 
 mkdir -p -- "$TMP"
 pushd -- "$TMP"
 
 SRCDIR=${SGE_O_WORKDIR}/
-echo "SRCDIR=$SRCDIR"
 
 cp -r "${SRCDIR}" .
 
 cd collatz/src
 
-make -C worker
-make -C client
+make -C worker clean all
+make -C client clean all
 
 cd client
 
