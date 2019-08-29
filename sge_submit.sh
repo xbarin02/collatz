@@ -4,8 +4,8 @@
 #$ -N collatz
 #$ -M ibarina@fit.vutbr.cz
 #$ -m a
-#$ -o /mnt/matylda1/ibarina/sge/collatz/out
-#$ -e /mnt/matylda1/ibarina/sge/collatz/err
+#$ -o /dev/null
+#$ -e /dev/null
 #$ -q all.q@@stable,all.q@@gpu
 #$ -tc 2000
 
@@ -14,7 +14,6 @@ set -e
 
 export LANG=C
 
-echo "hostname=$(hostname)"
 TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
 
 mkdir -p -- "$TMP"
@@ -35,5 +34,3 @@ stdbuf -o0 -e0 ./client -1 1
 
 popd
 rm -rf -- "$TMP"
-
-echo "DONE"
