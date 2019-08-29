@@ -1,8 +1,6 @@
 #!/bin/bash
 
-cd collatz-$(hostname -s)
-
-cd src
+cd collatz-$(hostname -s)/src
 
 make -C worker
 make -C client
