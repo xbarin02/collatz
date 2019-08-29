@@ -15,7 +15,7 @@
 #include <errno.h>
 #include <signal.h>
 
-static volatile int quit = 0;
+static volatile sig_atomic_t quit = 0;
 
 void sigint_handler(int i)
 {
@@ -297,7 +297,7 @@ int main(int argc, char *argv[])
 
 		printf("thread %i: started\n", tid);
 
-		do {
+		while (!quit) {
 			unsigned long n;
 
 			while (open_socket_and_request_assignment(&n) < 0) {
@@ -316,10 +316,7 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "thread %i: open_socket_and_return_assignment failed\n", tid);
 				sleep(15);
 			}
-
-			if (quit)
-				break;
-		} while (1);
+		}
 	}
 
 	printf("client has been halted\n");
