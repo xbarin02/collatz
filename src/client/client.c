@@ -17,7 +17,7 @@
 
 static volatile sig_atomic_t quit = 0;
 
-void sigint_handler(int i)
+void signal_handler(int i)
 {
 	(void)i;
 
@@ -346,8 +346,11 @@ int main(int argc, char *argv[])
 	fflush(stdout);
 	fflush(stderr);
 
-	signal(SIGINT, sigint_handler);
-	signal(SIGTERM, sigint_handler);
+	signal(SIGINT, signal_handler);
+	signal(SIGTERM, signal_handler);
+	signal(SIGALRM, signal_handler);
+	signal(SIGUSR1, signal_handler);
+	signal(SIGUSR2, signal_handler);
 
 	#pragma omp parallel num_threads(threads)
 	{
