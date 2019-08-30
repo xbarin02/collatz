@@ -312,6 +312,8 @@ int open_socket_and_revoke_assignment(unsigned long n)
 	return 0;
 }
 
+#define SLEEP_INTERVAL 10
+
 int main(int argc, char *argv[])
 {
 	int threads;
@@ -357,7 +359,7 @@ int main(int argc, char *argv[])
 			while (open_socket_and_request_assignment(&n) < 0) {
 				fprintf(stderr, "thread %i: open_socket_and_request_assignment failed\n", tid);
 				fflush(stderr);
-				sleep(15);
+				sleep(SLEEP_INTERVAL);
 			}
 
 			printf("thread %i: got assignment %lu\n", tid, n);
@@ -370,7 +372,7 @@ int main(int argc, char *argv[])
 				while (open_socket_and_revoke_assignment(n) < 0) {
 					fprintf(stderr, "thread %i: open_socket_and_revoke_assignment failed\n", tid);
 					fflush(stderr);
-					sleep(15);
+					sleep(SLEEP_INTERVAL);
 				}
 
 				if (one_shot)
@@ -381,7 +383,7 @@ int main(int argc, char *argv[])
 			while (open_socket_and_return_assignment(n) < 0) {
 				fprintf(stderr, "thread %i: open_socket_and_return_assignment failed\n", tid);
 				fflush(stderr);
-				sleep(15);
+				sleep(SLEEP_INTERVAL);
 			}
 
 			if (one_shot)
