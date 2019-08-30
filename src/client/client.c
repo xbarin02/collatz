@@ -247,7 +247,6 @@ int run_assignment(unsigned long n)
 	output = popen(buffer, "r");
 
 	if (!output) {
-		perror("popen");
 		return -1;
 	}
 
@@ -265,10 +264,15 @@ int run_assignment(unsigned long n)
 
 		if (c == 2 && strcmp(ln_part[0], "TASK_SIZE") == 0) {
 			unsigned long task_size = (unsigned long)atol(ln_part[1]);
-			printf("task_size = %lu\n", task_size);
+			/* TODO task_size must be returned to server */
 		} else if (c == 2 && strcmp(ln_part[0], "TASK_ID") == 0) {
 			unsigned long task_id = (unsigned long)atol(ln_part[1]);
-			printf("task_id = %lu\n", task_id);
+
+			if (n != task_id) {
+				fprintf(stderr, "client <---> worker communication problem!\n");
+				fflush(stderr);
+				return -1;
+			}
 		} /* ... */
 	}
 
