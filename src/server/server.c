@@ -16,6 +16,7 @@
 #include <sys/mman.h>
 #include <time.h>
 #include <stdarg.h>
+#include <limits.h>
 
 const uint16_t serverport = 5006;
 
@@ -204,6 +205,14 @@ unsigned long get_assignment()
 	return n;
 }
 
+void unset_assignment(unsigned long n)
+{
+	SET_UNASSIGNED(n);
+
+	if (g_lowest_unassigned > n)
+		g_lowest_unassigned = n;
+}
+
 unsigned long get_missed_assignment()
 {
 	unsigned long n = g_lowest_incomplete;
@@ -300,8 +309,7 @@ int read_message(int fd)
 
 		message(INFO "assignment interrupted: %lu\n", n);
 
-		/* TODO */
-		message(ERR "not implemented!\n!");
+		unset_assignment(n);
 	} else {
 		message(ERR "%s: unknown client message!\n", msg);
 		return -1;
