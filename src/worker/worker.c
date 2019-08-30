@@ -115,6 +115,10 @@ static void mpz_check(unsigned long nh, unsigned long nl)
 	mpz_mul_2exp(n, n, (mp_bitcnt_t)64);
 	mpz_add_ui(n, n, nl);
 
+#if 0
+	gmp_printf("[OVERFLOW %Zd\n", n);
+#endif
+
 	/* n0 = n */
 	mpz_init_set(n0, n);
 
