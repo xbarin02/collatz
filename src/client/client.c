@@ -185,6 +185,21 @@ int return_assignment(int fd, unsigned long n)
 	return 0;
 }
 
+int revoke_assignment(int fd, unsigned long n)
+{
+	if (write_(fd, "INT", 4) < 0) {
+		return -1;
+	}
+
+	assert( sizeof(uint64_t) == sizeof(unsigned long) );
+
+	if (write_assignment_no(fd, (uint64_t)n) < 0) {
+		return -1;
+	}
+
+	return 0;
+}
+
 int open_socket_to_server()
 {
 	int fd;
@@ -277,6 +292,26 @@ int open_socket_and_return_assignment(unsigned long n)
 	return 0;
 }
 
+int open_socket_and_revoke_assignment(unsigned long n)
+{
+	int fd;
+
+	fd = open_socket_to_server();
+
+	if (fd < 0) {
+		return -1;
+	}
+
+	if (revoke_assignment(fd, n) < 0) {
+		close(fd);
+		return -1;
+	}
+
+	close(fd);
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	int threads;
@@ -331,6 +366,9 @@ int main(int argc, char *argv[])
 			if (run_assignment(n) < 0) {
 				fprintf(stderr, "thread %i: run_assignment failed\n", tid);
 				fflush(stderr);
+
+				open_socket_and_revoke_assignment(n);
+
 				if (one_shot)
 					break;
 				continue;
