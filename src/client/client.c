@@ -231,6 +231,7 @@ int run_assignment(unsigned long n)
 	int r;
 	char buffer[4096];
 	char line[4096];
+	char ln_part[4][64];
 	FILE *output;
 
 	if (sprintf(buffer, "%s %lu", taskpath, n) < 0) {
@@ -251,7 +252,24 @@ int run_assignment(unsigned long n)
 	}
 
 	while (fgets(line, 4096, output)) {
+		int c;
+
 		printf("%s", line);
+
+		c = sscanf(line, "%63s %63s %63s %63s", ln_part[0], ln_part[1], ln_part[2], ln_part[3]);
+
+		ln_part[0][63] = 0;
+		ln_part[1][63] = 0;
+		ln_part[2][63] = 0;
+		ln_part[3][63] = 0;
+
+		if (c == 2 && strcmp(ln_part[0], "TASK_SIZE") == 0) {
+			unsigned long task_size = (unsigned long)atol(ln_part[1]);
+			printf("task_size = %lu\n", task_size);
+		} else if (c == 2 && strcmp(ln_part[0], "TASK_ID") == 0) {
+			unsigned long task_id = (unsigned long)atol(ln_part[1]);
+			printf("task_id = %lu\n", task_id);
+		} /* ... */
 	}
 
 	r = pclose(output);
