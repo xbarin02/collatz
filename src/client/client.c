@@ -230,15 +230,32 @@ int run_assignment(unsigned long n)
 {
 	int r;
 	char buffer[4096];
+	char line[4096];
+	FILE *output;
 
 	if (sprintf(buffer, "%s %lu", taskpath, n) < 0) {
 		return -1;
 	}
 
+	/* spawn sub-process */
+#if 1
+	r = system(buffer);
+#else
 	/* TODO use popen/pclose https://www.gnu.org/software/libc/manual/html_mono/libc.html#Pipe-to-a-Subprocess */
 
-	/* spawn sub-process */
-	r = system(buffer);
+	output = popen(buffer, "r");
+
+	if (!output) {
+		perror("popen");
+		return -1;
+	}
+
+	while (fgets(line, 4096, output)) {
+		printf("%s", line);
+	}
+
+	r = pclose(output);
+#endif
 
 	if (r == -1) {
 		return -1;

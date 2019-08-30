@@ -167,7 +167,9 @@ int main(int argc, char *argv[])
 	unsigned long task_id = (argc > 1) ? (unsigned long)atol(argv[1]) : 0;
 
 	printf("TASK_SIZE %lu\n", (unsigned long)TASK_SIZE);
+	fflush(stdout);
 	printf("TASK_ID %lu\n", task_id);
+	fflush(stdout);
 
 	assert( 2*sizeof(unsigned long) == sizeof(uint128_t) && "unsupported memory model" );
 
@@ -176,6 +178,7 @@ int main(int argc, char *argv[])
 	n_sup = ( UINT128_C(task_id) << TASK_SIZE ) + 3 + (1UL << TASK_SIZE);
 
 	printf("RANGE 0x%016lx:%016lx .. 0x%016lx:%016lx\n", (unsigned long)(n>>64), (unsigned long)n, (unsigned long)(n_sup>>64), (unsigned long)n_sup);
+	fflush(stdout);
 
 	init_lut();
 
@@ -187,8 +190,10 @@ int main(int argc, char *argv[])
 	}
 
 	printf("OVERFLOW 128 %lu\n", g_overflow_counter);
+	fflush(stdout);
 
 	printf("HALTED\n");
+	fflush(stdout);
 
 	return 0;
 }
