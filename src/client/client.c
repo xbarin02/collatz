@@ -273,7 +273,17 @@ int run_assignment(unsigned long n)
 				fflush(stderr);
 				return -1;
 			}
-		} /* ... */
+		} else if (c == 3 && strcmp(ln_part[0], "OVERFLOW") == 0) {
+			unsigned long size = (unsigned long)atol(ln_part[1]);
+			unsigned long overflow_counter = (unsigned long)atol(ln_part[2]);
+
+			if (size == 128) {
+				/* TODO overflow_counter must be returned to server */
+			}
+		} else if (c == 1 && strcmp(ln_part[0], "HALTED") == 0) {
+			/* this was expected */
+			(void)0;
+		} /* other cases... */
 	}
 
 	r = pclose(output);
