@@ -367,7 +367,11 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "thread %i: run_assignment failed\n", tid);
 				fflush(stderr);
 
-				open_socket_and_revoke_assignment(n);
+				while (open_socket_and_revoke_assignment(n) < 0) {
+					fprintf(stderr, "thread %i: open_socket_and_revoke_assignment failed\n", tid);
+					fflush(stderr);
+					sleep(15);
+				}
 
 				if (one_shot)
 					break;
