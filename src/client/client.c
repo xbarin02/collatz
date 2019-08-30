@@ -235,6 +235,8 @@ int run_assignment(unsigned long n)
 		return -1;
 	}
 
+	/* TODO use popen/pclose https://www.gnu.org/software/libc/manual/html_mono/libc.html#Pipe-to-a-Subprocess */
+
 	/* spawn sub-process */
 	r = system(buffer);
 
