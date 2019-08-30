@@ -99,12 +99,16 @@ static int check(uint128_t n)
 	} while (1);
 }
 
+static unsigned long g_overflow_counter = 0;
+
 /* check convergence */
 static void mpz_check(unsigned long nh, unsigned long nl)
 {
 	mpz_t n;
 	mpz_t n0;
 	mp_bitcnt_t e;
+
+	g_overflow_counter++;
 
 	/* n = nh * 2^64 + nl */
 	mpz_init_set_ui(n, nh);
@@ -177,6 +181,8 @@ int main(int argc, char *argv[])
 			mpz_check((unsigned long)(n>>64), (unsigned long)n);
 		}
 	}
+
+	printf("OVERFLOW 128 %lu\n", g_overflow_counter);
 
 	printf("HALTED\n");
 
