@@ -165,8 +165,9 @@ int read_assignment_no(int fd, uint64_t *n)
 #define IS_ASSIGNED(n) ( ( g_map_assigned[ (n)>>3 ] >> ((n)&7) ) & 1 )
 #define IS_COMPLETE(n) ( ( g_map_complete[ (n)>>3 ] >> ((n)&7) ) & 1 )
 
-#define SET_ASSIGNED(n) ( g_map_assigned[(n)>>3] |= (1<<((n)&7)) )
-#define SET_COMPLETE(n) ( g_map_complete[(n)>>3] |= (1<<((n)&7)) )
+#define SET_ASSIGNED(n)   ( g_map_assigned[(n)>>3] |= (1<<((n)&7)) )
+#define SET_UNASSIGNED(n) ( g_map_assigned[(n)>>3] &= UCHAR_MAX ^ (1<<((n)&7)) )
+#define SET_COMPLETE(n)   ( g_map_complete[(n)>>3] |= (1<<((n)&7)) )
 
 size_t g_lowest_unassigned = 0; /* bit index, not byte */
 size_t g_lowest_incomplete = 0;
