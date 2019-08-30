@@ -264,8 +264,8 @@ int read_message(int fd)
 			return -1;
 		}
 	} else if (strcmp(msg, "RET") == 0) {
-		unsigned long n;
 		/* returning assignment */
+		unsigned long n;
 
 		assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
@@ -287,6 +287,20 @@ int read_message(int fd)
 		if (write_assignment_no(fd, (uint64_t)n) < 0) {
 			return -1;
 		}
+	} else if (strcmp(msg, "INT") == 0) {
+		/* interrupted or unable to solve, unreserve the assignment */
+		unsigned long n;
+
+		assert( sizeof(uint64_t) == sizeof(unsigned long) );
+
+		if (read_assignment_no(fd, (uint64_t *)&n) < 0) {
+			return -1;
+		}
+
+		message(INFO "assignment interrupted: %lu\n", n);
+
+		/* TODO */
+		message(ERR "not implemented!\n!");
 	} else {
 		message(ERR "%s: unknown client message!\n", msg);
 		return -1;
