@@ -15,6 +15,14 @@
 #include <errno.h>
 #include <signal.h>
 
+#define TASK_SIZE 40
+#define REQUEST_LOWEST_INCOMPLETE 0
+
+const char *servername = "pcbarina2.fit.vutbr.cz";
+const uint16_t serverport = 5006;
+
+const char *taskpath = "../worker/worker";
+
 static volatile sig_atomic_t quit = 0;
 
 void signal_handler(int i)
@@ -32,13 +40,6 @@ int threads_get_thread_id()
 	return 0;
 #endif
 }
-
-#define REQUEST_LOWEST_INCOMPLETE 0
-
-const char *servername = "pcbarina2.fit.vutbr.cz";
-const uint16_t serverport = 5006;
-
-const char *taskpath = "../worker/worker";
 
 int init_sockaddr(struct sockaddr_in *name, const char *hostname, uint16_t port)
 {
@@ -86,7 +87,8 @@ ssize_t write_(int fd, const char *buf, size_t count)
 
 ssize_t read_(int fd, char *buf, size_t count)
 {
-	ssize_t readen = 0; /* read was already taken */
+	/* I known this isn't a word in English, but "read" was already taken. */
+	ssize_t readen = 0;
 
 	while ((size_t)readen < count) {
 		ssize_t t = read(fd, buf + readen, count - readen);
@@ -226,7 +228,7 @@ int open_socket_to_server()
 	return fd;
 }
 
-int run_assignment(unsigned long n)
+int run_assignment(unsigned long n, unsigned long task_size)
 {
 	int r;
 	char buffer[4096];
@@ -242,7 +244,7 @@ int run_assignment(unsigned long n)
 #if 1
 	r = system(buffer);
 #else
-	/* TODO use popen/pclose https://www.gnu.org/software/libc/manual/html_mono/libc.html#Pipe-to-a-Subprocess */
+	/* TODO https://www.gnu.org/software/libc/manual/html_mono/libc.html#Pipe-to-a-Subprocess */
 
 	output = popen(buffer, "r");
 
@@ -263,8 +265,13 @@ int run_assignment(unsigned long n)
 		ln_part[3][63] = 0;
 
 		if (c == 2 && strcmp(ln_part[0], "TASK_SIZE") == 0) {
-			unsigned long task_size = (unsigned long)atol(ln_part[1]);
-			/* TODO task_size must be returned to server */
+			unsigned long worker_task_size = (unsigned long)atol(ln_part[1]);
+
+			if (worker_task_size != task_size) {
+				fprintf(stderr, "worker uses different TASK_SIZE (%lu), whereas %lu is required\n", worker_task_size, task_size);
+				fflush(stderr);
+				return -1;
+			}
 		} else if (c == 2 && strcmp(ln_part[0], "TASK_ID") == 0) {
 			unsigned long task_id = (unsigned long)atol(ln_part[1]);
 
@@ -419,7 +426,7 @@ int main(int argc, char *argv[])
 			printf("thread %i: got assignment %lu\n", tid, n);
 			fflush(stdout);
 
-			if (run_assignment(n) < 0) {
+			if (run_assignment(n, TASK_SIZE) < 0) {
 				fprintf(stderr, "thread %i: run_assignment failed\n", tid);
 				fflush(stderr);
 
