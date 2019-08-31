@@ -1,10 +1,7 @@
 #!/bin/bash
 
-rm -f -- assigned.map.001
-rm -f -- complete.map.001
+mv -f assigned.000.map assigned.001.map
+mv -f complete.000.map complete.001.map
 
-mv assigned.map.000 assigned.map.001
-mv complete.map.000 complete.map.001
-
-cp assigned.map assigned.map.000
-cp complete.map complete.map.000
+cp assigned.map assigned.000.map
+cp complete.map complete.000.map
