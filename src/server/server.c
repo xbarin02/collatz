@@ -180,6 +180,32 @@ int write_task_size(int fd)
 	return 0;
 }
 
+int read_task_size(int fd, unsigned long *task_size)
+{
+	uint32_t nh, nl;
+	uint64_t n;
+
+	if (read_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (read_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+
+	nh = ntohl(nh);
+	nl = ntohl(nl);
+
+	n = ((uint64_t)nh << 32) + nl;
+
+	assert( task_size != NULL );
+	assert( sizeof(uint64_t) == sizeof(unsigned long) );
+
+	*task_size = (unsigned long)n;
+
+	return 0;
+}
+
 /* 2^32 assignments */
 #define ASSIGNMENTS_NO (1UL<<32)
 
@@ -307,10 +333,14 @@ int read_message(int fd)
 			return -1;
 		}
 
-		/* TODO write TASK_SIZE */
+		/* write TASK_SIZE */
+		if (write_task_size(fd) < 0) {
+			/* TODO */
+		}
 	} else if (strcmp(msg, "RET") == 0) {
 		/* returning assignment */
 		unsigned long n;
+		unsigned long task_size;
 
 		assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
@@ -318,7 +348,10 @@ int read_message(int fd)
 			return -1;
 		}
 
-		/* TODO read TASK_SIZE */
+		/* read TASK_SIZE */
+		if (read_task_size(fd, &task_size) < 0) {
+			/* TODO */
+		}
 
 		message(INFO "assignment returned: %lu\n", n);
 
@@ -335,10 +368,14 @@ int read_message(int fd)
 			return -1;
 		}
 
-		/* TODO write TASK_SIZE */
+		/* write TASK_SIZE */
+		if (write_task_size(fd) < 0) {
+			/* TODO */
+		}
 	} else if (strcmp(msg, "INT") == 0) {
 		/* interrupted or unable to solve, unreserve the assignment */
 		unsigned long n;
+		unsigned long task_size;
 
 		assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
@@ -346,7 +383,10 @@ int read_message(int fd)
 			return -1;
 		}
 
-		/* TODO read TASK_SIZE */
+		/* read TASK_SIZE */
+		if (read_task_size(fd, &task_size) < 0) {
+			/* TODO */
+		}
 
 		message(INFO "assignment interrupted: %lu\n", n);
 
