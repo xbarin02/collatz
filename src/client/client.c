@@ -325,6 +325,8 @@ int open_socket_and_request_assignment(unsigned long *n, int request_lowest_inco
 		return -1;
 	}
 
+	/* TODO try to read TASK_SIZE */
+
 	close(fd);
 
 	return 0;
