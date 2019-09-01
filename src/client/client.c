@@ -198,6 +198,28 @@ int read_task_size(int fd, unsigned long *task_size)
 	return 0;
 }
 
+int write_task_size(int fd)
+{
+	uint64_t n = TASK_SIZE;
+	uint32_t nh, nl;
+
+	nh = (uint32_t)(n >> 32);
+	nl = (uint32_t)(n);
+
+	nh = htonl(nh);
+	nl = ntohl(nl);
+
+	if (write_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (write_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+
+	return 0;
+}
+
 int return_assignment(int fd, unsigned long n)
 {
 	if (write_(fd, "RET", 4) < 0) {
@@ -224,6 +246,8 @@ int revoke_assignment(int fd, unsigned long n)
 	if (write_assignment_no(fd, (uint64_t)n) < 0) {
 		return -1;
 	}
+
+	/* TODO write TASK_SIZE */
 
 	return 0;
 }
@@ -376,6 +400,8 @@ int open_socket_and_return_assignment(unsigned long n)
 		close(fd);
 		return -1;
 	}
+
+	/* TODO write TASK_SIZE */
 
 	close(fd);
 
