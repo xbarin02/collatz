@@ -247,8 +247,6 @@ int revoke_assignment(int fd, unsigned long n)
 		return -1;
 	}
 
-	/* TODO write TASK_SIZE */
-
 	return 0;
 }
 
@@ -294,7 +292,7 @@ int run_assignment(unsigned long n, unsigned long task_size)
 #if 0
 	r = system(buffer);
 #else
-	/* TODO https://www.gnu.org/software/libc/manual/html_mono/libc.html#Pipe-to-a-Subprocess */
+	/* https://www.gnu.org/software/libc/manual/html_mono/libc.html#Pipe-to-a-Subprocess */
 
 	output = popen(buffer, "r");
 
@@ -401,7 +399,10 @@ int open_socket_and_return_assignment(unsigned long n)
 		return -1;
 	}
 
-	/* TODO write TASK_SIZE */
+	/* write TASK_SIZE */
+	if (write_task_size(fd) < 0) {
+		printf("server does not receive the TASK_SIZE\n");
+	}
 
 	close(fd);
 
@@ -421,6 +422,11 @@ int open_socket_and_revoke_assignment(unsigned long n)
 	if (revoke_assignment(fd, n) < 0) {
 		close(fd);
 		return -1;
+	}
+
+	/* write TASK_SIZE */
+	if (write_task_size(fd) < 0) {
+		printf("server does not receive the TASK_SIZE\n");
 	}
 
 	close(fd);
