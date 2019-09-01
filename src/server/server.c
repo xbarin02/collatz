@@ -198,9 +198,13 @@ void set_complete(unsigned long n)
 
 unsigned long get_assignment()
 {
-	unsigned long n = g_lowest_unassigned++;
+	unsigned long n = g_lowest_unassigned;
 
 	SET_ASSIGNED(n);
+
+	/* advance g_lowest_unassigned */
+	for (; IS_ASSIGNED(g_lowest_unassigned); ++g_lowest_unassigned)
+		;
 
 	return n;
 }
@@ -209,8 +213,9 @@ void unset_assignment(unsigned long n)
 {
 	SET_UNASSIGNED(n);
 
-	if (g_lowest_unassigned > n)
+	if (g_lowest_unassigned > n) {
 		g_lowest_unassigned = n;
+	}
 }
 
 unsigned long get_missed_assignment()
@@ -218,6 +223,12 @@ unsigned long get_missed_assignment()
 	unsigned long n = g_lowest_incomplete;
 
 	SET_ASSIGNED(n);
+
+	/* advance g_lowest_unassigned */
+	if (n == g_lowest_unassigned) {
+		for (; IS_ASSIGNED(g_lowest_unassigned); ++g_lowest_unassigned)
+			;
+	}
 
 	return n;
 }
