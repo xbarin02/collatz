@@ -379,6 +379,10 @@ int open_socket_and_request_assignment(unsigned long *n, int request_lowest_inco
 		printf("server does not send the TASK_SIZE\n");
 	}
 
+	if (task_size && task_size != TASK_SIZE) {
+		printf("TASK_SIZE mismatch!\n");
+	}
+
 	close(fd);
 
 	return 0;
