@@ -17,6 +17,7 @@
 
 #define TASK_SIZE 40
 #define REQUEST_LOWEST_INCOMPLETE 0
+#define SLEEP_INTERVAL 10
 
 const char *servername = "pcbarina2.fit.vutbr.cz";
 const uint16_t serverport = 5006;
@@ -241,7 +242,7 @@ int run_assignment(unsigned long n, unsigned long task_size)
 	}
 
 	/* spawn sub-process */
-#if 1
+#if 0
 	r = system(buffer);
 #else
 	/* TODO https://www.gnu.org/software/libc/manual/html_mono/libc.html#Pipe-to-a-Subprocess */
@@ -369,8 +370,6 @@ int open_socket_and_revoke_assignment(unsigned long n)
 
 	return 0;
 }
-
-#define SLEEP_INTERVAL 10
 
 int main(int argc, char *argv[])
 {
