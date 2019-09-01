@@ -306,6 +306,8 @@ int read_message(int fd)
 		if (write_assignment_no(fd, (uint64_t)n) < 0) {
 			return -1;
 		}
+
+		/* TODO write TASK_SIZE */
 	} else if (strcmp(msg, "RET") == 0) {
 		/* returning assignment */
 		unsigned long n;
@@ -315,6 +317,8 @@ int read_message(int fd)
 		if (read_assignment_no(fd, (uint64_t *)&n) < 0) {
 			return -1;
 		}
+
+		/* TODO read TASK_SIZE */
 
 		message(INFO "assignment returned: %lu\n", n);
 
@@ -330,6 +334,8 @@ int read_message(int fd)
 		if (write_assignment_no(fd, (uint64_t)n) < 0) {
 			return -1;
 		}
+
+		/* TODO write TASK_SIZE */
 	} else if (strcmp(msg, "INT") == 0) {
 		/* interrupted or unable to solve, unreserve the assignment */
 		unsigned long n;
@@ -339,6 +345,8 @@ int read_message(int fd)
 		if (read_assignment_no(fd, (uint64_t *)&n) < 0) {
 			return -1;
 		}
+
+		/* TODO read TASK_SIZE */
 
 		message(INFO "assignment interrupted: %lu\n", n);
 
