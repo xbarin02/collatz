@@ -158,6 +158,28 @@ int read_assignment_no(int fd, uint64_t *n)
 
 #define TASK_SIZE 40
 
+int write_task_size(int fd)
+{
+	uint64_t n = TASK_SIZE;
+	uint32_t nh, nl;
+
+	nh = (uint32_t)(n >> 32);
+	nl = (uint32_t)(n);
+
+	nh = htonl(nh);
+	nl = ntohl(nl);
+
+	if (write_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (write_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+
+	return 0;
+}
+
 /* 2^32 assignments */
 #define ASSIGNMENTS_NO (1UL<<32)
 
