@@ -172,6 +172,32 @@ int request_assignment(int fd, unsigned long *n, int request_lowest_incomplete)
 	return 0;
 }
 
+int read_task_size(int fd, unsigned long *task_size)
+{
+	uint32_t nh, nl;
+	uint64_t n;
+
+	if (read_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (read_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+
+	nh = ntohl(nh);
+	nl = ntohl(nl);
+
+	n = ((uint64_t)nh << 32) + nl;
+
+	assert( task_size != NULL );
+	assert( sizeof(uint64_t) == sizeof(unsigned long) );
+
+	*task_size = (unsigned long)n;
+
+	return 0;
+}
+
 int return_assignment(int fd, unsigned long n)
 {
 	if (write_(fd, "RET", 4) < 0) {
@@ -312,6 +338,7 @@ int run_assignment(unsigned long n, unsigned long task_size)
 int open_socket_and_request_assignment(unsigned long *n, int request_lowest_incomplete)
 {
 	int fd;
+	unsigned long task_size = 0;
 
 	fd = open_socket_to_server();
 
@@ -325,7 +352,10 @@ int open_socket_and_request_assignment(unsigned long *n, int request_lowest_inco
 		return -1;
 	}
 
-	/* TODO try to read TASK_SIZE */
+	/* try to read TASK_SIZE */
+	if (read_task_size(fd, &task_size) < 0) {
+		printf("server does not send the TASK_SIZE\n");
+	}
 
 	close(fd);
 
