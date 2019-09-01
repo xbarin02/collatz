@@ -16,7 +16,6 @@
 #include <signal.h>
 
 #define TASK_SIZE 40
-#define REQUEST_LOWEST_INCOMPLETE 0
 #define SLEEP_INTERVAL 10
 
 const char *servername = "pcbarina2.fit.vutbr.cz";
@@ -152,17 +151,17 @@ int write_assignment_no(int fd, uint64_t n)
 	return 0;
 }
 
-int request_assignment(int fd, unsigned long *n)
+int request_assignment(int fd, unsigned long *n, int request_lowest_incomplete)
 {
-#if (REQUEST_LOWEST_INCOMPLETE == 1)
-	if (write_(fd, "req", 4) < 0) {
-		return -1;
+	if (request_lowest_incomplete) {
+		if (write_(fd, "req", 4) < 0) {
+			return -1;
+		}
+	} else {
+		if (write_(fd, "REQ", 4) < 0) {
+			return -1;
+		}
 	}
-#else
-	if (write_(fd, "REQ", 4) < 0) {
-		return -1;
-	}
-#endif
 
 	assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
@@ -310,7 +309,7 @@ int run_assignment(unsigned long n, unsigned long task_size)
 	}
 }
 
-int open_socket_and_request_assignment(unsigned long *n)
+int open_socket_and_request_assignment(unsigned long *n, int request_lowest_incomplete)
 {
 	int fd;
 
@@ -321,7 +320,7 @@ int open_socket_and_request_assignment(unsigned long *n)
 	}
 
 	/* give me the assignment */
-	if (request_assignment(fd, n) < 0) {
+	if (request_assignment(fd, n, request_lowest_incomplete) < 0) {
 		close(fd);
 		return -1;
 	}
@@ -376,11 +375,15 @@ int main(int argc, char *argv[])
 	int threads;
 	int opt;
 	int one_shot = 0;
+	int request_lowest_incomplete = 0;
 
-	while ((opt = getopt(argc, argv, "1")) != -1) {
+	while ((opt = getopt(argc, argv, "1l")) != -1) {
 		switch (opt) {
 			case '1':
 				one_shot = 1;
+				break;
+			case 'l':
+				request_lowest_incomplete = 1;
 				break;
 			default:
 				fprintf(stderr, "Usage: %s [-1] num_threads\n", argv[0]);
@@ -416,7 +419,7 @@ int main(int argc, char *argv[])
 		while (!quit) {
 			unsigned long n;
 
-			while (open_socket_and_request_assignment(&n) < 0) {
+			while (open_socket_and_request_assignment(&n, request_lowest_incomplete) < 0) {
 				fprintf(stderr, "thread %i: open_socket_and_request_assignment failed\n", tid);
 				fflush(stderr);
 				sleep(SLEEP_INTERVAL);
