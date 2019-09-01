@@ -2,3 +2,4 @@ server
 *~
 *.gcda
 *.map
+*.log
