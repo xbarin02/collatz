@@ -340,7 +340,7 @@ int read_message(int fd)
 	} else if (strcmp(msg, "RET") == 0) {
 		/* returning assignment */
 		unsigned long n;
-		unsigned long task_size;
+		unsigned long task_size = 0;
 
 		assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
@@ -351,6 +351,10 @@ int read_message(int fd)
 		/* read TASK_SIZE */
 		if (read_task_size(fd, &task_size) < 0) {
 			/* TODO */
+		}
+
+		if (task_size && task_size != TASK_SIZE) {
+			message(ERR "TASK_SIZE mismatch!\n");
 		}
 
 		message(INFO "assignment returned: %lu\n", n);
@@ -375,7 +379,7 @@ int read_message(int fd)
 	} else if (strcmp(msg, "INT") == 0) {
 		/* interrupted or unable to solve, unreserve the assignment */
 		unsigned long n;
-		unsigned long task_size;
+		unsigned long task_size = 0;
 
 		assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
@@ -386,6 +390,10 @@ int read_message(int fd)
 		/* read TASK_SIZE */
 		if (read_task_size(fd, &task_size) < 0) {
 			/* TODO */
+		}
+
+		if (task_size && task_size != TASK_SIZE) {
+			message(ERR "TASK_SIZE mismatch!\n");
 		}
 
 		message(INFO "assignment interrupted: %lu\n", n);
