@@ -208,6 +208,32 @@ int read_task_size(int fd, unsigned long *task_size)
 	return 0;
 }
 
+int read_overflow_counter(int fd, unsigned long *overflow_counter)
+{
+	uint32_t nh, nl;
+	uint64_t n;
+
+	if (read_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (read_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+
+	nh = ntohl(nh);
+	nl = ntohl(nl);
+
+	n = ((uint64_t)nh << 32) + nl;
+
+	assert( overflow_counter != NULL );
+	assert( sizeof(uint64_t) == sizeof(unsigned long) );
+
+	*overflow_counter = (unsigned long)n;
+
+	return 0;
+}
+
 /* 2^32 assignments */
 #define ASSIGNMENTS_NO (1UL<<32)
 
@@ -344,6 +370,7 @@ int read_message(int fd)
 		/* returning assignment */
 		unsigned long n;
 		unsigned long task_size = 0;
+		unsigned long overflow_counter = 0;
 
 		assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
@@ -362,7 +389,11 @@ int read_message(int fd)
 			return -1;
 		}
 
-		/* TODO read overflow counter */
+		/* read overflow counter */
+		if (read_overflow_counter(fd, &overflow_counter) < 0) {
+			/* TODO */
+			message(WARN "client doest not send the overflow counter!\n");
+		}
 
 		message(INFO "assignment returned: %lu\n", n);
 
