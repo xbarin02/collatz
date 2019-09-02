@@ -252,6 +252,32 @@ int write_task_size(int fd, unsigned long task_size)
 	return 0;
 }
 
+int write_overflow_counter(int fd, unsigned long overflow_counter)
+{
+	uint64_t n;
+	uint32_t nh, nl;
+
+	assert( sizeof(unsigned long) == sizeof(uint64_t) );
+
+	n = (uint64_t)overflow_counter;
+
+	nh = (uint32_t)(n >> 32);
+	nl = (uint32_t)(n);
+
+	nh = htonl(nh);
+	nl = ntohl(nl);
+
+	if (write_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (write_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+
+	return 0;
+}
+
 int return_assignment(int fd, unsigned long n)
 {
 	if (write_(fd, "RET", 4) < 0) {
@@ -308,7 +334,7 @@ int open_socket_to_server()
 	return fd;
 }
 
-int run_assignment(unsigned long n, unsigned long task_size)
+int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_overflow_counter)
 {
 	int r;
 	char buffer[4096];
@@ -360,7 +386,8 @@ int run_assignment(unsigned long n, unsigned long task_size)
 			unsigned long overflow_counter = (unsigned long)atol(ln_part[2]);
 
 			if (size == 128) {
-				/* TODO overflow_counter must be returned to server */
+				assert(p_overflow_counter != NULL);
+				*p_overflow_counter = overflow_counter;
 			}
 		} else if (c == 1 && strcmp(ln_part[0], "HALTED") == 0) {
 			/* this was expected */
@@ -422,7 +449,7 @@ int open_socket_and_request_assignment(unsigned long *n, int request_lowest_inco
 	return 0;
 }
 
-int open_socket_and_return_assignment(unsigned long n, unsigned long task_size)
+int open_socket_and_return_assignment(unsigned long n, unsigned long task_size, unsigned long overflow_counter)
 {
 	int fd;
 
@@ -442,6 +469,10 @@ int open_socket_and_return_assignment(unsigned long n, unsigned long task_size)
 		message(ERR "server does not receive the TASK_SIZE\n");
 		close(fd);
 		return -1;
+	}
+
+	if (write_overflow_counter(fd, overflow_counter) < 0) {
+		message(WARN "server does not receive the overflow counter\n");
 	}
 
 	close(fd);
@@ -522,6 +553,7 @@ int main(int argc, char *argv[])
 		while (!quit) {
 			unsigned long n;
 			unsigned long task_size = 0;
+			unsigned long overflow_counter = 0;
 
 			while (open_socket_and_request_assignment(&n, request_lowest_incomplete, &task_size) < 0) {
 				message(ERR "thread %i: open_socket_and_request_assignment failed\n", tid);
@@ -530,7 +562,7 @@ int main(int argc, char *argv[])
 
 			message(INFO "thread %i: got assignment %lu\n", tid, n);
 
-			if (run_assignment(n, task_size) < 0) {
+			if (run_assignment(n, task_size, &overflow_counter) < 0) {
 				message(ERR "thread %i: run_assignment failed\n", tid);
 
 				while (open_socket_and_revoke_assignment(n, task_size) < 0) {
@@ -544,7 +576,7 @@ int main(int argc, char *argv[])
 				continue;
 			}
 
-			while (open_socket_and_return_assignment(n, task_size) < 0) {
+			while (open_socket_and_return_assignment(n, task_size, overflow_counter) < 0) {
 				message(ERR "thread %i: open_socket_and_return_assignment failed\n", tid);
 				sleep(SLEEP_INTERVAL);
 			}
