@@ -337,8 +337,8 @@ int read_message(int fd)
 
 		/* write TASK_SIZE */
 		if (write_task_size(fd) < 0) {
-			/* TODO */
-			message(WARN "unable to write task size, update the client!\n");
+			message(ERR "unable to write task size, update the client!\n");
+			return -1;
 		}
 	} else if (strcmp(msg, "RET") == 0) {
 		/* returning assignment */
@@ -353,12 +353,13 @@ int read_message(int fd)
 
 		/* read TASK_SIZE */
 		if (read_task_size(fd, &task_size) < 0) {
-			/* TODO */
-			message(WARN "unable to read task size, update the client!\n");
+			message(ERR "unable to read task size, update the client!\n");
+			return -1;
 		}
 
-		if (task_size && task_size != TASK_SIZE) {
+		if (task_size != TASK_SIZE) {
 			message(ERR "TASK_SIZE mismatch!\n");
+			return -1;
 		}
 
 		message(INFO "assignment returned: %lu\n", n);
@@ -378,8 +379,8 @@ int read_message(int fd)
 
 		/* write TASK_SIZE */
 		if (write_task_size(fd) < 0) {
-			/* TODO */
-			message(WARN "unable to write task size, update the client!\n");
+			message(ERR "unable to write task size, update the client!\n");
+			return -1;
 		}
 	} else if (strcmp(msg, "INT") == 0) {
 		/* interrupted or unable to solve, unreserve the assignment */
@@ -394,12 +395,13 @@ int read_message(int fd)
 
 		/* read TASK_SIZE */
 		if (read_task_size(fd, &task_size) < 0) {
-			/* TODO */
-			message(WARN "unable to read task size, update the client!\n");
+			message(ERR "unable to read task size, update the client!\n");
+			return -1;
 		}
 
-		if (task_size && task_size != TASK_SIZE) {
+		if (task_size != TASK_SIZE) {
 			message(ERR "TASK_SIZE mismatch!\n");
+			return -1;
 		}
 
 		message(INFO "assignment interrupted: %lu\n", n);
