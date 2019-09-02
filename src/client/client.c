@@ -198,10 +198,14 @@ int read_task_size(int fd, unsigned long *task_size)
 	return 0;
 }
 
-int write_task_size(int fd)
+int write_task_size(int fd, unsigned long task_size)
 {
 	uint64_t n = TASK_SIZE;
 	uint32_t nh, nl;
+
+	assert( sizeof(unsigned long) == sizeof(uint64_t) );
+
+	n = (uint64_t)task_size;
 
 	nh = (uint32_t)(n >> 32);
 	nl = (uint32_t)(n);
@@ -357,7 +361,7 @@ int run_assignment(unsigned long n, unsigned long task_size)
 	}
 }
 
-int open_socket_and_request_assignment(unsigned long *n, int request_lowest_incomplete)
+int open_socket_and_request_assignment(unsigned long *n, int request_lowest_incomplete, unsigned long *server_task_size)
 {
 	int fd;
 	unsigned long task_size = 0;
@@ -377,6 +381,7 @@ int open_socket_and_request_assignment(unsigned long *n, int request_lowest_inco
 	/* try to read TASK_SIZE */
 	if (read_task_size(fd, &task_size) < 0) {
 		printf("server does not send the TASK_SIZE\n");
+		task_size = TASK_SIZE; /* HACK */
 	}
 
 	if (task_size && task_size != TASK_SIZE) {
@@ -385,10 +390,14 @@ int open_socket_and_request_assignment(unsigned long *n, int request_lowest_inco
 
 	close(fd);
 
+	assert( server_task_size != NULL );
+
+	*server_task_size = task_size;
+
 	return 0;
 }
 
-int open_socket_and_return_assignment(unsigned long n)
+int open_socket_and_return_assignment(unsigned long n, unsigned long task_size)
 {
 	int fd;
 
@@ -404,7 +413,7 @@ int open_socket_and_return_assignment(unsigned long n)
 	}
 
 	/* write TASK_SIZE */
-	if (write_task_size(fd) < 0) {
+	if (write_task_size(fd, task_size) < 0) {
 		printf("server does not receive the TASK_SIZE\n");
 	}
 
@@ -413,7 +422,7 @@ int open_socket_and_return_assignment(unsigned long n)
 	return 0;
 }
 
-int open_socket_and_revoke_assignment(unsigned long n)
+int open_socket_and_revoke_assignment(unsigned long n, unsigned long task_size)
 {
 	int fd;
 
@@ -429,7 +438,7 @@ int open_socket_and_revoke_assignment(unsigned long n)
 	}
 
 	/* write TASK_SIZE */
-	if (write_task_size(fd) < 0) {
+	if (write_task_size(fd, task_size) < 0) {
 		printf("server does not receive the TASK_SIZE\n");
 	}
 
@@ -486,8 +495,9 @@ int main(int argc, char *argv[])
 
 		while (!quit) {
 			unsigned long n;
+			unsigned long task_size = TASK_SIZE;
 
-			while (open_socket_and_request_assignment(&n, request_lowest_incomplete) < 0) {
+			while (open_socket_and_request_assignment(&n, request_lowest_incomplete, &task_size) < 0) {
 				fprintf(stderr, "thread %i: open_socket_and_request_assignment failed\n", tid);
 				fflush(stderr);
 				sleep(SLEEP_INTERVAL);
@@ -496,11 +506,11 @@ int main(int argc, char *argv[])
 			printf("thread %i: got assignment %lu\n", tid, n);
 			fflush(stdout);
 
-			if (run_assignment(n, TASK_SIZE) < 0) {
+			if (run_assignment(n, task_size) < 0) {
 				fprintf(stderr, "thread %i: run_assignment failed\n", tid);
 				fflush(stderr);
 
-				while (open_socket_and_revoke_assignment(n) < 0) {
+				while (open_socket_and_revoke_assignment(n, task_size) < 0) {
 					fprintf(stderr, "thread %i: open_socket_and_revoke_assignment failed\n", tid);
 					fflush(stderr);
 					sleep(SLEEP_INTERVAL);
@@ -508,10 +518,11 @@ int main(int argc, char *argv[])
 
 				if (one_shot)
 					break;
+
 				continue;
 			}
 
-			while (open_socket_and_return_assignment(n) < 0) {
+			while (open_socket_and_return_assignment(n, task_size) < 0) {
 				fprintf(stderr, "thread %i: open_socket_and_return_assignment failed\n", tid);
 				fflush(stderr);
 				sleep(SLEEP_INTERVAL);
