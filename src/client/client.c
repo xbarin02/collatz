@@ -49,13 +49,16 @@ int message(const char *format, ...)
 
 	buf[strlen(buf)-1] = 0;
 
-	n = printf("[%s] ", buf);
+	#pragma omp critical
+	{
+		n = printf("[%s] ", buf);
 
-	va_start(ap, format);
-	n += vprintf(format, ap);
-	va_end(ap);
+		va_start(ap, format);
+		n += vprintf(format, ap);
+		va_end(ap);
 
-	fflush(stdout);
+		fflush(stdout);
+	}
 
 	return n;
 }
