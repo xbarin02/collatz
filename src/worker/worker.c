@@ -220,7 +220,10 @@ int main(int argc, char *argv[])
 		    (usage.ru_utime.tv_sec * 1UL <= ULONG_MAX / 1000000UL) &&
 		    (usage.ru_utime.tv_sec * 1000000UL <= ULONG_MAX - usage.ru_utime.tv_usec)) {
 			usecs = usage.ru_utime.tv_sec * 1000000UL + usage.ru_utime.tv_usec;
-			printf("USERTIME %lu\n", usecs);
+			printf("USERTIME %lu %lu\n", (unsigned long)usage.ru_utime.tv_sec, usecs);
+			fflush(stdout);
+		} else if (sizeof(unsigned long) >= sizeof(time_t)) {
+			printf("USERTIME %lu\n", (unsigned long)usage.ru_utime.tv_sec);
 			fflush(stdout);
 		}
 	}
