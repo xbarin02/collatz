@@ -17,7 +17,6 @@
 #include <time.h>
 #include <stdarg.h>
 
-#define TASK_SIZE 40
 #define SLEEP_INTERVAL 10
 
 const char *servername = "pcbarina2.fit.vutbr.cz";
@@ -403,12 +402,15 @@ int open_socket_and_request_assignment(unsigned long *n, int request_lowest_inco
 
 	/* try to read TASK_SIZE */
 	if (read_task_size(fd, &task_size) < 0) {
-		message(WARN "server does not send the TASK_SIZE, using default\n");
-		task_size = TASK_SIZE;
+		message(ERR "server does not send the TASK_SIZE\n");
+		close(fd);
+		return -1;
 	}
 
-	if (task_size && task_size != TASK_SIZE) {
-		message(ERR "TASK_SIZE mismatch!\n");
+	if (task_size == 0) {
+		message(ERR "server sent zero TASK_SIZE\n");
+		close(fd);
+		return -1;
 	}
 
 	close(fd);
@@ -437,7 +439,9 @@ int open_socket_and_return_assignment(unsigned long n, unsigned long task_size)
 
 	/* write TASK_SIZE */
 	if (write_task_size(fd, task_size) < 0) {
-		message(WARN "server does not receive the TASK_SIZE\n");
+		message(ERR "server does not receive the TASK_SIZE\n");
+		close(fd);
+		return -1;
 	}
 
 	close(fd);
@@ -462,7 +466,9 @@ int open_socket_and_revoke_assignment(unsigned long n, unsigned long task_size)
 
 	/* write TASK_SIZE */
 	if (write_task_size(fd, task_size) < 0) {
-		message(WARN "server does not receive the TASK_SIZE\n");
+		message(ERR "server does not receive the TASK_SIZE\n");
+		close(fd);
+		return -1;
 	}
 
 	close(fd);
@@ -515,7 +521,7 @@ int main(int argc, char *argv[])
 
 		while (!quit) {
 			unsigned long n;
-			unsigned long task_size = TASK_SIZE;
+			unsigned long task_size = 0;
 
 			while (open_socket_and_request_assignment(&n, request_lowest_incomplete, &task_size) < 0) {
 				message(ERR "thread %i: open_socket_and_request_assignment failed\n", tid);
