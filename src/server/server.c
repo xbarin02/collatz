@@ -392,7 +392,7 @@ int read_message(int fd)
 		/* read overflow counter */
 		if (read_overflow_counter(fd, &overflow_counter) < 0) {
 			/* TODO */
-			message(WARN "client doest not send the overflow counter!\n");
+			message(WARN "client does not send the overflow counter!\n");
 		}
 
 		message(INFO "assignment returned: %lu\n", n);
