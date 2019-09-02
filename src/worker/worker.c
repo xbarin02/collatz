@@ -165,8 +165,9 @@ int main(int argc, char *argv[])
 	uint128_t n;
 	uint128_t n_sup;
 	unsigned long task_id = (argc > 1) ? (unsigned long)atol(argv[1]) : 0;
+	unsigned long task_size = TASK_SIZE;
 
-	printf("TASK_SIZE %lu\n", (unsigned long)TASK_SIZE);
+	printf("TASK_SIZE %lu\n", task_size);
 	fflush(stdout);
 	printf("TASK_ID %lu\n", task_id);
 	fflush(stdout);
@@ -174,8 +175,8 @@ int main(int argc, char *argv[])
 	assert( 2*sizeof(unsigned long) == sizeof(uint128_t) && "unsupported memory model" );
 
 	/* n of the form 4n+3 */
-	n     = ( UINT128_C(task_id) << TASK_SIZE ) + 3;
-	n_sup = ( UINT128_C(task_id) << TASK_SIZE ) + 3 + (1UL << TASK_SIZE);
+	n     = ( UINT128_C(task_id) << task_size ) + 3;
+	n_sup = ( UINT128_C(task_id) << task_size ) + 3 + (1UL << task_size);
 
 	printf("RANGE 0x%016lx:%016lx .. 0x%016lx:%016lx\n", (unsigned long)(n>>64), (unsigned long)n, (unsigned long)(n_sup>>64), (unsigned long)n_sup);
 	fflush(stdout);
