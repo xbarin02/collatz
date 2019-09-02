@@ -24,7 +24,7 @@ const uint16_t serverport = 5006;
 
 static volatile int quit = 0;
 
-void sigint_handler(int i)
+void signal_handler(int i)
 {
 	(void)i;
 
@@ -453,11 +453,11 @@ int main(/*int argc, char *argv[]*/)
 	message(INFO "lowest unassigned = %lu\n", (unsigned long)g_lowest_unassigned);
 	message(INFO "lowest incomplete = %lu\n", (unsigned long)g_lowest_incomplete);
 
-	message(INFO "*** all numbers below %lu * 2^%lu are convergent ***\n", g_lowest_incomplete, TASK_SIZE);
-	message(INFO "*** all numbers below %lu * 2^%lu are convergent ***\n", g_lowest_incomplete>>20, TASK_SIZE+20);
+	message(INFO "*** all numbers below %lu * 2^%lu are convergent (blocks) ***\n", g_lowest_incomplete, TASK_SIZE);
+	message(INFO "*** all numbers below %lu * 2^%lu are convergent (superblocks) ***\n", g_lowest_incomplete>>20, TASK_SIZE+20);
 
-	signal(SIGINT, sigint_handler);
-	signal(SIGTERM, sigint_handler);
+	signal(SIGINT, signal_handler);
+	signal(SIGTERM, signal_handler);
 
 	if (fd < 0) {
 		perror("socket");
