@@ -11,6 +11,8 @@
 #include <assert.h>
 #include <limits.h>
 #include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #include "wideint.h"
 
@@ -169,6 +171,8 @@ int main(int argc, char *argv[])
 	unsigned long task_id = 0;
 	unsigned long task_size = TASK_SIZE;
 	int opt;
+	struct rusage usage;
+	unsigned long usecs = 0;
 
 	while ((opt = getopt(argc, argv, "t:")) != -1) {
 		switch (opt) {
@@ -204,6 +208,19 @@ int main(int argc, char *argv[])
 			/* the function cannot verify the convergence using 128-bit arithmetic, use libgmp */
 			mpz_check((unsigned long)(n>>64), (unsigned long)n);
 		}
+	}
+
+	if (getrusage(RUSAGE_SELF, &usage) < 0) {
+		/*  errno is set appropriately. */
+		perror("getrusage");
+	} else {
+		assert( sizeof(unsigned long) >= sizeof(time_t) );
+		assert( sizeof(unsigned long) >= sizeof(suseconds_t) );
+		assert( usage.ru_utime.tv_sec * 1UL <= ULONG_MAX / 1000000UL );
+		assert( usage.ru_utime.tv_sec * 1000000UL <= ULONG_MAX - usage.ru_utime.tv_usec );
+		usecs = usage.ru_utime.tv_sec * 1000000UL + usage.ru_utime.tv_usec;
+		printf("USERTIME %lu\n", usecs);
+		fflush(stdout);
 	}
 
 	printf("OVERFLOW 128 %lu\n", g_overflow_counter);
