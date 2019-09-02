@@ -336,6 +336,7 @@ int read_message(int fd)
 		/* write TASK_SIZE */
 		if (write_task_size(fd) < 0) {
 			/* TODO */
+			message(WARN "unable to write task size, update the client!\n");
 		}
 	} else if (strcmp(msg, "RET") == 0) {
 		/* returning assignment */
@@ -351,6 +352,7 @@ int read_message(int fd)
 		/* read TASK_SIZE */
 		if (read_task_size(fd, &task_size) < 0) {
 			/* TODO */
+			message(WARN "unable to read task size, update the client!\n");
 		}
 
 		if (task_size && task_size != TASK_SIZE) {
@@ -375,6 +377,7 @@ int read_message(int fd)
 		/* write TASK_SIZE */
 		if (write_task_size(fd) < 0) {
 			/* TODO */
+			message(WARN "unable to write task size, update the client!\n");
 		}
 	} else if (strcmp(msg, "INT") == 0) {
 		/* interrupted or unable to solve, unreserve the assignment */
@@ -390,6 +393,7 @@ int read_message(int fd)
 		/* read TASK_SIZE */
 		if (read_task_size(fd, &task_size) < 0) {
 			/* TODO */
+			message(WARN "unable to read task size, update the client!\n");
 		}
 
 		if (task_size && task_size != TASK_SIZE) {
