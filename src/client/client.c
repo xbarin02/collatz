@@ -200,7 +200,7 @@ int read_task_size(int fd, unsigned long *task_size)
 
 int write_task_size(int fd, unsigned long task_size)
 {
-	uint64_t n = TASK_SIZE;
+	uint64_t n;
 	uint32_t nh, nl;
 
 	assert( sizeof(unsigned long) == sizeof(uint64_t) );
@@ -380,8 +380,8 @@ int open_socket_and_request_assignment(unsigned long *n, int request_lowest_inco
 
 	/* try to read TASK_SIZE */
 	if (read_task_size(fd, &task_size) < 0) {
-		printf("server does not send the TASK_SIZE\n");
-		task_size = TASK_SIZE; /* HACK */
+		printf("WARNING: server does not send the TASK_SIZE, using default\n");
+		task_size = TASK_SIZE;
 	}
 
 	if (task_size && task_size != TASK_SIZE) {
