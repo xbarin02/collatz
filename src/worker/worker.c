@@ -210,6 +210,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	/* the total amount of time spent executing in user mode, expressed in a timeval structure (seconds plus microseconds) */
 	if (getrusage(RUSAGE_SELF, &usage) < 0) {
 		/*  errno is set appropriately. */
 		perror("getrusage");
