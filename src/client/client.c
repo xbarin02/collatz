@@ -14,6 +14,8 @@
 #include <string.h>
 #include <errno.h>
 #include <signal.h>
+#include <time.h>
+#include <stdarg.h>
 
 #define TASK_SIZE 40
 #define SLEEP_INTERVAL 10
@@ -30,6 +32,33 @@ void signal_handler(int i)
 	(void)i;
 
 	quit = 1;
+}
+
+#define ERR "ERROR: "
+#define WARN "WARNING: "
+#define DBG "DEBUG: "
+#define INFO "INFO: "
+
+int message(const char *format, ...)
+{
+	va_list ap;
+	time_t now = time(NULL);
+	char buf[26];
+	int n;
+
+	ctime_r(&now, buf);
+
+	buf[strlen(buf)-1] = 0;
+
+	n = printf("[%s] ", buf);
+
+	va_start(ap, format);
+	n += vprintf(format, ap);
+	va_end(ap);
+
+	fflush(stdout);
+
+	return n;
 }
 
 int threads_get_thread_id()
@@ -293,9 +322,6 @@ int run_assignment(unsigned long n, unsigned long task_size)
 	}
 
 	/* spawn sub-process */
-#if 0
-	r = system(buffer);
-#else
 	/* https://www.gnu.org/software/libc/manual/html_mono/libc.html#Pipe-to-a-Subprocess */
 
 	output = popen(buffer, "r");
@@ -320,16 +346,14 @@ int run_assignment(unsigned long n, unsigned long task_size)
 			unsigned long worker_task_size = (unsigned long)atol(ln_part[1]);
 
 			if (worker_task_size != task_size) {
-				fprintf(stderr, "worker uses different TASK_SIZE (%lu), whereas %lu is required\n", worker_task_size, task_size);
-				fflush(stderr);
+				message(ERR "worker uses different TASK_SIZE (%lu), whereas %lu is required\n", worker_task_size, task_size);
 				return -1;
 			}
 		} else if (c == 2 && strcmp(ln_part[0], "TASK_ID") == 0) {
 			unsigned long task_id = (unsigned long)atol(ln_part[1]);
 
 			if (n != task_id) {
-				fprintf(stderr, "client <---> worker communication problem!\n");
-				fflush(stderr);
+				message(ERR "client <---> worker communication problem!\n");
 				return -1;
 			}
 		} else if (c == 3 && strcmp(ln_part[0], "OVERFLOW") == 0) {
@@ -346,7 +370,6 @@ int run_assignment(unsigned long n, unsigned long task_size)
 	}
 
 	r = pclose(output);
-#endif
 
 	if (r == -1) {
 		return -1;
@@ -380,12 +403,12 @@ int open_socket_and_request_assignment(unsigned long *n, int request_lowest_inco
 
 	/* try to read TASK_SIZE */
 	if (read_task_size(fd, &task_size) < 0) {
-		printf("WARNING: server does not send the TASK_SIZE, using default\n");
+		message(WARN "server does not send the TASK_SIZE, using default\n");
 		task_size = TASK_SIZE;
 	}
 
 	if (task_size && task_size != TASK_SIZE) {
-		printf("TASK_SIZE mismatch!\n");
+		message(ERR "TASK_SIZE mismatch!\n");
 	}
 
 	close(fd);
@@ -414,7 +437,7 @@ int open_socket_and_return_assignment(unsigned long n, unsigned long task_size)
 
 	/* write TASK_SIZE */
 	if (write_task_size(fd, task_size) < 0) {
-		printf("server does not receive the TASK_SIZE\n");
+		message(WARN "server does not receive the TASK_SIZE\n");
 	}
 
 	close(fd);
@@ -439,7 +462,7 @@ int open_socket_and_revoke_assignment(unsigned long n, unsigned long task_size)
 
 	/* write TASK_SIZE */
 	if (write_task_size(fd, task_size) < 0) {
-		printf("server does not receive the TASK_SIZE\n");
+		message(WARN "server does not receive the TASK_SIZE\n");
 	}
 
 	close(fd);
@@ -463,7 +486,7 @@ int main(int argc, char *argv[])
 				request_lowest_incomplete = 1;
 				break;
 			default:
-				fprintf(stderr, "Usage: %s [-1] num_threads\n", argv[0]);
+				message(ERR "Usage: %s [-1] num_threads\n", argv[0]);
 				return EXIT_FAILURE;
 		}
 	}
@@ -473,13 +496,10 @@ int main(int argc, char *argv[])
 	assert(threads > 0);
 
 	if (one_shot) {
-		printf("one shot mode activated!\n");
+		message(INFO "one shot mode activated!\n");
 	}
 
-	printf("starting %u worker threads...\n", threads);
-
-	fflush(stdout);
-	fflush(stderr);
+	message(INFO "starting %u worker threads...\n", threads);
 
 	signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
@@ -491,28 +511,24 @@ int main(int argc, char *argv[])
 	{
 		int tid = threads_get_thread_id();
 
-		printf("thread %i: started\n", tid);
+		message(INFO "thread %i: started\n", tid);
 
 		while (!quit) {
 			unsigned long n;
 			unsigned long task_size = TASK_SIZE;
 
 			while (open_socket_and_request_assignment(&n, request_lowest_incomplete, &task_size) < 0) {
-				fprintf(stderr, "thread %i: open_socket_and_request_assignment failed\n", tid);
-				fflush(stderr);
+				message(ERR "thread %i: open_socket_and_request_assignment failed\n", tid);
 				sleep(SLEEP_INTERVAL);
 			}
 
-			printf("thread %i: got assignment %lu\n", tid, n);
-			fflush(stdout);
+			message(INFO "thread %i: got assignment %lu\n", tid, n);
 
 			if (run_assignment(n, task_size) < 0) {
-				fprintf(stderr, "thread %i: run_assignment failed\n", tid);
-				fflush(stderr);
+				message(ERR "thread %i: run_assignment failed\n", tid);
 
 				while (open_socket_and_revoke_assignment(n, task_size) < 0) {
-					fprintf(stderr, "thread %i: open_socket_and_revoke_assignment failed\n", tid);
-					fflush(stderr);
+					message(ERR "thread %i: open_socket_and_revoke_assignment failed\n", tid);
 					sleep(SLEEP_INTERVAL);
 				}
 
@@ -523,8 +539,7 @@ int main(int argc, char *argv[])
 			}
 
 			while (open_socket_and_return_assignment(n, task_size) < 0) {
-				fprintf(stderr, "thread %i: open_socket_and_return_assignment failed\n", tid);
-				fflush(stderr);
+				message(ERR "thread %i: open_socket_and_return_assignment failed\n", tid);
 				sleep(SLEEP_INTERVAL);
 			}
 
@@ -533,7 +548,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	printf("client has been halted\n");
+	message(INFO "client has been halted\n");
 
 	return EXIT_SUCCESS;
 }
