@@ -362,6 +362,8 @@ int read_message(int fd)
 			return -1;
 		}
 
+		/* TODO read overflow counter */
+
 		message(INFO "assignment returned: %lu\n", n);
 
 		set_complete(n);
