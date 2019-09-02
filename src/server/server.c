@@ -395,7 +395,7 @@ int read_message(int fd)
 			message(WARN "client does not send the overflow counter!\n");
 		}
 
-		message(INFO "assignment returned: %lu\n", n);
+		message(INFO "assignment returned: %lu (%lu overflows)\n", n, overflow_counter);
 
 		set_complete(n);
 	} else if (strcmp(msg, "req") == 0) {
