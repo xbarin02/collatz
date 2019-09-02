@@ -6,8 +6,8 @@
 #$ -m a
 #$ -o /dev/null
 #$ -e /dev/null
-#$ -q all.q@@stable,all.q@@gpu
-#$ -tc 2000
+#$ -q all.q@@stable
+#$ -tc 1000
 
 set -u
 set -e
