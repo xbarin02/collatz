@@ -494,10 +494,11 @@ int main(/*int argc, char *argv[]*/)
 					break;
 			}
 		}
-
+#if 0
 		if (sockaddr_len >= sizeof sockaddr_in && sockaddr_in.sin_family == AF_INET) {
 			message(INFO "client IPv4 %s\n", inet_ntoa(sockaddr_in.sin_addr));
 		}
+#endif
 
 		if (read_message(cl_fd) < 0) {
 			message(ERR "client <--> server communication failure!\n");
