@@ -4,11 +4,13 @@
  *
  * @author David Barina <ibarina@fit.vutbr.cz>
  */
+#define _XOPEN_SOURCE
 #include <stdio.h>
 #include <gmp.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <limits.h>
+#include <unistd.h>
 
 #include "wideint.h"
 
@@ -164,8 +166,22 @@ int main(int argc, char *argv[])
 {
 	uint128_t n;
 	uint128_t n_sup;
-	unsigned long task_id = (argc > 1) ? (unsigned long)atol(argv[1]) : 0;
+	unsigned long task_id = 0;
 	unsigned long task_size = TASK_SIZE;
+	int opt;
+
+	while ((opt = getopt(argc, argv, "t:")) != -1) {
+		switch (opt) {
+			case 't':
+				task_size = (unsigned long)atol(optarg);
+				break;
+			default:
+				fprintf(stderr, "Usage: %s [-t task_size] task_id\n", argv[0]);
+				return EXIT_FAILURE;
+		}
+	}
+
+	task_id = (optind < argc) ? (unsigned long)atol(argv[optind]) : 0;
 
 	printf("TASK_SIZE %lu\n", task_size);
 	fflush(stdout);
