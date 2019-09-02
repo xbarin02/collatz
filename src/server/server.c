@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <netdb.h>
 #include <strings.h>
@@ -482,13 +484,19 @@ int main(/*int argc, char *argv[]*/)
 	message(INFO "listening...\n");
 
 	while (1) {
-		int cl_fd = accept(fd, NULL, NULL);
+		struct sockaddr_in sockaddr_in;
+		socklen_t sockaddr_len = sizeof sockaddr_in;
+		int cl_fd = accept(fd, &sockaddr_in, &sockaddr_len);
 
 		if (-1 == cl_fd) {
 			if (errno == EINTR) {
 				if (quit)
 					break;
 			}
+		}
+
+		if (sockaddr_len >= sizeof sockaddr_in && sockaddr_in.sin_family == AF_INET) {
+			message(INFO "client IPv4 %s\n", inet_ntoa(sockaddr_in.sin_addr));
 		}
 
 		if (read_message(cl_fd) < 0) {
