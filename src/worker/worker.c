@@ -214,13 +214,14 @@ int main(int argc, char *argv[])
 		/*  errno is set appropriately. */
 		perror("getrusage");
 	} else {
-		assert( sizeof(unsigned long) >= sizeof(time_t) );
-		assert( sizeof(unsigned long) >= sizeof(suseconds_t) );
-		assert( usage.ru_utime.tv_sec * 1UL <= ULONG_MAX / 1000000UL );
-		assert( usage.ru_utime.tv_sec * 1000000UL <= ULONG_MAX - usage.ru_utime.tv_usec );
-		usecs = usage.ru_utime.tv_sec * 1000000UL + usage.ru_utime.tv_usec;
-		printf("USERTIME %lu\n", usecs);
-		fflush(stdout);
+		if ((sizeof(unsigned long) >= sizeof(time_t)) &&
+		    (sizeof(unsigned long) >= sizeof(suseconds_t)) &&
+		    (usage.ru_utime.tv_sec * 1UL <= ULONG_MAX / 1000000UL) &&
+		    (usage.ru_utime.tv_sec * 1000000UL <= ULONG_MAX - usage.ru_utime.tv_usec)) {
+			usecs = usage.ru_utime.tv_sec * 1000000UL + usage.ru_utime.tv_usec;
+			printf("USERTIME %lu\n", usecs);
+			fflush(stdout);
+		}
 	}
 
 	printf("OVERFLOW 128 %lu\n", g_overflow_counter);
