@@ -16,6 +16,8 @@
 #include <signal.h>
 #include <time.h>
 #include <stdarg.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #define SLEEP_INTERVAL 10
 
@@ -595,6 +597,25 @@ int open_socket_and_revoke_assignment(unsigned long n, unsigned long task_size)
 	return 0;
 }
 
+int open_urandom_and_read_clid(unsigned long *clid)
+{
+	int fd = open("/dev/urandom", O_RDONLY);
+
+	if (fd < 0) {
+		return -1;
+	}
+
+	assert(clid != NULL);
+
+	if (read_(fd, (char *)clid, sizeof(unsigned long)) < 0) {
+		return -1;
+	}
+
+	close(fd);
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	int threads;
@@ -635,8 +656,15 @@ int main(int argc, char *argv[])
 	#pragma omp parallel num_threads(threads)
 	{
 		int tid = threads_get_thread_id();
+		unsigned long clid = 0;
 
 		message(INFO "thread %i: started\n", tid);
+
+		if (open_urandom_and_read_clid(&clid) < 0) {
+			message(WARN "unable to generate random client ID");
+		}
+
+		message(INFO "client ID: 0x%16lx\n", clid);
 
 		while (!quit) {
 			unsigned long n;
