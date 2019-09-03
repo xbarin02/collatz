@@ -4,4 +4,4 @@ git pull
 
 cd
 
-./$(hostname -s)/bootstrap.sh
+./collatz-$(hostname -s)/bootstrap.sh
