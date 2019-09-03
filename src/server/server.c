@@ -369,6 +369,11 @@ int read_message(int fd)
 			return -1;
 		}
 
+		if (user_time == 0 && check_sum == 0) {
+			message(ERR "broken client, discarting the result!\n");
+			return -1;
+		}
+
 		message(INFO "assignment returned: %" PRIu64 " (%" PRIu64 " overflows, time %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ", checksum %" PRIu64 ")\n",
 			n, overflow_counter, user_time/60/60, user_time/60%60, user_time%60, check_sum);
 
