@@ -18,6 +18,7 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <inttypes.h>
 
 #define SLEEP_INTERVAL 10
 
@@ -166,13 +167,6 @@ int read_uint64(int fd, uint64_t *nptr)
 	return 0;
 }
 
-int read_ul(int fd, unsigned long *nptr)
-{
-	assert( sizeof(unsigned long) == sizeof(uint64_t) );
-
-	return read_uint64(fd, (uint64_t *)nptr);
-}
-
 int write_uint64(int fd, uint64_t n)
 {
 	uint32_t nh, nl;
@@ -194,6 +188,15 @@ int write_uint64(int fd, uint64_t n)
 	return 0;
 }
 
+/* DEPRECATED */
+int read_ul(int fd, unsigned long *nptr)
+{
+	assert( sizeof(unsigned long) == sizeof(uint64_t) );
+
+	return read_uint64(fd, (uint64_t *)nptr);
+}
+
+/* DEPRECATED */
 int write_ul(int fd, unsigned long n)
 {
 	assert( sizeof(unsigned long) == sizeof(uint64_t) );
@@ -211,7 +214,7 @@ int write_assignment_no(int fd, uint64_t n)
 	return write_uint64(fd, n);
 }
 
-int request_assignment(int fd, unsigned long *n, int request_lowest_incomplete)
+int request_assignment(int fd, uint64_t *n, int request_lowest_incomplete)
 {
 	if (request_lowest_incomplete) {
 		if (write_(fd, "req", 4) < 0) {
@@ -223,64 +226,59 @@ int request_assignment(int fd, unsigned long *n, int request_lowest_incomplete)
 		}
 	}
 
-	assert( sizeof(uint64_t) == sizeof(unsigned long) );
-
-	if (read_assignment_no(fd, (uint64_t *)n) < 0) {
+	if (read_assignment_no(fd, n) < 0) {
 		return -1;
 	}
 
 	return 0;
 }
 
-int read_task_size(int fd, unsigned long *task_size)
+int read_task_size(int fd, uint64_t *task_size)
 {
-	return read_ul(fd, task_size);
+	return read_uint64(fd, task_size);
 }
 
-int write_task_size(int fd, unsigned long task_size)
+int write_task_size(int fd, uint64_t task_size)
 {
-	return write_ul(fd, task_size);
+	return write_uint64(fd, task_size);
 }
 
-int write_overflow_counter(int fd, unsigned long overflow_counter)
+int write_overflow_counter(int fd, uint64_t overflow_counter)
 {
-	return write_ul(fd, overflow_counter);
+	return write_uint64(fd, overflow_counter);
 }
 
-int write_user_time(int fd, unsigned long user_time)
+int write_user_time(int fd, uint64_t user_time)
 {
-	return write_ul(fd, user_time);
+	return write_uint64(fd, user_time);
 }
 
-int write_check_sum(int fd, unsigned long check_sum)
+int write_check_sum(int fd, uint64_t check_sum)
 {
-	return write_ul(fd, check_sum);
+	return write_uint64(fd, check_sum);
 }
 
-int return_assignment(int fd, unsigned long n)
+int return_assignment(int fd, uint64_t n)
 {
 	if (write_(fd, "RET", 4) < 0) {
 		return -1;
 	}
 
-	assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
-	if (write_assignment_no(fd, (uint64_t)n) < 0) {
+	if (write_assignment_no(fd, n) < 0) {
 		return -1;
 	}
 
 	return 0;
 }
 
-int revoke_assignment(int fd, unsigned long n)
+int revoke_assignment(int fd, uint64_t n)
 {
 	if (write_(fd, "INT", 4) < 0) {
 		return -1;
 	}
 
-	assert( sizeof(uint64_t) == sizeof(unsigned long) );
-
-	if (write_assignment_no(fd, (uint64_t)n) < 0) {
+	if (write_assignment_no(fd, n) < 0) {
 		return -1;
 	}
 
@@ -313,12 +311,20 @@ int open_socket_to_server()
 	return fd;
 }
 
+/* DEPRECATED */
 static unsigned long atoul(const char *nptr)
 {
 	return strtoul(nptr, NULL, 10);
 }
 
-int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_overflow_counter, unsigned long *p_user_time, unsigned long *p_check_sum)
+static uint64_t atou64(const char *nptr)
+{
+	assert( sizeof(uint64_t) == sizeof(unsigned long) );
+
+	return (uint64_t)atoul(nptr);
+}
+
+int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_user_time, uint64_t *p_check_sum)
 {
 	int r;
 	char buffer[4096];
@@ -326,7 +332,7 @@ int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_ov
 	char ln_part[4][64];
 	FILE *output;
 
-	if (sprintf(buffer, "%s %lu", taskpath, n) < 0) {
+	if (sprintf(buffer, "%s %" PRIu64, taskpath, n) < 0) {
 		return -1;
 	}
 
@@ -352,38 +358,44 @@ int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_ov
 		ln_part[3][63] = 0;
 
 		if (c == 2 && strcmp(ln_part[0], "TASK_SIZE") == 0) {
-			unsigned long worker_task_size = atoul(ln_part[1]);
+			uint64_t worker_task_size = atou64(ln_part[1]);
 
 			if (worker_task_size != task_size) {
-				message(ERR "worker uses different TASK_SIZE (%lu), whereas %lu is required\n", worker_task_size, task_size);
+				message(ERR "worker uses different TASK_SIZE (%" PRIu64 "), whereas %" PRIu64 " is required\n", worker_task_size, task_size);
 				return -1;
 			}
 		} else if (c == 2 && strcmp(ln_part[0], "TASK_ID") == 0) {
-			unsigned long task_id = atoul(ln_part[1]);
+			uint64_t task_id = atou64(ln_part[1]);
 
 			if (n != task_id) {
 				message(ERR "client <---> worker communication problem!\n");
 				return -1;
 			}
 		} else if (c == 3 && strcmp(ln_part[0], "OVERFLOW") == 0) {
-			unsigned long size = atoul(ln_part[1]);
-			unsigned long overflow_counter = atoul(ln_part[2]);
+			uint64_t size = atou64(ln_part[1]);
+			uint64_t overflow_counter = atou64(ln_part[2]);
 
 			if (size == 128) {
 				assert(p_overflow_counter != NULL);
 				*p_overflow_counter = overflow_counter;
 			}
 		} else if (c == 2 && strcmp(ln_part[0], "USERTIME") == 0) {
-			unsigned long user_time = atoul(ln_part[1]);
+			uint64_t user_time = atou64(ln_part[1]);
+
 			assert(p_user_time != NULL);
+
 			*p_user_time = user_time;
 		} else if (c == 3 && strcmp(ln_part[0], "USERTIME") == 0) {
-			unsigned long user_time = atoul(ln_part[1]);
+			uint64_t user_time = atou64(ln_part[1]);
+
 			assert(p_user_time != NULL);
+
 			*p_user_time = user_time;
 		} else if (c == 2 && strcmp(ln_part[0], "CHECKSUM") == 0) {
-			unsigned long check_sum = atoul(ln_part[1]);
+			uint64_t check_sum = atou64(ln_part[1]);
+
 			assert(p_check_sum != NULL);
+
 			*p_check_sum = check_sum;
 		} else if (c == 1 && strcmp(ln_part[0], "HALTED") == 0) {
 			/* this was expected */
@@ -406,10 +418,10 @@ int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_ov
 	}
 }
 
-int open_socket_and_request_assignment(unsigned long *n, int request_lowest_incomplete, unsigned long *server_task_size)
+int open_socket_and_request_assignment(uint64_t *n, int request_lowest_incomplete, uint64_t *server_task_size)
 {
 	int fd;
-	unsigned long task_size = 0;
+	uint64_t task_size = 0;
 
 	fd = open_socket_to_server();
 
@@ -423,7 +435,6 @@ int open_socket_and_request_assignment(unsigned long *n, int request_lowest_inco
 		return -1;
 	}
 
-	/* try to read TASK_SIZE */
 	if (read_task_size(fd, &task_size) < 0) {
 		message(ERR "server does not send the TASK_SIZE\n");
 		close(fd);
@@ -438,14 +449,14 @@ int open_socket_and_request_assignment(unsigned long *n, int request_lowest_inco
 
 	close(fd);
 
-	assert( server_task_size != NULL );
+	assert(server_task_size != NULL);
 
 	*server_task_size = task_size;
 
 	return 0;
 }
 
-int open_socket_and_return_assignment(unsigned long n, unsigned long task_size, unsigned long overflow_counter, unsigned long user_time,  unsigned long check_sum)
+int open_socket_and_return_assignment(uint64_t n, uint64_t task_size, uint64_t overflow_counter, uint64_t user_time, uint64_t check_sum)
 {
 	int fd;
 
@@ -460,7 +471,6 @@ int open_socket_and_return_assignment(unsigned long n, unsigned long task_size, 
 		return -1;
 	}
 
-	/* write TASK_SIZE */
 	if (write_task_size(fd, task_size) < 0) {
 		message(ERR "server does not receive the TASK_SIZE\n");
 		close(fd);
@@ -473,14 +483,12 @@ int open_socket_and_return_assignment(unsigned long n, unsigned long task_size, 
 		return -1;
 	}
 
-	/* write user_time */
 	if (write_user_time(fd, user_time) < 0) {
 		message(ERR "server does not receive the user time\n");
 		close(fd);
 		return -1;
 	}
 
-	/* write check sum */
 	if (write_check_sum(fd, check_sum) < 0) {
 		message(ERR "server does not receive the check sum\n");
 		close(fd);
@@ -492,7 +500,7 @@ int open_socket_and_return_assignment(unsigned long n, unsigned long task_size, 
 	return 0;
 }
 
-int open_socket_and_revoke_assignment(unsigned long n, unsigned long task_size)
+int open_socket_and_revoke_assignment(uint64_t n, uint64_t task_size)
 {
 	int fd;
 
@@ -507,7 +515,6 @@ int open_socket_and_revoke_assignment(unsigned long n, unsigned long task_size)
 		return -1;
 	}
 
-	/* write TASK_SIZE */
 	if (write_task_size(fd, task_size) < 0) {
 		message(ERR "server does not receive the TASK_SIZE\n");
 		close(fd);
@@ -519,7 +526,7 @@ int open_socket_and_revoke_assignment(unsigned long n, unsigned long task_size)
 	return 0;
 }
 
-int open_urandom_and_read_clid(unsigned long *clid)
+int open_urandom_and_read_clid(uint64_t *clid)
 {
 	int fd = open("/dev/urandom", O_RDONLY);
 
@@ -529,7 +536,7 @@ int open_urandom_and_read_clid(unsigned long *clid)
 
 	assert(clid != NULL);
 
-	if (read_(fd, (char *)clid, sizeof(unsigned long)) < 0) {
+	if (read_(fd, (char *)clid, sizeof(uint64_t)) < 0) {
 		return -1;
 	}
 
@@ -567,7 +574,7 @@ int main(int argc, char *argv[])
 		message(INFO "one shot mode activated!\n");
 	}
 
-	message(INFO "starting %u worker threads...\n", threads);
+	message(INFO "starting %i worker threads...\n", threads);
 
 	signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
@@ -578,7 +585,7 @@ int main(int argc, char *argv[])
 	#pragma omp parallel num_threads(threads)
 	{
 		int tid = threads_get_thread_id();
-		unsigned long clid = 0;
+		uint64_t clid = 0;
 
 		message(INFO "thread %i: started\n", tid);
 
@@ -586,21 +593,21 @@ int main(int argc, char *argv[])
 			message(WARN "unable to generate random client ID");
 		}
 
-		message(INFO "client ID: 0x%16lx\n", clid);
+		message(INFO "client ID: 0x%16" PRIx64 "\n", clid);
 
 		while (!quit) {
-			unsigned long n;
-			unsigned long task_size = 0;
-			unsigned long overflow_counter = 0;
-			unsigned long user_time = 0;
-			unsigned long check_sum = 0;
+			uint64_t n;
+			uint64_t task_size = 0;
+			uint64_t overflow_counter = 0;
+			uint64_t user_time = 0;
+			uint64_t check_sum = 0;
 
 			while (open_socket_and_request_assignment(&n, request_lowest_incomplete, &task_size) < 0) {
 				message(ERR "thread %i: open_socket_and_request_assignment failed\n", tid);
 				sleep(SLEEP_INTERVAL);
 			}
 
-			message(INFO "thread %i: got assignment %lu\n", tid, n);
+			message(INFO "thread %i: got assignment %" PRIu64 "\n", tid, n);
 
 			if (run_assignment(n, task_size, &overflow_counter, &user_time, &check_sum) < 0) {
 				message(ERR "thread %i: run_assignment failed\n", tid);
@@ -621,7 +628,7 @@ int main(int argc, char *argv[])
 				sleep(SLEEP_INTERVAL);
 			}
 
-			message(INFO "thread %i: returned assignment %lu\n", tid, n);
+			message(INFO "thread %i: returned assignment %" PRIu64 "\n", tid, n);
 
 			if (one_shot)
 				break;
