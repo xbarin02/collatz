@@ -12,7 +12,7 @@ e=0
 n=1
 
 while :; do
-	R=$(\time ./worker -t $t $n 2>&1 | grep "user" | sed 's/user.*//')
+	R=$(bc <<< "scale=6; $(./worker -t $t | grep USERTIME | cut -d' ' -f3) / 1000000")
 	echo -e "$e\t$n\t$R"
 	echo -e "$e\t$n\t$R" >> "$PLOTFILE"
 	n=$(($n * 2))
