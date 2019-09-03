@@ -204,6 +204,11 @@ int write_ul(int fd, unsigned long n)
 	return write_uint64(fd, (uint64_t)n);
 }
 
+int write_clid(int fd, uint64_t clid)
+{
+	return write_uint64(fd, clid);
+}
+
 int read_assignment_no(int fd, uint64_t *n)
 {
 	return read_uint64(fd, n);
@@ -214,7 +219,7 @@ int write_assignment_no(int fd, uint64_t n)
 	return write_uint64(fd, n);
 }
 
-int request_assignment(int fd, uint64_t *n, int request_lowest_incomplete)
+int request_assignment(int fd, uint64_t *n, int request_lowest_incomplete, uint64_t clid)
 {
 	if (request_lowest_incomplete) {
 		if (write_(fd, "req", 4) < 0) {
@@ -224,6 +229,10 @@ int request_assignment(int fd, uint64_t *n, int request_lowest_incomplete)
 		if (write_(fd, "REQ", 4) < 0) {
 			return -1;
 		}
+	}
+
+	if (write_clid(fd, clid) < 0) {
+		message(WARN "server does not receive client ID\n");
 	}
 
 	if (read_assignment_no(fd, n) < 0) {
@@ -263,7 +272,6 @@ int return_assignment(int fd, uint64_t n)
 	if (write_(fd, "RET", 4) < 0) {
 		return -1;
 	}
-
 
 	if (write_assignment_no(fd, n) < 0) {
 		return -1;
@@ -424,7 +432,7 @@ int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter,
 	}
 }
 
-int open_socket_and_request_assignment(uint64_t *n, int request_lowest_incomplete, uint64_t *server_task_size)
+int open_socket_and_request_assignment(uint64_t *n, int request_lowest_incomplete, uint64_t *server_task_size, uint64_t clid)
 {
 	int fd;
 	uint64_t task_size = 0;
@@ -436,7 +444,7 @@ int open_socket_and_request_assignment(uint64_t *n, int request_lowest_incomplet
 	}
 
 	/* give me the assignment */
-	if (request_assignment(fd, n, request_lowest_incomplete) < 0) {
+	if (request_assignment(fd, n, request_lowest_incomplete, clid) < 0) {
 		close(fd);
 		return -1;
 	}
@@ -462,7 +470,7 @@ int open_socket_and_request_assignment(uint64_t *n, int request_lowest_incomplet
 	return 0;
 }
 
-int open_socket_and_return_assignment(uint64_t n, uint64_t task_size, uint64_t overflow_counter, uint64_t user_time, uint64_t check_sum)
+int open_socket_and_return_assignment(uint64_t n, uint64_t task_size, uint64_t overflow_counter, uint64_t user_time, uint64_t check_sum, uint64_t clid)
 {
 	int fd;
 
@@ -501,12 +509,16 @@ int open_socket_and_return_assignment(uint64_t n, uint64_t task_size, uint64_t o
 		return -1;
 	}
 
+	if (write_clid(fd, clid) < 0) {
+		message(WARN "server does not receive client ID\n");
+	}
+
 	close(fd);
 
 	return 0;
 }
 
-int open_socket_and_revoke_assignment(uint64_t n, uint64_t task_size)
+int open_socket_and_revoke_assignment(uint64_t n, uint64_t task_size, uint64_t clid)
 {
 	int fd;
 
@@ -525,6 +537,10 @@ int open_socket_and_revoke_assignment(uint64_t n, uint64_t task_size)
 		message(ERR "server does not receive the TASK_SIZE\n");
 		close(fd);
 		return -1;
+	}
+
+	if (write_clid(fd, clid) < 0) {
+		message(WARN "server does not receive client ID\n");
 	}
 
 	close(fd);
@@ -608,7 +624,7 @@ int main(int argc, char *argv[])
 			uint64_t user_time = 0;
 			uint64_t check_sum = 0;
 
-			while (open_socket_and_request_assignment(&n, request_lowest_incomplete, &task_size) < 0) {
+			while (open_socket_and_request_assignment(&n, request_lowest_incomplete, &task_size, clid) < 0) {
 				message(ERR "thread %i: open_socket_and_request_assignment failed\n", tid);
 				sleep(SLEEP_INTERVAL);
 			}
@@ -618,7 +634,7 @@ int main(int argc, char *argv[])
 			if (run_assignment(n, task_size, &overflow_counter, &user_time, &check_sum) < 0) {
 				message(ERR "thread %i: run_assignment failed\n", tid);
 
-				while (open_socket_and_revoke_assignment(n, task_size) < 0) {
+				while (open_socket_and_revoke_assignment(n, task_size, clid) < 0) {
 					message(ERR "thread %i: open_socket_and_revoke_assignment failed\n", tid);
 					sleep(SLEEP_INTERVAL);
 				}
@@ -629,7 +645,7 @@ int main(int argc, char *argv[])
 				continue;
 			}
 
-			while (open_socket_and_return_assignment(n, task_size, overflow_counter, user_time, check_sum) < 0) {
+			while (open_socket_and_return_assignment(n, task_size, overflow_counter, user_time, check_sum, clid) < 0) {
 				message(ERR "thread %i: open_socket_and_return_assignment failed\n", tid);
 				sleep(SLEEP_INTERVAL);
 			}
