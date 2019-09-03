@@ -640,17 +640,23 @@ int open_socket_and_return_assignment(unsigned long n, unsigned long task_size, 
 	}
 
 	if (write_overflow_counter(fd, overflow_counter) < 0) {
-		message(WARN "server does not receive the overflow counter\n");
+		message(ERR "server does not receive the overflow counter\n");
+		close(fd);
+		return -1;
 	}
 
 	/* write user_time */
 	if (write_user_time(fd, user_time) < 0) {
-		message(WARN "server does not receive the user time\n");
+		message(ERR "server does not receive the user time\n");
+		close(fd);
+		return -1;
 	}
 
 	/* write check sum */
 	if (write_check_sum(fd, check_sum) < 0) {
-		message(WARN "server does not receive the check sum\n");
+		message(ERR "server does not receive the check sum\n");
+		close(fd);
+		return -1;
 	}
 
 	close(fd);
