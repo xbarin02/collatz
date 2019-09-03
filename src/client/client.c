@@ -281,6 +281,32 @@ int write_overflow_counter(int fd, unsigned long overflow_counter)
 	return 0;
 }
 
+int write_user_time(int fd, unsigned long user_time)
+{
+	uint64_t n;
+	uint32_t nh, nl;
+
+	assert( sizeof(unsigned long) == sizeof(uint64_t) );
+
+	n = (uint64_t)user_time;
+
+	nh = (uint32_t)(n >> 32);
+	nl = (uint32_t)(n);
+
+	nh = htonl(nh);
+	nl = ntohl(nl);
+
+	if (write_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (write_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+
+	return 0;
+}
+
 int return_assignment(int fd, unsigned long n)
 {
 	if (write_(fd, "RET", 4) < 0) {
@@ -337,7 +363,7 @@ int open_socket_to_server()
 	return fd;
 }
 
-int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_overflow_counter)
+int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_overflow_counter, unsigned long *p_user_time)
 {
 	int r;
 	char buffer[4096];
@@ -395,11 +421,15 @@ int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_ov
 		} else if (c == 2 && strcmp(ln_part[0], "USERTIME") == 0) {
 			unsigned long user_time = (unsigned long)atol(ln_part[1]);
 			/* TODO */
-			message(DBG "user time: %lu secs\n", user_time);
+			message(DBG "user time: %lu:%lu\n", user_time/60, user_time%60);
+			assert(p_user_time != NULL);
+			*p_user_time = user_time;
 		} else if (c == 3 && strcmp(ln_part[0], "USERTIME") == 0) {
 			unsigned long user_time = (unsigned long)atol(ln_part[1]);
 			/* TODO */
-			message(DBG "user time: %lu secs\n", user_time);
+			message(DBG "user time: %lu:%lu\n", user_time/60, user_time%60);
+			assert(p_user_time != NULL);
+			*p_user_time = user_time;
 		} else if (c == 1 && strcmp(ln_part[0], "HALTED") == 0) {
 			/* this was expected */
 			(void)0;
@@ -460,7 +490,7 @@ int open_socket_and_request_assignment(unsigned long *n, int request_lowest_inco
 	return 0;
 }
 
-int open_socket_and_return_assignment(unsigned long n, unsigned long task_size, unsigned long overflow_counter)
+int open_socket_and_return_assignment(unsigned long n, unsigned long task_size, unsigned long overflow_counter, unsigned long user_time)
 {
 	int fd;
 
@@ -484,6 +514,11 @@ int open_socket_and_return_assignment(unsigned long n, unsigned long task_size, 
 
 	if (write_overflow_counter(fd, overflow_counter) < 0) {
 		message(WARN "server does not receive the overflow counter\n");
+	}
+
+	/* write user_time */
+	if (write_user_time(fd, user_time) < 0) {
+		message(WARN "server does not receive the user time\n");
 	}
 
 	close(fd);
@@ -565,6 +600,7 @@ int main(int argc, char *argv[])
 			unsigned long n;
 			unsigned long task_size = 0;
 			unsigned long overflow_counter = 0;
+			unsigned long user_time = 0;
 
 			while (open_socket_and_request_assignment(&n, request_lowest_incomplete, &task_size) < 0) {
 				message(ERR "thread %i: open_socket_and_request_assignment failed\n", tid);
@@ -573,7 +609,7 @@ int main(int argc, char *argv[])
 
 			message(INFO "thread %i: got assignment %lu\n", tid, n);
 
-			if (run_assignment(n, task_size, &overflow_counter) < 0) {
+			if (run_assignment(n, task_size, &overflow_counter, &user_time) < 0) {
 				message(ERR "thread %i: run_assignment failed\n", tid);
 
 				while (open_socket_and_revoke_assignment(n, task_size) < 0) {
@@ -587,7 +623,7 @@ int main(int argc, char *argv[])
 				continue;
 			}
 
-			while (open_socket_and_return_assignment(n, task_size, overflow_counter) < 0) {
+			while (open_socket_and_return_assignment(n, task_size, overflow_counter, user_time) < 0) {
 				message(ERR "thread %i: open_socket_and_return_assignment failed\n", tid);
 				sleep(SLEEP_INTERVAL);
 			}

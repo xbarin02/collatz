@@ -234,6 +234,32 @@ int read_overflow_counter(int fd, unsigned long *overflow_counter)
 	return 0;
 }
 
+int read_user_time(int fd, unsigned long *user_time)
+{
+	uint32_t nh, nl;
+	uint64_t n;
+
+	if (read_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (read_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+
+	nh = ntohl(nh);
+	nl = ntohl(nl);
+
+	n = ((uint64_t)nh << 32) + nl;
+
+	assert( user_time != NULL );
+	assert( sizeof(uint64_t) == sizeof(unsigned long) );
+
+	*user_time = (unsigned long)n;
+
+	return 0;
+}
+
 /* 2^32 assignments */
 #define ASSIGNMENTS_NO (1UL<<32)
 
@@ -371,6 +397,7 @@ int read_message(int fd)
 		unsigned long n;
 		unsigned long task_size = 0;
 		unsigned long overflow_counter = 0;
+		unsigned long user_time = 0;
 
 		assert( sizeof(uint64_t) == sizeof(unsigned long) );
 
@@ -391,11 +418,15 @@ int read_message(int fd)
 
 		/* read overflow counter */
 		if (read_overflow_counter(fd, &overflow_counter) < 0) {
-			/* TODO */
-			message(WARN "client does not send the overflow counter!\n");
+			message(ERR "client does not send the overflow counter!\n");
+			return -1;
 		}
 
-		message(INFO "assignment returned: %lu (%lu overflows)\n", n, overflow_counter);
+		if (read_user_time(fd, &user_time) < 0) {
+			message(WARN "client does not send the user time!\n");
+		}
+
+		message(INFO "assignment returned: %lu (%lu overflows, time %lu:%lu)\n", n, overflow_counter, user_time/60, user_time%60);
 
 		set_complete(n);
 	} else if (strcmp(msg, "req") == 0) {
