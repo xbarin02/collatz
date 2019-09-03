@@ -307,6 +307,32 @@ int write_user_time(int fd, unsigned long user_time)
 	return 0;
 }
 
+int write_check_sum(int fd, unsigned long check_sum)
+{
+	uint64_t n;
+	uint32_t nh, nl;
+
+	assert( sizeof(unsigned long) == sizeof(uint64_t) );
+
+	n = (uint64_t)check_sum;
+
+	nh = (uint32_t)(n >> 32);
+	nl = (uint32_t)(n);
+
+	nh = htonl(nh);
+	nl = ntohl(nl);
+
+	if (write_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (write_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+
+	return 0;
+}
+
 int return_assignment(int fd, unsigned long n)
 {
 	if (write_(fd, "RET", 4) < 0) {
@@ -368,7 +394,7 @@ static unsigned long atoul(const char *nptr)
 	return strtoul(nptr, NULL, 10);
 }
 
-int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_overflow_counter, unsigned long *p_user_time)
+int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_overflow_counter, unsigned long *p_user_time, unsigned long *p_check_sum)
 {
 	int r;
 	char buffer[4096];
@@ -439,6 +465,8 @@ int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_ov
 			unsigned long check_sum = atoul(ln_part[1]);
 			/* TODO */
 			message(DBG "check sum: %lu\n", check_sum);
+			assert(p_check_sum != NULL);
+			*p_check_sum = check_sum;
 		} else if (c == 1 && strcmp(ln_part[0], "HALTED") == 0) {
 			/* this was expected */
 			(void)0;
@@ -499,7 +527,7 @@ int open_socket_and_request_assignment(unsigned long *n, int request_lowest_inco
 	return 0;
 }
 
-int open_socket_and_return_assignment(unsigned long n, unsigned long task_size, unsigned long overflow_counter, unsigned long user_time)
+int open_socket_and_return_assignment(unsigned long n, unsigned long task_size, unsigned long overflow_counter, unsigned long user_time,  unsigned long check_sum)
 {
 	int fd;
 
@@ -528,6 +556,11 @@ int open_socket_and_return_assignment(unsigned long n, unsigned long task_size, 
 	/* write user_time */
 	if (write_user_time(fd, user_time) < 0) {
 		message(WARN "server does not receive the user time\n");
+	}
+
+	/* write check sum */
+	if (write_check_sum(fd, check_sum) < 0) {
+		message(WARN "server does not receive the check sum\n");
 	}
 
 	close(fd);
@@ -610,6 +643,7 @@ int main(int argc, char *argv[])
 			unsigned long task_size = 0;
 			unsigned long overflow_counter = 0;
 			unsigned long user_time = 0;
+			unsigned long check_sum = 0;
 
 			while (open_socket_and_request_assignment(&n, request_lowest_incomplete, &task_size) < 0) {
 				message(ERR "thread %i: open_socket_and_request_assignment failed\n", tid);
@@ -618,7 +652,7 @@ int main(int argc, char *argv[])
 
 			message(INFO "thread %i: got assignment %lu\n", tid, n);
 
-			if (run_assignment(n, task_size, &overflow_counter, &user_time) < 0) {
+			if (run_assignment(n, task_size, &overflow_counter, &user_time, &check_sum) < 0) {
 				message(ERR "thread %i: run_assignment failed\n", tid);
 
 				while (open_socket_and_revoke_assignment(n, task_size) < 0) {
@@ -632,7 +666,7 @@ int main(int argc, char *argv[])
 				continue;
 			}
 
-			while (open_socket_and_return_assignment(n, task_size, overflow_counter, user_time) < 0) {
+			while (open_socket_and_return_assignment(n, task_size, overflow_counter, user_time, check_sum) < 0) {
 				message(ERR "thread %i: open_socket_and_return_assignment failed\n", tid);
 				sleep(SLEEP_INTERVAL);
 			}
