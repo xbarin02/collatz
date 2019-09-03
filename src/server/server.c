@@ -458,7 +458,8 @@ int read_message(int fd)
 			message(WARN "client does not send the check sum!\n");
 		}
 
-		message(INFO "assignment returned: %lu (%lu overflows, time %lu:%02lu, checksum %lu)\n", n, overflow_counter, user_time/60, user_time%60, check_sum);
+		message(INFO "assignment returned: %lu (%lu overflows, time %lu:%02lu:%02lu, checksum %lu)\n",
+			n, overflow_counter, user_time/60/60, user_time/60%60, user_time%60, check_sum);
 
 		set_complete(n);
 	} else if (strcmp(msg, "req") == 0) {
