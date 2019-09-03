@@ -363,6 +363,11 @@ int open_socket_to_server()
 	return fd;
 }
 
+static unsigned long atoul(const char *nptr)
+{
+	return strtoul(nptr, NULL, 10);
+}
+
 int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_overflow_counter, unsigned long *p_user_time)
 {
 	int r;
@@ -397,39 +402,43 @@ int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_ov
 		ln_part[3][63] = 0;
 
 		if (c == 2 && strcmp(ln_part[0], "TASK_SIZE") == 0) {
-			unsigned long worker_task_size = (unsigned long)atol(ln_part[1]);
+			unsigned long worker_task_size = atoul(ln_part[1]);
 
 			if (worker_task_size != task_size) {
 				message(ERR "worker uses different TASK_SIZE (%lu), whereas %lu is required\n", worker_task_size, task_size);
 				return -1;
 			}
 		} else if (c == 2 && strcmp(ln_part[0], "TASK_ID") == 0) {
-			unsigned long task_id = (unsigned long)atol(ln_part[1]);
+			unsigned long task_id = atoul(ln_part[1]);
 
 			if (n != task_id) {
 				message(ERR "client <---> worker communication problem!\n");
 				return -1;
 			}
 		} else if (c == 3 && strcmp(ln_part[0], "OVERFLOW") == 0) {
-			unsigned long size = (unsigned long)atol(ln_part[1]);
-			unsigned long overflow_counter = (unsigned long)atol(ln_part[2]);
+			unsigned long size = atoul(ln_part[1]);
+			unsigned long overflow_counter = atoul(ln_part[2]);
 
 			if (size == 128) {
 				assert(p_overflow_counter != NULL);
 				*p_overflow_counter = overflow_counter;
 			}
 		} else if (c == 2 && strcmp(ln_part[0], "USERTIME") == 0) {
-			unsigned long user_time = (unsigned long)atol(ln_part[1]);
+			unsigned long user_time = atoul(ln_part[1]);
 			/* TODO */
 			message(DBG "user time: %lu:%lu\n", user_time/60, user_time%60);
 			assert(p_user_time != NULL);
 			*p_user_time = user_time;
 		} else if (c == 3 && strcmp(ln_part[0], "USERTIME") == 0) {
-			unsigned long user_time = (unsigned long)atol(ln_part[1]);
+			unsigned long user_time = atoul(ln_part[1]);
 			/* TODO */
 			message(DBG "user time: %lu:%lu\n", user_time/60, user_time%60);
 			assert(p_user_time != NULL);
 			*p_user_time = user_time;
+		} else if (c == 2 && strcmp(ln_part[0], "CHECKSUM") == 0) {
+			unsigned long check_sum = atoul(ln_part[1]);
+			/* TODO */
+			message(DBG "check sum: %lu\n", check_sum);
 		} else if (c == 1 && strcmp(ln_part[0], "HALTED") == 0) {
 			/* this was expected */
 			(void)0;
