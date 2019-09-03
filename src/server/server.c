@@ -20,6 +20,7 @@
 #include <stdarg.h>
 #include <limits.h>
 #include <inttypes.h>
+#include <netinet/tcp.h>
 
 const uint16_t serverport = 5006;
 
@@ -505,6 +506,11 @@ int main(/*int argc, char *argv[]*/)
 	}
 
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *)&reuse, (socklen_t)sizeof(reuse)) < 0) {
+		perror("setsockopt");
+		abort();
+	}
+
+	if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (const void *)&reuse, (socklen_t)sizeof(reuse)) < 0) {
 		perror("setsockopt");
 		abort();
 	}
