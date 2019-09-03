@@ -47,13 +47,16 @@ int message(const char *format, ...)
 
 	buf[strlen(buf)-1] = 0;
 
-	n = printf("[%s] ", buf);
+	#pragma omp critical
+	{
+		n = printf("[%s] ", buf);
 
-	va_start(ap, format);
-	n += vprintf(format, ap);
-	va_end(ap);
+		va_start(ap, format);
+		n += vprintf(format, ap);
+		va_end(ap);
 
-	fflush(stdout);
+		fflush(stdout);
+	}
 
 	return n;
 }
@@ -95,7 +98,8 @@ ssize_t write_(int fd, const char *buf, size_t count)
 
 ssize_t read_(int fd, char *buf, size_t count)
 {
-	ssize_t readen = 0; /* read was already taken */
+	/* I known this isn't a word in English, but "read" was already taken. */
+	ssize_t readen = 0;
 
 	while ((size_t)readen < count) {
 		ssize_t t = read(fd, buf + readen, count - readen);
