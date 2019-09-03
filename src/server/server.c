@@ -19,6 +19,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <limits.h>
+#include <inttypes.h>
 
 const uint16_t serverport = 5006;
 
@@ -119,7 +120,32 @@ ssize_t read_(int fd, char *buf, size_t count)
 	return readen;
 }
 
-int write_assignment_no(int fd, uint64_t n)
+int read_uint64(int fd, uint64_t *nptr)
+{
+	uint32_t nh, nl;
+	uint64_t n;
+
+	if (read_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (read_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+
+	nh = ntohl(nh);
+	nl = ntohl(nl);
+
+	n = ((uint64_t)nh << 32) + nl;
+
+	assert( nptr != NULL );
+
+	*nptr = n;
+
+	return 0;
+}
+
+int write_uint64(int fd, uint64_t n)
 {
 	uint32_t nh, nl;
 
@@ -140,8 +166,34 @@ int write_assignment_no(int fd, uint64_t n)
 	return 0;
 }
 
+int write_assignment_no(int fd, uint64_t n)
+{
+#if 0
+	uint32_t nh, nl;
+
+	nh = (uint32_t)(n >> 32);
+	nl = (uint32_t)(n);
+
+	nh = htonl(nh);
+	nl = ntohl(nl);
+
+	if (write_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (write_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+
+	return 0;
+#else
+	return write_uint64(fd, n);
+#endif
+}
+
 int read_assignment_no(int fd, uint64_t *n)
 {
+#if 0
 	uint32_t nh, nl;
 
 	if (read_(fd, (void *)&nh, 4) < 0) {
@@ -160,12 +212,16 @@ int read_assignment_no(int fd, uint64_t *n)
 	*n = ((uint64_t)nh << 32) + nl;
 
 	return 0;
+#else
+	return read_uint64(fd, n);
+#endif
 }
 
 #define TASK_SIZE 40
 
 int write_task_size(int fd)
 {
+#if 0
 	uint64_t n = TASK_SIZE;
 	uint32_t nh, nl;
 
@@ -184,10 +240,14 @@ int write_task_size(int fd)
 	}
 
 	return 0;
+#else
+	return write_uint64(fd, TASK_SIZE);
+#endif
 }
 
-int read_task_size(int fd, unsigned long *task_size)
+int read_task_size(int fd, uint64_t *task_size)
 {
+#if 0
 	uint32_t nh, nl;
 	uint64_t n;
 
@@ -210,10 +270,14 @@ int read_task_size(int fd, unsigned long *task_size)
 	*task_size = (unsigned long)n;
 
 	return 0;
+#else
+	return read_uint64(fd, task_size);
+#endif
 }
 
-int read_overflow_counter(int fd, unsigned long *overflow_counter)
+int read_overflow_counter(int fd, uint64_t *overflow_counter)
 {
+#if 0
 	uint32_t nh, nl;
 	uint64_t n;
 
@@ -236,10 +300,14 @@ int read_overflow_counter(int fd, unsigned long *overflow_counter)
 	*overflow_counter = (unsigned long)n;
 
 	return 0;
+#else
+	return read_uint64(fd, overflow_counter);
+#endif
 }
 
-int read_user_time(int fd, unsigned long *user_time)
+int read_user_time(int fd, uint64_t *user_time)
 {
+#if 0
 	uint32_t nh, nl;
 	uint64_t n;
 
@@ -262,10 +330,14 @@ int read_user_time(int fd, unsigned long *user_time)
 	*user_time = (unsigned long)n;
 
 	return 0;
+#else
+	return read_uint64(fd, user_time);
+#endif
 }
 
-int read_check_sum(int fd, unsigned long *check_sum)
+int read_check_sum(int fd, uint64_t *check_sum)
 {
+#if 0
 	uint32_t nh, nl;
 	uint64_t n;
 
@@ -288,6 +360,9 @@ int read_check_sum(int fd, unsigned long *check_sum)
 	*check_sum = (unsigned long)n;
 
 	return 0;
+#else
+	return read_uint64(fd, check_sum);
+#endif
 }
 
 /* 2^32 assignments */
@@ -302,20 +377,20 @@ int read_check_sum(int fd, unsigned long *check_sum)
 #define SET_UNASSIGNED(n) ( g_map_assigned[(n)>>3] &= UCHAR_MAX ^ (1<<((n)&7)) )
 #define SET_COMPLETE(n)   ( g_map_complete[(n)>>3] |= (1<<((n)&7)) )
 
-size_t g_lowest_unassigned = 0; /* bit index, not byte */
-size_t g_lowest_incomplete = 0;
+uint64_t g_lowest_unassigned = 0; /* bit index, not byte */
+uint64_t g_lowest_incomplete = 0;
 
 unsigned char *g_map_assigned;
 unsigned char *g_map_complete;
 
-void set_complete(unsigned long n)
+void set_complete(uint64_t n)
 {
 	if (IS_COMPLETE(n)) {
-		message(INFO "assignment %lu was already complete (duplicate result)\n", n);
+		message(INFO "assignment %" PRIu64 " was already complete (duplicate result)\n", n);
 	}
 
 	if (!IS_ASSIGNED(n)) {
-		message(WARN "assignment %lu was not assigned, discarting the result!\n", n);
+		message(WARN "assignment %" PRIu64 " was not assigned, discarting the result!\n", n);
 		return;
 	}
 
@@ -328,9 +403,9 @@ void set_complete(unsigned long n)
 	}
 }
 
-unsigned long get_assignment()
+uint64_t get_assignment()
 {
-	unsigned long n = g_lowest_unassigned;
+	uint64_t n = g_lowest_unassigned;
 
 	SET_ASSIGNED(n);
 
@@ -341,7 +416,7 @@ unsigned long get_assignment()
 	return n;
 }
 
-void unset_assignment(unsigned long n)
+void unset_assignment(uint64_t n)
 {
 	SET_UNASSIGNED(n);
 
@@ -350,9 +425,9 @@ void unset_assignment(unsigned long n)
 	}
 }
 
-unsigned long get_missed_assignment()
+uint64_t get_missed_assignment()
 {
-	unsigned long n = g_lowest_incomplete;
+	uint64_t n = g_lowest_incomplete;
 
 	SET_ASSIGNED(n);
 
@@ -407,36 +482,30 @@ int read_message(int fd)
 
 	if (strcmp(msg, "REQ") == 0) {
 		/* requested assignment */
-		unsigned long n = get_assignment();
+		uint64_t n = get_assignment();
 
-		message(INFO "assignment requested: %lu\n", n);
+		message(INFO "assignment requested: %" PRIu64 "\n", n);
 
-		assert( sizeof(uint64_t) == sizeof(unsigned long) );
-
-		if (write_assignment_no(fd, (uint64_t)n) < 0) {
+		if (write_assignment_no(fd, n) < 0) {
 			return -1;
 		}
 
-		/* write TASK_SIZE */
 		if (write_task_size(fd) < 0) {
 			message(ERR "unable to write task size, update the client!\n");
 			return -1;
 		}
 	} else if (strcmp(msg, "RET") == 0) {
 		/* returning assignment */
-		unsigned long n;
-		unsigned long task_size = 0;
-		unsigned long overflow_counter = 0;
-		unsigned long user_time = 0;
-		unsigned long check_sum = 0;
+		uint64_t n;
+		uint64_t task_size = 0;
+		uint64_t overflow_counter = 0;
+		uint64_t user_time = 0;
+		uint64_t check_sum = 0;
 
-		assert( sizeof(uint64_t) == sizeof(unsigned long) );
-
-		if (read_assignment_no(fd, (uint64_t *)&n) < 0) {
+		if (read_assignment_no(fd, &n) < 0) {
 			return -1;
 		}
 
-		/* read TASK_SIZE */
 		if (read_task_size(fd, &task_size) < 0) {
 			message(ERR "unable to read task size, update the client!\n");
 			return -1;
@@ -447,7 +516,6 @@ int read_message(int fd)
 			return -1;
 		}
 
-		/* read overflow counter */
 		if (read_overflow_counter(fd, &overflow_counter) < 0) {
 			message(ERR "client does not send the overflow counter!\n");
 			return -1;
@@ -457,44 +525,37 @@ int read_message(int fd)
 			message(WARN "client does not send the user time!\n");
 		}
 
-		/* read check_sum */
 		if (read_check_sum(fd, &check_sum) < 0) {
 			message(WARN "client does not send the check sum!\n");
 		}
 
-		message(INFO "assignment returned: %lu (%lu overflows, time %lu:%02lu:%02lu, checksum %lu)\n",
+		message(INFO "assignment returned: %" PRIu64 " (%" PRIu64 " overflows, time %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ", checksum %" PRIu64 ")\n",
 			n, overflow_counter, user_time/60/60, user_time/60%60, user_time%60, check_sum);
 
 		set_complete(n);
 	} else if (strcmp(msg, "req") == 0) {
 		/* requested lowest incomplete assignment */
-		unsigned long n = get_missed_assignment();
+		uint64_t n = get_missed_assignment();
 
-		message(INFO "assignment requested: %lu (lowest incomplete)\n", n);
+		message(INFO "assignment requested: %" PRIu64 " (lowest incomplete)\n", n);
 
-		assert( sizeof(uint64_t) == sizeof(unsigned long) );
-
-		if (write_assignment_no(fd, (uint64_t)n) < 0) {
+		if (write_assignment_no(fd, n) < 0) {
 			return -1;
 		}
 
-		/* write TASK_SIZE */
 		if (write_task_size(fd) < 0) {
 			message(ERR "unable to write task size, update the client!\n");
 			return -1;
 		}
 	} else if (strcmp(msg, "INT") == 0) {
 		/* interrupted or unable to solve, unreserve the assignment */
-		unsigned long n;
-		unsigned long task_size = 0;
+		uint64_t n;
+		uint64_t task_size = 0;
 
-		assert( sizeof(uint64_t) == sizeof(unsigned long) );
-
-		if (read_assignment_no(fd, (uint64_t *)&n) < 0) {
+		if (read_assignment_no(fd, &n) < 0) {
 			return -1;
 		}
 
-		/* read TASK_SIZE */
 		if (read_task_size(fd, &task_size) < 0) {
 			message(ERR "unable to read task size, update the client!\n");
 			return -1;
@@ -505,7 +566,7 @@ int read_message(int fd)
 			return -1;
 		}
 
-		message(INFO "assignment interrupted: %lu\n", n);
+		message(INFO "assignment interrupted: %" PRIu64 "\n", n);
 
 		unset_assignment(n);
 	} else {
@@ -518,8 +579,8 @@ int read_message(int fd)
 
 void set_complete_range_from_hercher()
 {
-	size_t n;
-	size_t n_max = 91226112; /* = ( 87 * 2^60 ) / 2^TASK_SIZE */
+	uint64_t n;
+	uint64_t n_max = 91226112; /* = ( 87 * 2^60 ) / 2^TASK_SIZE */
 
 	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 		if (n < n_max) {
@@ -553,11 +614,11 @@ int main(/*int argc, char *argv[]*/)
 	for (g_lowest_incomplete = 0; IS_COMPLETE(g_lowest_incomplete); ++g_lowest_incomplete)
 		;
 
-	message(INFO "lowest unassigned = %lu\n", (unsigned long)g_lowest_unassigned);
-	message(INFO "lowest incomplete = %lu\n", (unsigned long)g_lowest_incomplete);
+	message(INFO "lowest unassigned = %" PRIu64 "\n", g_lowest_unassigned);
+	message(INFO "lowest incomplete = %" PRIu64 "\n", g_lowest_incomplete);
 
-	message(INFO "*** all numbers below %lu * 2^%lu are convergent (blocks) ***\n", g_lowest_incomplete, TASK_SIZE);
-	message(INFO "*** all numbers below %lu * 2^%lu are convergent (superblocks) ***\n", g_lowest_incomplete>>20, TASK_SIZE+20);
+	message(INFO "*** all numbers below %" PRIu64 " * 2^%" PRIu64 " are convergent (blocks) ***\n", g_lowest_incomplete, TASK_SIZE);
+	message(INFO "*** all numbers below %" PRIu64 " * 2^%" PRIu64 " are convergent (superblocks) ***\n", g_lowest_incomplete >> 20, TASK_SIZE + 20);
 
 	signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
