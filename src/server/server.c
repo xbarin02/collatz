@@ -360,11 +360,13 @@ int read_message(int fd)
 		}
 
 		if (read_user_time(fd, &user_time) < 0) {
-			message(WARN "client does not send the user time!\n");
+			message(ERR "client does not send the user time!\n");
+			return -1;
 		}
 
 		if (read_check_sum(fd, &check_sum) < 0) {
-			message(WARN "client does not send the check sum!\n");
+			message(ERR "client does not send the check sum!\n");
+			return -1;
 		}
 
 		message(INFO "assignment returned: %" PRIu64 " (%" PRIu64 " overflows, time %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ", checksum %" PRIu64 ")\n",
