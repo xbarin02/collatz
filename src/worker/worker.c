@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <stdint.h>
+#include <inttypes.h>
 
 #include "wideint.h"
 
@@ -48,15 +50,15 @@ static void mpz_pow3(mpz_t r, unsigned long n)
 /* init lookup tables */
 void init_lut()
 {
-	unsigned long a;
+	int a;
 
 	for (a = 0; a < LUT_SIZE128; ++a) {
-		g_lut[a] = pow3x(a);
+		g_lut[a] = pow3x((uint128_t)a);
 	}
 
 	for (a = 0; a < LUT_SIZEMPZ; ++a) {
 		mpz_init(g_mpz_lut[a]);
-		mpz_pow3(g_mpz_lut[a], a);
+		mpz_pow3(g_mpz_lut[a], (unsigned long)a);
 	}
 }
 
@@ -66,7 +68,7 @@ static mp_bitcnt_t mpz_ctz(const mpz_t n)
 	return mpz_scan1(n, 0);
 }
 
-static unsigned long g_check_sum = 0;
+static uint64_t g_check_sum = 0;
 
 /* check convergence */
 static int check(uint128_t n)
@@ -107,10 +109,22 @@ static int check(uint128_t n)
 	} while (1);
 }
 
-static unsigned long g_overflow_counter = 0;
+static uint64_t g_overflow_counter = 0;
+
+static void mpz_init_set_u128(mpz_t rop, uint128_t op)
+{
+	uint64_t nh = (uint64_t)(op>>64);
+	uint64_t nl = (uint64_t)(op);
+
+	assert( sizeof(unsigned long) == sizeof(uint64_t) );
+
+	mpz_init_set_ui(rop, (unsigned long)nh);
+	mpz_mul_2exp(rop, rop, (mp_bitcnt_t)64);
+	mpz_add_ui(rop, rop, (unsigned long)nl);
+}
 
 /* check convergence */
-static void mpz_check(unsigned long nh, unsigned long nl)
+static void mpz_check(uint128_t n_)
 {
 	mpz_t n;
 	mpz_t n0;
@@ -118,14 +132,7 @@ static void mpz_check(unsigned long nh, unsigned long nl)
 
 	g_overflow_counter++;
 
-	/* n = nh * 2^64 + nl */
-	mpz_init_set_ui(n, nh);
-	mpz_mul_2exp(n, n, (mp_bitcnt_t)64);
-	mpz_add_ui(n, n, nl);
-
-#if 0
-	gmp_printf("[OVERFLOW %Zd\n", n);
-#endif
+	mpz_init_set_u128(n, n_);
 
 	/* n0 = n */
 	mpz_init_set(n0, n);
@@ -170,27 +177,35 @@ static void mpz_check(unsigned long nh, unsigned long nl)
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
 
+/* DEPRECATED */
 static unsigned long atoul(const char *nptr)
 {
 	return strtoul(nptr, NULL, 10);
+}
+
+static uint64_t atou64(const char *nptr)
+{
+	assert( sizeof(uint64_t) == sizeof(unsigned long) );
+
+	return (uint64_t)atoul(nptr);
 }
 
 int main(int argc, char *argv[])
 {
 	uint128_t n;
 	uint128_t n_sup;
-	unsigned long task_id = 0;
-	unsigned long task_size = TASK_SIZE;
+	uint64_t task_id = 0;
+	uint64_t task_size = TASK_SIZE;
 	int opt;
 	struct rusage usage;
-	unsigned long usecs = 0;
+	uint64_t usecs = 0;
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
 	while ((opt = getopt(argc, argv, "t:")) != -1) {
 		switch (opt) {
 			case 't':
-				task_size = atoul(optarg);
+				task_size = atou64(optarg);
 				break;
 			default:
 				fprintf(stderr, "Usage: %s [-t task_size] task_id\n", argv[0]);
@@ -198,25 +213,24 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	task_id = (optind < argc) ? atoul(argv[optind]) : 0;
+	task_id = (optind < argc) ? atou64(argv[optind]) : 0;
 
-	printf("TASK_SIZE %lu\n", task_size);
-	printf("TASK_ID %lu\n", task_id);
-
-	assert( 2*sizeof(unsigned long) == sizeof(uint128_t) && "unsupported memory model" );
+	printf("TASK_SIZE %" PRIu64 "\n", task_size);
+	printf("TASK_ID %" PRIu64 "\n", task_id);
 
 	/* n of the form 4n+3 */
 	n     = ( UINT128_C(task_id) << task_size ) + 3;
-	n_sup = ( UINT128_C(task_id) << task_size ) + 3 + (1UL << task_size);
+	n_sup = ( UINT128_C(task_id) << task_size ) + 3 + (UINT64_C(1) << task_size);
 
-	printf("RANGE 0x%016lx:%016lx .. 0x%016lx:%016lx\n", (unsigned long)(n>>64), (unsigned long)n, (unsigned long)(n_sup>>64), (unsigned long)n_sup);
+	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " .. 0x%016" PRIx64 ":%016" PRIx64 "\n",
+		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
 
 	init_lut();
 
 	for (; n < n_sup; n += 4) {
 		if (unlikely(check(n))) {
 			/* the function cannot verify the convergence using 128-bit arithmetic, use libgmp */
-			mpz_check((unsigned long)(n>>64), (unsigned long)n);
+			mpz_check(n);
 		}
 	}
 
@@ -225,20 +239,20 @@ int main(int argc, char *argv[])
 		/*  errno is set appropriately. */
 		perror("getrusage");
 	} else {
-		if ((sizeof(unsigned long) >= sizeof(time_t)) &&
-		    (sizeof(unsigned long) >= sizeof(suseconds_t)) &&
-		    (usage.ru_utime.tv_sec * 1UL <= ULONG_MAX / 1000000UL) &&
-		    (usage.ru_utime.tv_sec * 1000000UL <= ULONG_MAX - usage.ru_utime.tv_usec)) {
-			usecs = usage.ru_utime.tv_sec * 1000000UL + usage.ru_utime.tv_usec;
-			printf("USERTIME %lu %lu\n", (unsigned long)usage.ru_utime.tv_sec, usecs);
-		} else if (sizeof(unsigned long) >= sizeof(time_t)) {
-			printf("USERTIME %lu\n", (unsigned long)usage.ru_utime.tv_sec);
+		if ((sizeof(uint64_t) >= sizeof(time_t)) &&
+		    (sizeof(uint64_t) >= sizeof(suseconds_t)) &&
+		    (usage.ru_utime.tv_sec * UINT64_C(1) <= UINT64_MAX / UINT64_C(1000000)) &&
+		    (usage.ru_utime.tv_sec * UINT64_C(1000000) <= UINT64_MAX - usage.ru_utime.tv_usec)) {
+			usecs = usage.ru_utime.tv_sec * UINT64_C(1000000) + usage.ru_utime.tv_usec;
+			printf("USERTIME %" PRIu64 " %" PRIu64 "\n", (uint64_t)usage.ru_utime.tv_sec, usecs);
+		} else if (sizeof(uint64_t) >= sizeof(time_t)) {
+			printf("USERTIME %" PRIu64 "\n", (uint64_t)usage.ru_utime.tv_sec);
 		}
 	}
 
-	printf("OVERFLOW 128 %lu\n", g_overflow_counter);
+	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 
-	printf("CHECKSUM %lu\n", g_check_sum);
+	printf("CHECKSUM %" PRIu64 "\n", g_check_sum);
 
 	printf("HALTED\n");
 
