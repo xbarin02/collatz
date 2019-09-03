@@ -178,6 +178,11 @@ static void mpz_check(unsigned long nh, unsigned long nl)
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
 
+static unsigned long atoul(const char *nptr)
+{
+	return strtoul(nptr, NULL, 10);
+}
+
 int main(int argc, char *argv[])
 {
 	uint128_t n;
@@ -191,7 +196,7 @@ int main(int argc, char *argv[])
 	while ((opt = getopt(argc, argv, "t:")) != -1) {
 		switch (opt) {
 			case 't':
-				task_size = (unsigned long)atol(optarg);
+				task_size = atoul(optarg);
 				break;
 			default:
 				fprintf(stderr, "Usage: %s [-t task_size] task_id\n", argv[0]);
@@ -199,7 +204,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	task_id = (optind < argc) ? (unsigned long)atol(argv[optind]) : 0;
+	task_id = (optind < argc) ? atoul(argv[optind]) : 0;
 
 	printf("TASK_SIZE %lu\n", task_size);
 	fflush(stdout);
