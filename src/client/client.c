@@ -141,8 +141,41 @@ ssize_t read_(int fd, char *buf, size_t count)
 	return readen;
 }
 
+int read_uint64(int fd, uint64_t *nptr)
+{
+	uint32_t nh, nl;
+	uint64_t n;
+
+	if (read_(fd, (void *)&nh, 4) < 0) {
+		return -1;
+	}
+
+	if (read_(fd, (void *)&nl, 4) < 0) {
+		return -1;
+	}
+
+	nh = ntohl(nh);
+	nl = ntohl(nl);
+
+	n = ((uint64_t)nh << 32) + nl;
+
+	assert( nptr != NULL );
+
+	*nptr = n;
+
+	return 0;
+}
+
+int read_ul(int fd, unsigned long *nptr)
+{
+	assert( sizeof(unsigned long) == sizeof(uint64_t) );
+
+	return read_uint64(fd, (uint64_t *)nptr);
+}
+
 int read_assignment_no(int fd, uint64_t *n)
 {
+#if 0
 	uint32_t nh, nl;
 
 	if (read_(fd, (void *)&nh, 4) < 0) {
@@ -161,6 +194,9 @@ int read_assignment_no(int fd, uint64_t *n)
 	*n = ((uint64_t)nh << 32) + nl;
 
 	return 0;
+#else
+	return read_uint64(fd, n);
+#endif
 }
 
 int write_assignment_no(int fd, uint64_t n)
@@ -207,6 +243,7 @@ int request_assignment(int fd, unsigned long *n, int request_lowest_incomplete)
 
 int read_task_size(int fd, unsigned long *task_size)
 {
+#if 0
 	uint32_t nh, nl;
 	uint64_t n;
 
@@ -229,6 +266,9 @@ int read_task_size(int fd, unsigned long *task_size)
 	*task_size = (unsigned long)n;
 
 	return 0;
+#else
+	return read_ul(fd, task_size);
+#endif
 }
 
 int write_task_size(int fd, unsigned long task_size)
