@@ -168,205 +168,18 @@ int write_uint64(int fd, uint64_t n)
 
 int write_assignment_no(int fd, uint64_t n)
 {
-#if 0
-	uint32_t nh, nl;
-
-	nh = (uint32_t)(n >> 32);
-	nl = (uint32_t)(n);
-
-	nh = htonl(nh);
-	nl = ntohl(nl);
-
-	if (write_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (write_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	return 0;
-#else
 	return write_uint64(fd, n);
-#endif
 }
 
 int read_assignment_no(int fd, uint64_t *n)
 {
-#if 0
-	uint32_t nh, nl;
-
-	if (read_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (read_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	nh = ntohl(nh);
-	nl = ntohl(nl);
-
-	assert( n != NULL );
-
-	*n = ((uint64_t)nh << 32) + nl;
-
-	return 0;
-#else
 	return read_uint64(fd, n);
-#endif
 }
 
 #define TASK_SIZE 40
 
-int write_task_size(int fd)
-{
-#if 0
-	uint64_t n = TASK_SIZE;
-	uint32_t nh, nl;
-
-	nh = (uint32_t)(n >> 32);
-	nl = (uint32_t)(n);
-
-	nh = htonl(nh);
-	nl = ntohl(nl);
-
-	if (write_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (write_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	return 0;
-#else
-	return write_uint64(fd, TASK_SIZE);
-#endif
-}
-
-int read_task_size(int fd, uint64_t *task_size)
-{
-#if 0
-	uint32_t nh, nl;
-	uint64_t n;
-
-	if (read_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (read_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	nh = ntohl(nh);
-	nl = ntohl(nl);
-
-	n = ((uint64_t)nh << 32) + nl;
-
-	assert( task_size != NULL );
-	assert( sizeof(uint64_t) == sizeof(unsigned long) );
-
-	*task_size = (unsigned long)n;
-
-	return 0;
-#else
-	return read_uint64(fd, task_size);
-#endif
-}
-
-int read_overflow_counter(int fd, uint64_t *overflow_counter)
-{
-#if 0
-	uint32_t nh, nl;
-	uint64_t n;
-
-	if (read_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (read_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	nh = ntohl(nh);
-	nl = ntohl(nl);
-
-	n = ((uint64_t)nh << 32) + nl;
-
-	assert( overflow_counter != NULL );
-	assert( sizeof(uint64_t) == sizeof(unsigned long) );
-
-	*overflow_counter = (unsigned long)n;
-
-	return 0;
-#else
-	return read_uint64(fd, overflow_counter);
-#endif
-}
-
-int read_user_time(int fd, uint64_t *user_time)
-{
-#if 0
-	uint32_t nh, nl;
-	uint64_t n;
-
-	if (read_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (read_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	nh = ntohl(nh);
-	nl = ntohl(nl);
-
-	n = ((uint64_t)nh << 32) + nl;
-
-	assert( user_time != NULL );
-	assert( sizeof(uint64_t) == sizeof(unsigned long) );
-
-	*user_time = (unsigned long)n;
-
-	return 0;
-#else
-	return read_uint64(fd, user_time);
-#endif
-}
-
-int read_check_sum(int fd, uint64_t *check_sum)
-{
-#if 0
-	uint32_t nh, nl;
-	uint64_t n;
-
-	if (read_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (read_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	nh = ntohl(nh);
-	nl = ntohl(nl);
-
-	n = ((uint64_t)nh << 32) + nl;
-
-	assert( check_sum != NULL );
-	assert( sizeof(uint64_t) == sizeof(unsigned long) );
-
-	*check_sum = (unsigned long)n;
-
-	return 0;
-#else
-	return read_uint64(fd, check_sum);
-#endif
-}
-
-/* 2^32 assignments */
-#define ASSIGNMENTS_NO (1UL<<32)
+/* 2^32 assignments (tasks) */
+#define ASSIGNMENTS_NO (UINT64_C(1)<<32)
 
 #define MAP_SIZE (ASSIGNMENTS_NO>>3)
 
@@ -376,6 +189,31 @@ int read_check_sum(int fd, uint64_t *check_sum)
 #define SET_ASSIGNED(n)   ( g_map_assigned[(n)>>3] |= (1<<((n)&7)) )
 #define SET_UNASSIGNED(n) ( g_map_assigned[(n)>>3] &= UCHAR_MAX ^ (1<<((n)&7)) )
 #define SET_COMPLETE(n)   ( g_map_complete[(n)>>3] |= (1<<((n)&7)) )
+
+int write_task_size(int fd)
+{
+	return write_uint64(fd, TASK_SIZE);
+}
+
+int read_task_size(int fd, uint64_t *task_size)
+{
+	return read_uint64(fd, task_size);
+}
+
+int read_overflow_counter(int fd, uint64_t *overflow_counter)
+{
+	return read_uint64(fd, overflow_counter);
+}
+
+int read_user_time(int fd, uint64_t *user_time)
+{
+	return read_uint64(fd, user_time);
+}
+
+int read_check_sum(int fd, uint64_t *check_sum)
+{
+	return read_uint64(fd, check_sum);
+}
 
 uint64_t g_lowest_unassigned = 0; /* bit index, not byte */
 uint64_t g_lowest_incomplete = 0;
@@ -450,12 +288,12 @@ void *open_map(const char *path)
 		abort();
 	}
 
-	if (ftruncate(fd, MAP_SIZE) < 0) {
+	if (ftruncate(fd, (off_t)MAP_SIZE) < 0) {
 		perror("ftruncate");
 		abort();
 	}
 
-	ptr = mmap(NULL, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	ptr = mmap(NULL, (size_t)MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	if (ptr == MAP_FAILED) {
 		perror("mmap");
