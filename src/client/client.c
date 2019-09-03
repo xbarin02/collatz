@@ -175,28 +175,7 @@ int read_ul(int fd, unsigned long *nptr)
 
 int read_assignment_no(int fd, uint64_t *n)
 {
-#if 0
-	uint32_t nh, nl;
-
-	if (read_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (read_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	nh = ntohl(nh);
-	nl = ntohl(nl);
-
-	assert( n != NULL );
-
-	*n = ((uint64_t)nh << 32) + nl;
-
-	return 0;
-#else
 	return read_uint64(fd, n);
-#endif
 }
 
 int write_uint64(int fd, uint64_t n)
@@ -229,27 +208,7 @@ int write_ul(int fd, unsigned long n)
 
 int write_assignment_no(int fd, uint64_t n)
 {
-#if 0
-	uint32_t nh, nl;
-
-	nh = (uint32_t)(n >> 32);
-	nl = (uint32_t)(n);
-
-	nh = htonl(nh);
-	nl = ntohl(nl);
-
-	if (write_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (write_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	return 0;
-#else
 	return write_uint64(fd, n);
-#endif
 }
 
 int request_assignment(int fd, unsigned long *n, int request_lowest_incomplete)
@@ -275,152 +234,27 @@ int request_assignment(int fd, unsigned long *n, int request_lowest_incomplete)
 
 int read_task_size(int fd, unsigned long *task_size)
 {
-#if 0
-	uint32_t nh, nl;
-	uint64_t n;
-
-	if (read_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (read_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	nh = ntohl(nh);
-	nl = ntohl(nl);
-
-	n = ((uint64_t)nh << 32) + nl;
-
-	assert( task_size != NULL );
-	assert( sizeof(uint64_t) == sizeof(unsigned long) );
-
-	*task_size = (unsigned long)n;
-
-	return 0;
-#else
 	return read_ul(fd, task_size);
-#endif
 }
 
 int write_task_size(int fd, unsigned long task_size)
 {
-#if 0
-	uint64_t n;
-	uint32_t nh, nl;
-
-	assert( sizeof(unsigned long) == sizeof(uint64_t) );
-
-	n = (uint64_t)task_size;
-
-	nh = (uint32_t)(n >> 32);
-	nl = (uint32_t)(n);
-
-	nh = htonl(nh);
-	nl = ntohl(nl);
-
-	if (write_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (write_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	return 0;
-#else
 	return write_ul(fd, task_size);
-#endif
 }
 
 int write_overflow_counter(int fd, unsigned long overflow_counter)
 {
-#if 0
-	uint64_t n;
-	uint32_t nh, nl;
-
-	assert( sizeof(unsigned long) == sizeof(uint64_t) );
-
-	n = (uint64_t)overflow_counter;
-
-	nh = (uint32_t)(n >> 32);
-	nl = (uint32_t)(n);
-
-	nh = htonl(nh);
-	nl = ntohl(nl);
-
-	if (write_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (write_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	return 0;
-#else
 	return write_ul(fd, overflow_counter);
-#endif
 }
 
 int write_user_time(int fd, unsigned long user_time)
 {
-#if 0
-	uint64_t n;
-	uint32_t nh, nl;
-
-	assert( sizeof(unsigned long) == sizeof(uint64_t) );
-
-	n = (uint64_t)user_time;
-
-	nh = (uint32_t)(n >> 32);
-	nl = (uint32_t)(n);
-
-	nh = htonl(nh);
-	nl = ntohl(nl);
-
-	if (write_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (write_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	return 0;
-#else
 	return write_ul(fd, user_time);
-#endif
 }
 
 int write_check_sum(int fd, unsigned long check_sum)
 {
-#if 0
-	uint64_t n;
-	uint32_t nh, nl;
-
-	assert( sizeof(unsigned long) == sizeof(uint64_t) );
-
-	n = (uint64_t)check_sum;
-
-	nh = (uint32_t)(n >> 32);
-	nl = (uint32_t)(n);
-
-	nh = htonl(nh);
-	nl = ntohl(nl);
-
-	if (write_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (write_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	return 0;
-#else
 	return write_ul(fd, check_sum);
-#endif
 }
 
 int return_assignment(int fd, unsigned long n)
