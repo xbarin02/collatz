@@ -215,6 +215,11 @@ int read_check_sum(int fd, uint64_t *check_sum)
 	return read_uint64(fd, check_sum);
 }
 
+int read_clid(int fd, uint64_t *clid)
+{
+	return read_uint64(fd, clid);
+}
+
 uint64_t g_lowest_unassigned = 0; /* bit index, not byte */
 uint64_t g_lowest_incomplete = 0;
 
@@ -308,6 +313,7 @@ void *open_map(const char *path)
 int read_message(int fd)
 {
 	char msg[4];
+	uint64_t clid;
 
 	if (read_(fd, msg, 4) < 0) {
 		return -1;
@@ -320,7 +326,13 @@ int read_message(int fd)
 
 	if (strcmp(msg, "REQ") == 0) {
 		/* requested assignment */
-		uint64_t n = get_assignment();
+		uint64_t n;
+
+		if (read_clid(fd, &clid) < 0) {
+			message(WARN "client does not send client ID\n");
+		}
+
+		n = get_assignment();
 
 		message(INFO "assignment requested: %" PRIu64 "\n", n);
 
@@ -369,6 +381,10 @@ int read_message(int fd)
 			return -1;
 		}
 
+		if (read_clid(fd, &clid) < 0) {
+			message(WARN "client does not send client ID\n");
+		}
+
 		if (user_time == 0 && check_sum == 0) {
 			message(ERR "broken client, discarting the result!\n");
 			return -1;
@@ -385,7 +401,13 @@ int read_message(int fd)
 		set_complete(n);
 	} else if (strcmp(msg, "req") == 0) {
 		/* requested lowest incomplete assignment */
-		uint64_t n = get_missed_assignment();
+		uint64_t n;
+
+		if (read_clid(fd, &clid) < 0) {
+			message(WARN "client does not send client ID\n");
+		}
+
+		n = get_missed_assignment();
 
 		message(INFO "assignment requested: %" PRIu64 " (lowest incomplete)\n", n);
 
@@ -409,6 +431,10 @@ int read_message(int fd)
 		if (read_task_size(fd, &task_size) < 0) {
 			message(ERR "unable to read task size, update the client!\n");
 			return -1;
+		}
+
+		if (read_clid(fd, &clid) < 0) {
+			message(WARN "client does not send client ID\n");
 		}
 
 		if (task_size != TASK_SIZE) {
