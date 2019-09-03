@@ -392,6 +392,14 @@ int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_ov
 				assert(p_overflow_counter != NULL);
 				*p_overflow_counter = overflow_counter;
 			}
+		} else if (c == 2 && strcmp(ln_part[0], "USERTIME") == 0) {
+			unsigned long user_time = (unsigned long)atol(ln_part[1]);
+			/* TODO */
+			message(DBG "user time: %lu secs\n", user_time);
+		} else if (c == 3 && strcmp(ln_part[0], "USERTIME") == 0) {
+			unsigned long user_time = (unsigned long)atol(ln_part[1]);
+			/* TODO */
+			message(DBG "user time: %lu secs\n", user_time);
 		} else if (c == 1 && strcmp(ln_part[0], "HALTED") == 0) {
 			/* this was expected */
 			(void)0;
