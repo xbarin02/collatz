@@ -331,6 +331,7 @@ int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter,
 	char line[4096];
 	char ln_part[4][64];
 	FILE *output;
+	int success = 0;
 
 	if (sprintf(buffer, "%s %" PRIu64, taskpath, n) < 0) {
 		return -1;
@@ -399,7 +400,7 @@ int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter,
 			*p_check_sum = check_sum;
 		} else if (c == 1 && strcmp(ln_part[0], "HALTED") == 0) {
 			/* this was expected */
-			(void)0;
+			success = 1;
 		} /* other cases... */
 	}
 
@@ -411,7 +412,12 @@ int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter,
 
 	if (WIFEXITED(r)) {
 		/* the child terminated normally */
-		return 0;
+		if (success) {
+			/* return success status only if the worker issued HALTED line */
+			return 0;
+		}
+
+		return -1;
 
 	} else {
 		return -1;
