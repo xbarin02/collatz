@@ -329,10 +329,6 @@ int read_message(int fd)
 		/* requested assignment */
 		uint64_t n;
 
-		if (read_clid(fd, &clid) < 0) {
-			message(WARN "client does not send client ID\n");
-		}
-
 		n = get_assignment();
 
 		message(INFO "assignment requested: %" PRIu64 "\n", n);
@@ -344,6 +340,10 @@ int read_message(int fd)
 		if (write_task_size(fd) < 0) {
 			message(ERR "unable to write task size, update the client!\n");
 			return -1;
+		}
+
+		if (read_clid(fd, &clid) < 0) {
+			message(WARN "client does not send client ID\n");
 		}
 	} else if (strcmp(msg, "RET") == 0) {
 		/* returning assignment */
@@ -404,10 +404,6 @@ int read_message(int fd)
 		/* requested lowest incomplete assignment */
 		uint64_t n;
 
-		if (read_clid(fd, &clid) < 0) {
-			message(WARN "client does not send client ID\n");
-		}
-
 		n = get_missed_assignment();
 
 		message(INFO "assignment requested: %" PRIu64 " (lowest incomplete)\n", n);
@@ -419,6 +415,10 @@ int read_message(int fd)
 		if (write_task_size(fd) < 0) {
 			message(ERR "unable to write task size, update the client!\n");
 			return -1;
+		}
+
+		if (read_clid(fd, &clid) < 0) {
+			message(WARN "client does not send client ID\n");
 		}
 	} else if (strcmp(msg, "INT") == 0) {
 		/* interrupted or unable to solve, unreserve the assignment */
