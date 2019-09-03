@@ -18,6 +18,8 @@
 
 #define TASK_SIZE 40
 
+#define COMPUTE_CHECK_SUM 1
+
 #define LUT_SIZE64 41
 #define LUT_SIZE128 81
 #define LUT_SIZEMPZ 512
@@ -66,6 +68,10 @@ static mp_bitcnt_t mpz_ctz(const mpz_t n)
 	return mpz_scan1(n, 0);
 }
 
+#if (COMPUTE_CHECK_SUM == 1)
+static unsigned long g_check_sum = 0;
+#endif
+
 /* check convergence */
 static int check(uint128_t n)
 {
@@ -80,6 +86,10 @@ static int check(uint128_t n)
 		n++;
 
 		e = __builtin_ctzx(n);
+
+#if (COMPUTE_CHECK_SUM == 1)
+		g_check_sum += e;
+#endif
 
 		n >>= e;
 
@@ -131,6 +141,10 @@ static void mpz_check(unsigned long nh, unsigned long nl)
 		mpz_add_ui(n, n, 1UL);
 
 		e = mpz_ctz(n);
+
+#if (COMPUTE_CHECK_SUM == 1)
+		g_check_sum += e;
+#endif
 
 		/* n >>= e */
 		mpz_fdiv_q_2exp(n, n, e);
@@ -230,6 +244,11 @@ int main(int argc, char *argv[])
 
 	printf("OVERFLOW 128 %lu\n", g_overflow_counter);
 	fflush(stdout);
+
+#if (COMPUTE_CHECK_SUM == 1)
+	printf("CHECKSUM %lu\n", g_check_sum);
+	fflush(stdout);
+#endif
 
 	printf("HALTED\n");
 	fflush(stdout);
