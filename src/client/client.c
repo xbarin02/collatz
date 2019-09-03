@@ -621,6 +621,8 @@ int main(int argc, char *argv[])
 				sleep(SLEEP_INTERVAL);
 			}
 
+			message(INFO "thread %i: returned assignment %lu\n", tid, n);
+
 			if (one_shot)
 				break;
 		}
