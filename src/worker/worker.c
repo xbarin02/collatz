@@ -185,6 +185,8 @@ int main(int argc, char *argv[])
 	struct rusage usage;
 	unsigned long usecs = 0;
 
+	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
 	while ((opt = getopt(argc, argv, "t:")) != -1) {
 		switch (opt) {
 			case 't':
@@ -199,9 +201,7 @@ int main(int argc, char *argv[])
 	task_id = (optind < argc) ? atoul(argv[optind]) : 0;
 
 	printf("TASK_SIZE %lu\n", task_size);
-	fflush(stdout);
 	printf("TASK_ID %lu\n", task_id);
-	fflush(stdout);
 
 	assert( 2*sizeof(unsigned long) == sizeof(uint128_t) && "unsupported memory model" );
 
@@ -210,7 +210,6 @@ int main(int argc, char *argv[])
 	n_sup = ( UINT128_C(task_id) << task_size ) + 3 + (1UL << task_size);
 
 	printf("RANGE 0x%016lx:%016lx .. 0x%016lx:%016lx\n", (unsigned long)(n>>64), (unsigned long)n, (unsigned long)(n_sup>>64), (unsigned long)n_sup);
-	fflush(stdout);
 
 	init_lut();
 
@@ -232,21 +231,16 @@ int main(int argc, char *argv[])
 		    (usage.ru_utime.tv_sec * 1000000UL <= ULONG_MAX - usage.ru_utime.tv_usec)) {
 			usecs = usage.ru_utime.tv_sec * 1000000UL + usage.ru_utime.tv_usec;
 			printf("USERTIME %lu %lu\n", (unsigned long)usage.ru_utime.tv_sec, usecs);
-			fflush(stdout);
 		} else if (sizeof(unsigned long) >= sizeof(time_t)) {
 			printf("USERTIME %lu\n", (unsigned long)usage.ru_utime.tv_sec);
-			fflush(stdout);
 		}
 	}
 
 	printf("OVERFLOW 128 %lu\n", g_overflow_counter);
-	fflush(stdout);
 
 	printf("CHECKSUM %lu\n", g_check_sum);
-	fflush(stdout);
 
 	printf("HALTED\n");
-	fflush(stdout);
 
 	return 0;
 }
