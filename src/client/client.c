@@ -232,7 +232,8 @@ int request_assignment(int fd, uint64_t *n, int request_lowest_incomplete, uint6
 	}
 
 	if (write_clid(fd, clid) < 0) {
-		message(WARN "server does not receive client ID\n");
+		message(ERR "server does not receive client ID\n");
+		return -1;
 	}
 
 	if (read_assignment_no(fd, n) < 0) {
@@ -510,7 +511,9 @@ int open_socket_and_return_assignment(uint64_t n, uint64_t task_size, uint64_t o
 	}
 
 	if (write_clid(fd, clid) < 0) {
-		message(WARN "server does not receive client ID\n");
+		message(ERR "server does not receive client ID\n");
+		close(fd);
+		return -1;
 	}
 
 	close(fd);
@@ -540,7 +543,9 @@ int open_socket_and_revoke_assignment(uint64_t n, uint64_t task_size, uint64_t c
 	}
 
 	if (write_clid(fd, clid) < 0) {
-		message(WARN "server does not receive client ID\n");
+		message(ERR "server does not receive client ID\n");
+		close(fd);
+		return -1;
 	}
 
 	close(fd);
