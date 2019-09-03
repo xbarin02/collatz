@@ -2,11 +2,12 @@
 
 make
 
-PLOTFILE=usertime.txt
+t=32
+
+PLOTFILE=usertime-$t.txt
 
 rm -f -- "$PLOTFILE"
 
-t=32
 e=0
 n=1
 

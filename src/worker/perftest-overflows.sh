@@ -2,11 +2,12 @@
 
 make
 
-PLOTFILE=overflows.txt
+t=32
+
+PLOTFILE=overflows-$t.txt
 
 rm -f -- "$PLOTFILE"
 
-t=32
 e=0
 n=1
 
