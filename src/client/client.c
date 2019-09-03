@@ -541,20 +541,14 @@ int run_assignment(unsigned long n, unsigned long task_size, unsigned long *p_ov
 			}
 		} else if (c == 2 && strcmp(ln_part[0], "USERTIME") == 0) {
 			unsigned long user_time = atoul(ln_part[1]);
-			/* TODO */
-			message(DBG "user time: %lu:%02lu:%02lu\n", user_time/60/60, user_time/60%60, user_time%60);
 			assert(p_user_time != NULL);
 			*p_user_time = user_time;
 		} else if (c == 3 && strcmp(ln_part[0], "USERTIME") == 0) {
 			unsigned long user_time = atoul(ln_part[1]);
-			/* TODO */
-			message(DBG "user time: %lu:%02lu:%02lu\n", user_time/60/60, user_time/60%60, user_time%60);
 			assert(p_user_time != NULL);
 			*p_user_time = user_time;
 		} else if (c == 2 && strcmp(ln_part[0], "CHECKSUM") == 0) {
 			unsigned long check_sum = atoul(ln_part[1]);
-			/* TODO */
-			message(DBG "check sum: %lu\n", check_sum);
 			assert(p_check_sum != NULL);
 			*p_check_sum = check_sum;
 		} else if (c == 1 && strcmp(ln_part[0], "HALTED") == 0) {
