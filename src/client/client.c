@@ -19,6 +19,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <inttypes.h>
+#include <netinet/tcp.h>
 
 #define SLEEP_INTERVAL 10
 
@@ -298,12 +299,18 @@ int open_socket_to_server()
 {
 	int fd;
 	struct sockaddr_in server_addr;
+	int i = 1;
 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (fd < 0) {
 		/* errno is set appropriately */
 		return -1;
+	}
+
+	if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *)&i, sizeof i) < 0) {
+		perror("setsockopt");
+		abort();
 	}
 
 	if (init_sockaddr(&server_addr, servername, serverport) < 0 ) {
