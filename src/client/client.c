@@ -173,11 +173,6 @@ int read_ul(int fd, unsigned long *nptr)
 	return read_uint64(fd, (uint64_t *)nptr);
 }
 
-int read_assignment_no(int fd, uint64_t *n)
-{
-	return read_uint64(fd, n);
-}
-
 int write_uint64(int fd, uint64_t n)
 {
 	uint32_t nh, nl;
@@ -204,6 +199,11 @@ int write_ul(int fd, unsigned long n)
 	assert( sizeof(unsigned long) == sizeof(uint64_t) );
 
 	return write_uint64(fd, (uint64_t)n);
+}
+
+int read_assignment_no(int fd, uint64_t *n)
+{
+	return read_uint64(fd, n);
 }
 
 int write_assignment_no(int fd, uint64_t n)
