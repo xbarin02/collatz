@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd ./collatz-$(hostname -s)/
+
 git pull
 
 cd
