@@ -426,6 +426,8 @@ int read_message(int fd)
 			message(WARN "client does not send the user time!\n");
 		}
 
+		/* TODO read check_sum */
+
 		message(INFO "assignment returned: %lu (%lu overflows, time %lu:%lu)\n", n, overflow_counter, user_time/60, user_time%60);
 
 		set_complete(n);
