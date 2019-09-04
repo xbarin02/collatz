@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
 
 	/* zero checksum is always invalid, so the server can implement simple valididty check */
 	if (g_check_sum == 0)
-		g_check_sum = ~0;
+		g_check_sum = ~UINT64_C(0);
 
 	printf("CHECKSUM %" PRIu64 "\n", g_check_sum);
 
