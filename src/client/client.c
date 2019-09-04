@@ -587,6 +587,12 @@ int main(int argc, char *argv[])
 	int one_shot = 0;
 	int request_lowest_incomplete = 0;
 
+	if (getenv("SERVER_NAME")) {
+		servername = getenv("SERVER_NAME");
+	}
+
+	message(INFO "server to be used: %s\n", servername);
+
 	while ((opt = getopt(argc, argv, "1l")) != -1) {
 		switch (opt) {
 			case '1':
