@@ -317,8 +317,8 @@ int main(int argc, char *argv[])
 	}
 
 	switch (query) {
-			uint64_t n = 0;
-			uint64_t task_size = 0;
+			uint64_t n;
+			uint64_t task_size;
 		case 'l':
 			if (open_socket_and_query_lowest_incomplete(&n, &task_size) < 0) {
 				message(ERR "open_socket_and_query_lowest_incomplete failed\n");
