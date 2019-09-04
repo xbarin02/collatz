@@ -18,7 +18,7 @@ ssh -TN -f -L 5006:localhost:5006 login1
 # tunel from localhost to login1 has been established
 export SERVER_NAME=localhost
 
-# dont forget git clone git@github.com:xbarin02/collatz.git into $HOME
+# don't forget git clone git@github.com:xbarin02/collatz.git into $HOME
 SRCDIR=$HOME/collatz
 TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
 
