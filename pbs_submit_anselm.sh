@@ -37,9 +37,12 @@ pushd -- "$TMP"
 
 cp -r "${SRCDIR}" .
 
-cd collatz/src/client
+cd collatz/src
 
+# build client & worker
 make clean all
+
+cd client
 
 stdbuf -o0 -e0 ./client -1 16
 
