@@ -446,6 +446,22 @@ int read_message(int fd)
 		message(INFO "assignment interrupted: %" PRIu64 "\n", n);
 
 		unset_assignment(n);
+	} else if (strcmp(msg, "LOI") == 0) {
+		if (write_assignment_no(fd, g_lowest_incomplete) < 0) {
+			return -1;
+		}
+
+		if (write_task_size(fd) < 0) {
+			return -1;
+		}
+	} else if (strcmp(msg, "HIR") == 0) {
+		if (write_assignment_no(fd, g_lowest_unassigned-1) < 0) {
+			return -1;
+		}
+
+		if (write_task_size(fd) < 0) {
+			return -1;
+		}
 	} else {
 		message(ERR "%s: unknown client message!\n", msg);
 		return -1;
