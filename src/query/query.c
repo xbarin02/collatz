@@ -323,14 +323,14 @@ int main(int argc, char *argv[])
 			if (open_socket_and_query_lowest_incomplete(&n, &task_size) < 0) {
 				message(ERR "open_socket_and_query_lowest_incomplete failed\n");
 			} else {
-				printf("%" PRIu64 "\n", n);
+				printf("%" PRIu64 " %" PRIu64 "\n", n, task_size);
 			}
 			break;
 		case 'h':
 			if (open_socket_and_query_highest_requested(&n, &task_size) < 0) {
 				message(ERR "open_socket_and_query_highest_requested failed\n");
 			} else {
-				printf("%" PRIu64 "\n", n);
+				printf("%" PRIu64 " %" PRIu64 "\n", n, task_size);
 			}
 			break;
 	}
