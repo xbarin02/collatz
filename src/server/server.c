@@ -526,6 +526,7 @@ int main(/*int argc, char *argv[]*/)
 		abort();
 	}
 
+	/* This probably doesn't do anything at all. */
 	if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (const void *)&reuse, (socklen_t)sizeof(reuse)) < 0) {
 		perror("setsockopt");
 		abort();

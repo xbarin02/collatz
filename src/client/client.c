@@ -308,6 +308,7 @@ int open_socket_to_server()
 		return -1;
 	}
 
+	/* This probably doesn't do anything at all. */
 	if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *)&i, sizeof i) < 0) {
 		perror("setsockopt");
 		abort();
