@@ -634,7 +634,7 @@ int main(int argc, char *argv[])
 			message(WARN "unable to generate random client ID");
 		}
 
-		message(INFO "client ID: 0x%16" PRIx64 "\n", clid);
+		message(INFO "thread %i: client ID: 0x%16" PRIx64 "\n", tid, clid);
 
 		while (!quit) {
 			uint64_t n;
