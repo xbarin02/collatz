@@ -491,7 +491,7 @@ int read_message(int fd)
 			return -1;
 		}
 	} else if (strcmp(msg, "HIR") == 0) {
-		if (write_assignment_no(fd, g_lowest_unassigned-1) < 0) {
+		if (write_assignment_no(fd, g_lowest_unassigned) < 0) {
 			return -1;
 		}
 
