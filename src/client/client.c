@@ -365,9 +365,9 @@ int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter,
 
 	while (fgets(line, 4096, output)) {
 		int c;
-
+#if 0
 		printf("%s", line);
-
+#endif
 		c = sscanf(line, "%63s %63s %63s %63s", ln_part[0], ln_part[1], ln_part[2], ln_part[3]);
 
 		ln_part[0][63] = 0;
