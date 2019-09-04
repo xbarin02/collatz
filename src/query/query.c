@@ -302,6 +302,12 @@ int main(int argc, char *argv[])
 	int opt;
 	int query = 0;
 
+	if (getenv("SERVER_NAME")) {
+		servername = getenv("SERVER_NAME");
+	}
+
+	message(INFO "server to be used: %s\n", servername);
+
 	while ((opt = getopt(argc, argv, "lh")) != -1) {
 		switch (opt) {
 			case 'l':
