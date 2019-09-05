@@ -407,6 +407,8 @@ int multiple_requests(int fd, int threads)
 	if (write_group_size(fd, threads) < 0) {
 		return -1;
 	}
+
+	return 0;
 }
 
 int request_assignment(int fd, uint64_t *n, uint64_t *task_size, uint64_t clid)
@@ -481,11 +483,14 @@ int revoke_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t clid)
 	if (write_clid(fd, clid) < 0) {
 		return -1;
 	}
+
+	return 0;
 }
 
 int open_socket_and_revoke_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t clid[])
 {
 	int fd;
+	int tid;
 
 	fd = open_socket_to_server();
 
@@ -548,6 +553,7 @@ int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow_
 int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t overflow_counter[], uint64_t user_time[], uint64_t check_sum[], uint64_t clid[])
 {
 	int fd;
+	int tid;
 
 	fd = open_socket_to_server();
 
@@ -598,7 +604,8 @@ int main(int argc, char *argv[])
 	int threads;
 	int opt;
 	int one_shot = 0;
-	int request_lowest_incomplete = 0;
+	uint64_t *clid;
+	int tid;
 
 	if (getenv("SERVER_NAME")) {
 		servername = getenv("SERVER_NAME");
@@ -606,13 +613,10 @@ int main(int argc, char *argv[])
 
 	message(INFO "server to be used: %s\n", servername);
 
-	while ((opt = getopt(argc, argv, "1l")) != -1) {
+	while ((opt = getopt(argc, argv, "1")) != -1) {
 		switch (opt) {
 			case '1':
 				one_shot = 1;
-				break;
-			case 'l':
-				request_lowest_incomplete = 1;
 				break;
 			default:
 				message(ERR "Usage: %s [-1] num_threads\n", argv[0]);
@@ -628,13 +632,29 @@ int main(int argc, char *argv[])
 		message(INFO "one shot mode activated!\n");
 	}
 
-	message(INFO "starting %i worker threads...\n", threads);
+	clid = malloc(sizeof(uint64_t) * threads);
+
+	if (clid == NULL) {
+		message(ERR "memory allocation failed!\n");
+		return EXIT_FAILURE;
+	}
+
+	for (tid = 0; tid < threads; ++tid) {
+		clid[tid] = 0;
+		if (open_urandom_and_read_clid(clid+tid) < 0) {
+			message(WARN "unable to generate random client ID");
+		}
+	}
 
 	signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
 	signal(SIGALRM, signal_handler);
 	signal(SIGUSR1, signal_handler);
 	signal(SIGUSR2, signal_handler);
+
+	/* TODO */
+#if 0
+	message(INFO "starting %i worker threads...\n", threads);
 
 	#pragma omp parallel num_threads(threads)
 	{
@@ -688,6 +708,8 @@ int main(int argc, char *argv[])
 				break;
 		}
 	}
+#endif
+	free(clid);
 
 	message(INFO "client has been halted\n");
 
