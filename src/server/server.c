@@ -587,7 +587,7 @@ int main(int argc, char *argv[])
 
 		while (g_lowest_unassigned > g_lowest_incomplete) {
 			g_lowest_unassigned--;
-			if (IS_ASSIGNED(g_lowest_unassigned)) {
+			if (IS_ASSIGNED(g_lowest_unassigned) && !IS_COMPLETE(g_lowest_unassigned)) {
 				SET_UNASSIGNED(g_lowest_unassigned);
 			}
 		}
