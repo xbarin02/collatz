@@ -240,9 +240,9 @@ int write_user_time(int fd, uint64_t user_time)
 	return write_uint64(fd, user_time);
 }
 
-int write_check_sum(int fd, uint64_t check_sum)
+int write_checksum(int fd, uint64_t checksum)
 {
-	return write_uint64(fd, check_sum);
+	return write_uint64(fd, checksum);
 }
 
 int open_socket_to_server()
@@ -514,7 +514,7 @@ int open_socket_and_revoke_multiple_assignments(int threads, uint64_t n[], uint6
 	return 0;
 }
 
-int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow_counter, uint64_t user_time, uint64_t check_sum, uint64_t clid)
+int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow_counter, uint64_t user_time, uint64_t checksum, uint64_t clid)
 {
 	if (write_(fd, "RET", 4) < 0) {
 		return -1;
@@ -536,7 +536,7 @@ int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow_
 		return -1;
 	}
 
-	if (write_check_sum(fd, check_sum) < 0) {
+	if (write_checksum(fd, checksum) < 0) {
 		return -1;
 	}
 
@@ -547,7 +547,7 @@ int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow_
 	return 0;
 }
 
-int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t overflow_counter[], uint64_t user_time[], uint64_t check_sum[], uint64_t clid[])
+int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t overflow_counter[], uint64_t user_time[], uint64_t checksum[], uint64_t clid[])
 {
 	int fd;
 	int tid;
@@ -565,7 +565,7 @@ int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint6
 	}
 
 	for (tid = 0; tid < threads; ++tid) {
-		if (return_assignment(fd, n[tid], task_size[tid], overflow_counter[tid], user_time[tid], check_sum[tid], clid[tid]) < 0) {
+		if (return_assignment(fd, n[tid], task_size[tid], overflow_counter[tid], user_time[tid], checksum[tid], clid[tid]) < 0) {
 			message(ERR "return_assignment failed (%i/%i)\n", tid, threads);
 			close(fd);
 			return -1;
@@ -596,6 +596,19 @@ int open_urandom_and_read_clid(uint64_t *clid)
 	return 0;
 }
 
+int all_succeeded(int threads, int *success)
+{
+	int tid;
+
+	for (tid = 0; tid < threads; ++tid) {
+		if (success[tid] < 0) {
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	int threads;
@@ -608,6 +621,7 @@ int main(int argc, char *argv[])
 	uint64_t *overflow_counter;
 	uint64_t *user_time;
 	uint64_t *checksum;
+	int *success;
 
 	if (getenv("SERVER_NAME")) {
 		servername = getenv("SERVER_NAME");
@@ -634,14 +648,15 @@ int main(int argc, char *argv[])
 		message(INFO "one shot mode activated!\n");
 	}
 
-	clid = malloc(sizeof(uint64_t) * threads);
 	task_id = malloc(sizeof(uint64_t) * threads);
 	task_size = malloc(sizeof(uint64_t) * threads);
 	overflow_counter = malloc(sizeof(uint64_t) * threads);
 	user_time = malloc(sizeof(uint64_t) * threads);
 	checksum = malloc(sizeof(uint64_t) * threads);
+	clid = malloc(sizeof(uint64_t) * threads);
+	success = malloc(sizeof(int) * threads);
 
-	if (clid == NULL || task_id == NULL || task_size == NULL || overflow_counter == NULL || user_time == NULL || checksum == NULL ) {
+	if (task_id == NULL || task_size == NULL || overflow_counter == NULL || user_time == NULL || checksum == NULL || clid == NULL) {
 		message(ERR "memory allocation failed!\n");
 		return EXIT_FAILURE;
 	}
@@ -659,70 +674,55 @@ int main(int argc, char *argv[])
 	signal(SIGUSR1, signal_handler);
 	signal(SIGUSR2, signal_handler);
 
-	/* TODO */
-#if 0
-	message(INFO "starting %i worker threads...\n", threads);
-
-	#pragma omp parallel num_threads(threads)
-	{
-		int tid = threads_get_thread_id();
-		uint64_t clid = 0;
-
-		message(INFO "thread %i: started\n", tid);
-
-		if (open_urandom_and_read_clid(&clid) < 0) {
-			message(WARN "unable to generate random client ID");
+	while (!quit) {
+		while (open_socket_and_return_multiple_assignments(threads, task_id, task_size, overflow_counter, user_time, checksum, clid)) < 0) {
+			message(ERR "open_socket_and_return_multiple_assignments failed\n");
+			sleep(SLEEP_INTERVAL);
 		}
 
-		message(INFO "thread %i: client ID: 0x%16" PRIx64 "\n", tid, clid);
+		#pragma omp parallel num_threads(threads)
+		{
+			int tid = threads_get_thread_id();
 
-		while (!quit) {
-			uint64_t n;
-			uint64_t task_size = 0;
-			uint64_t overflow_counter = 0;
-			uint64_t user_time = 0;
-			uint64_t check_sum = 0;
+			message(INFO "thread %i: started, client ID: 0x%16" PRIx64 "\n", tid, clid[tid]);
+			message(INFO "thread %i: got assignment %" PRIu64 "\n", tid, task_id[tid]);
 
-			while (open_socket_and_request_assignment(&n, request_lowest_incomplete, &task_size, clid) < 0) {
-				message(ERR "thread %i: open_socket_and_request_assignment failed\n", tid);
-				sleep(SLEEP_INTERVAL);
-			}
+			success[tid] = run_assignment(task_id[tid], task_size[tid], overflow_counter[tid], user_time[tid], checksum[tid]);
 
-			message(INFO "thread %i: got assignment %" PRIu64 "\n", tid, n);
-
-			if (run_assignment(n, task_size, &overflow_counter, &user_time, &check_sum) < 0) {
+			if (success[tid] < 0) {
 				message(ERR "thread %i: run_assignment failed\n", tid);
-
-				while (open_socket_and_revoke_assignment(n, task_size, clid) < 0) {
-					message(ERR "thread %i: open_socket_and_revoke_assignment failed\n", tid);
-					sleep(SLEEP_INTERVAL);
-				}
-
-				if (one_shot)
-					break;
-
-				continue;
 			}
+		}
 
-			while (open_socket_and_return_assignment(n, task_size, overflow_counter, user_time, check_sum, clid) < 0) {
-				message(ERR "thread %i: open_socket_and_return_assignment failed\n", tid);
+		if (all_succeeded(threads, success) < 0) {
+			while (open_socket_and_revoke_multiple_assignments(...) < 0) {
+				message(ERR "open_socket_and_revoke_multiple_assignments failed\n");
 				sleep(SLEEP_INTERVAL);
 			}
-
-			message(INFO "thread %i: returned assignment %" PRIu64 "\n", tid, n);
 
 			if (one_shot)
 				break;
-		}
-	}
-#endif
 
-	free(clid);
+			continue;
+		}
+
+		while (open_socket_and_return_multiple_assignments(...) < 0) {
+			message(ERR "open_socket_and_return_multiple_assignments failed\n");
+			sleep(SLEEP_INTERVAL);
+		}
+
+		message(INFO "all assignments returned\n");
+
+		if (one_shot)
+			break;
+	}
+
 	free(task_id);
 	free(task_size);
 	free(overflow_counter);
 	free(user_time);
 	free(checksum);
+	free(clid);
 
 	message(INFO "client has been halted\n");
 
