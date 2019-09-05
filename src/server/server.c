@@ -21,6 +21,8 @@
 #include <limits.h>
 #include <inttypes.h>
 #include <netinet/tcp.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 const uint16_t serverport = 5006;
 
@@ -526,6 +528,16 @@ int main(/*int argc, char *argv[]*/)
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
 	struct sockaddr_in server_addr;
 	int reuse = 1;
+	struct rlimit rlim;
+
+	if (getrlimit(RLIMIT_NOFILE, &rlim) < 0) {
+		/* errno is set appropriately. */
+		perror("getrlimit");
+	} else {
+		assert( sizeof(uint64_t) >= sizeof(rlim_t) );
+
+		message(INFO "limit file descriptors: %" PRIu64 " (hard %" PRIu64 ")\n", rlim.rlim_cur, rlim.rlim_max);
+	}
 
 	message(INFO "starting server...\n");
 
