@@ -6,7 +6,7 @@ git pull
 
 cd
 
-killall client
+killall client mclient
 
 sleep 1
 
