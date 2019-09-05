@@ -687,7 +687,7 @@ int main(int argc, char *argv[])
 			message(INFO "thread %i: started, client ID: 0x%16" PRIx64 "\n", tid, clid[tid]);
 			message(INFO "thread %i: got assignment %" PRIu64 "\n", tid, task_id[tid]);
 
-			success[tid] = run_assignment(task_id[tid], task_size[tid], overflow_counter[tid], user_time[tid], checksum[tid]);
+			success[tid] = run_assignment(task_id[tid], task_size[tid], overflow_counter+tid, user_time+tid, checksum+tid);
 
 			if (success[tid] < 0) {
 				message(ERR "thread %i: run_assignment failed\n", tid);
