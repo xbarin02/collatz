@@ -677,6 +677,8 @@ int main(int argc, char *argv[])
 	while (!quit) {
 		while (open_socket_and_request_multiple_assignments(threads, task_id, task_size, clid) < 0) {
 			message(ERR "open_socket_and_request_multiple_assignments failed\n");
+			if (quit)
+				goto end;
 			sleep(SLEEP_INTERVAL);
 		}
 
@@ -714,6 +716,9 @@ int main(int argc, char *argv[])
 
 		if (one_shot)
 			break;
+
+		end:
+			;
 	}
 
 	free(task_id);
