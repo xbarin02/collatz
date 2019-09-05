@@ -3,8 +3,8 @@
 cd collatz-$(hostname -s)/src
 
 make -C worker clean all
-make -C client clean all
+make -C mclient clean all
 
-cd client
+cd mclient
 
 screen -d -m ./spawn.sh
