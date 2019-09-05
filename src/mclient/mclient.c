@@ -596,19 +596,6 @@ int open_urandom_and_read_clid(uint64_t *clid)
 	return 0;
 }
 
-int all_succeeded(int threads, int *success)
-{
-	int tid;
-
-	for (tid = 0; tid < threads; ++tid) {
-		if (success[tid] < 0) {
-			return -1;
-		}
-	}
-
-	return 0;
-}
-
 int run_assignments_in_parallel(int threads, uint64_t task_id[], uint64_t task_size[], uint64_t overflow_counter[], uint64_t user_time[], uint64_t checksum[])
 {
 	int *success;
@@ -645,7 +632,6 @@ int run_assignments_in_parallel(int threads, uint64_t task_id[], uint64_t task_s
 
 	return 0;
 }
-
 
 int main(int argc, char *argv[])
 {
