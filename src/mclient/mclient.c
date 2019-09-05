@@ -675,8 +675,8 @@ int main(int argc, char *argv[])
 	signal(SIGUSR2, signal_handler);
 
 	while (!quit) {
-		while (open_socket_and_return_multiple_assignments(threads, task_id, task_size, overflow_counter, user_time, checksum, clid)) < 0) {
-			message(ERR "open_socket_and_return_multiple_assignments failed\n");
+		while (open_socket_and_request_multiple_assignments(threads, task_id, task_size, clid) < 0) {
+			message(ERR "open_socket_and_request_multiple_assignments failed\n");
 			sleep(SLEEP_INTERVAL);
 		}
 
@@ -695,7 +695,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (all_succeeded(threads, success) < 0) {
-			while (open_socket_and_revoke_multiple_assignments(...) < 0) {
+			while (open_socket_and_revoke_multiple_assignments(threads, task_id, task_size, clid) < 0) {
 				message(ERR "open_socket_and_revoke_multiple_assignments failed\n");
 				sleep(SLEEP_INTERVAL);
 			}
@@ -706,7 +706,7 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		while (open_socket_and_return_multiple_assignments(...) < 0) {
+		while (open_socket_and_return_multiple_assignments(threads, task_id, task_size, overflow_counter, user_time, checksum, clid) < 0) {
 			message(ERR "open_socket_and_return_multiple_assignments failed\n");
 			sleep(SLEEP_INTERVAL);
 		}
