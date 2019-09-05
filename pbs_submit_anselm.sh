@@ -22,7 +22,7 @@ export SERVER_NAME=localhost
 SRCDIR=$HOME/collatz
 TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
 
-echo "PBS_ARRAY_INDEX=${PBS_ARRAY_INDEX}"
+# echo "PBS_ARRAY_INDEX=${PBS_ARRAY_INDEX}"
 echo "PBS_JOBID=${PBS_JOBID}"
 # this is the cwd where qsub was executed, not cwd of the script itself
 echo "PBS_O_WORKDIR=${PBS_O_WORKDIR}"
