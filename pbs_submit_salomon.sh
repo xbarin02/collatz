@@ -3,6 +3,7 @@
 #PBS -q qprod
 #PBS -N collatz
 #PBS -l select=1:ncpus=24:ompthreads=24,walltime=04:00:00
+#PBS -M ibarina@fit.vutbr.cz
 
 set -u
 set -e
@@ -39,12 +40,12 @@ cp -r "${SRCDIR}" .
 
 cd collatz/src
 
-# build client & worker
+# build mclient & worker
 make clean all
 
-cd client
+cd mclient
 
-stdbuf -o0 -e0 ./client -1 24
+stdbuf -o0 -e0 ./mclient -1 24
 
 popd
 rm -rf -- "$TMP"
