@@ -704,7 +704,6 @@ int main(int argc, char *argv[])
 			sleep(SLEEP_INTERVAL);
 		}
 
-
 		if (run_assignments_in_parallel(threads, task_id, task_size, overflow_counter, user_time, checksum) < 0) {
 			while (open_socket_and_revoke_multiple_assignments(threads, task_id, task_size, clid) < 0) {
 				message(ERR "open_socket_and_revoke_multiple_assignments failed\n");
