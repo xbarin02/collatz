@@ -609,6 +609,44 @@ int all_succeeded(int threads, int *success)
 	return 0;
 }
 
+int run_assignments_in_parallel(int threads, uint64_t task_id[], uint64_t task_size[], uint64_t overflow_counter[], uint64_t user_time[], uint64_t checksum[])
+{
+	int *success;
+	int tid;
+
+	assert(threads > 0);
+
+	success = malloc(sizeof(int) * threads);
+
+	if (success == NULL) {
+		return -1;
+	}
+
+	#pragma omp parallel num_threads(threads)
+	{
+		int tid = threads_get_thread_id();
+
+		message(INFO "thread %i: got assignment %" PRIu64 "\n", tid, task_id[tid]);
+
+		success[tid] = run_assignment(task_id[tid], task_size[tid], overflow_counter+tid, user_time+tid, checksum+tid);
+
+		if (success[tid] < 0) {
+			message(ERR "thread %i: run_assignment failed\n", tid);
+		}
+	}
+
+	for (tid = 0; tid < threads; ++tid) {
+		if (success[tid] < 0) {
+			return -1;
+		}
+	}
+
+	free(success);
+
+	return 0;
+}
+
+
 int main(int argc, char *argv[])
 {
 	int threads;
@@ -621,7 +659,6 @@ int main(int argc, char *argv[])
 	uint64_t *overflow_counter;
 	uint64_t *user_time;
 	uint64_t *checksum;
-	int *success;
 
 	if (getenv("SERVER_NAME")) {
 		servername = getenv("SERVER_NAME");
@@ -654,7 +691,6 @@ int main(int argc, char *argv[])
 	user_time = malloc(sizeof(uint64_t) * threads);
 	checksum = malloc(sizeof(uint64_t) * threads);
 	clid = malloc(sizeof(uint64_t) * threads);
-	success = malloc(sizeof(int) * threads);
 
 	if (task_id == NULL || task_size == NULL || overflow_counter == NULL || user_time == NULL || checksum == NULL || clid == NULL) {
 		message(ERR "memory allocation failed!\n");
@@ -682,20 +718,8 @@ int main(int argc, char *argv[])
 			sleep(SLEEP_INTERVAL);
 		}
 
-		#pragma omp parallel num_threads(threads)
-		{
-			int tid = threads_get_thread_id();
 
-			message(INFO "thread %i: got assignment %" PRIu64 "\n", tid, task_id[tid]);
-
-			success[tid] = run_assignment(task_id[tid], task_size[tid], overflow_counter+tid, user_time+tid, checksum+tid);
-
-			if (success[tid] < 0) {
-				message(ERR "thread %i: run_assignment failed\n", tid);
-			}
-		}
-
-		if (all_succeeded(threads, success) < 0) {
+		if (run_assignments_in_parallel(threads, task_id, task_size, overflow_counter, user_time, checksum) < 0) {
 			while (open_socket_and_revoke_multiple_assignments(threads, task_id, task_size, clid) < 0) {
 				message(ERR "open_socket_and_revoke_multiple_assignments failed\n");
 				sleep(SLEEP_INTERVAL);
