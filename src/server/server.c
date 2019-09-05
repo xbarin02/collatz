@@ -536,12 +536,25 @@ void set_complete_range_from_hercher()
 
 }
 
-int main(/*int argc, char *argv[]*/)
+int main(int argc, char *argv[])
 {
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
 	struct sockaddr_in server_addr;
 	int reuse = 1;
 	struct rlimit rlim;
+	int opt;
+	int clear_incomplete_assigned = 0;
+
+	while ((opt = getopt(argc, argv, "c")) != -1) {
+		switch (opt) {
+			case 'c':
+				clear_incomplete_assigned = 1;
+				break;
+			default:
+				message(ERR "Usage: %s [-c]\n", argv[0]);
+				return EXIT_FAILURE;
+		}
+	}
 
 	if (getrlimit(RLIMIT_NOFILE, &rlim) < 0) {
 		/* errno is set appropriately. */
@@ -568,6 +581,19 @@ int main(/*int argc, char *argv[]*/)
 
 	for (g_lowest_incomplete = 0; IS_COMPLETE(g_lowest_incomplete); ++g_lowest_incomplete)
 		;
+
+	if (clear_incomplete_assigned) {
+		message(WARN "incomplete assignments will be cleared...\n");
+
+		while (g_lowest_unassigned > g_lowest_incomplete) {
+			g_lowest_unassigned--;
+			if (IS_ASSIGNED(g_lowest_unassigned)) {
+				SET_UNASSIGNED(g_lowest_unassigned);
+			}
+		}
+
+		message(WARN "incomplete assignments have been cleared!\n");
+	}
 
 	message(INFO "lowest unassigned = %" PRIu64 "\n", g_lowest_unassigned);
 	message(INFO "lowest incomplete = %" PRIu64 "\n", g_lowest_incomplete);
