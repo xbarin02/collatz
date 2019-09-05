@@ -260,8 +260,8 @@ int open_socket_to_server()
 
 	/* This probably doesn't do anything at all. */
 	if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *)&i, sizeof i) < 0) {
-		perror("setsockopt");
-		abort();
+		close(fd);
+		return -1;
 	}
 
 	if (init_sockaddr(&server_addr, servername, serverport) < 0 ) {
@@ -291,7 +291,7 @@ static uint64_t atou64(const char *nptr)
 	return (uint64_t)atoul(nptr);
 }
 
-int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_user_time, uint64_t *p_check_sum)
+int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_user_time, uint64_t *p_checksum)
 {
 	int r;
 	char buffer[4096];
@@ -303,9 +303,6 @@ int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter,
 	if (sprintf(buffer, "%s %" PRIu64, taskpath, n) < 0) {
 		return -1;
 	}
-
-	/* spawn sub-process */
-	/* https://www.gnu.org/software/libc/manual/html_mono/libc.html#Pipe-to-a-Subprocess */
 
 	output = popen(buffer, "r");
 
@@ -333,9 +330,9 @@ int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter,
 				return -1;
 			}
 		} else if (c == 2 && strcmp(ln_part[0], "TASK_ID") == 0) {
-			uint64_t task_id = atou64(ln_part[1]);
+			uint64_t worker_task_id = atou64(ln_part[1]);
 
-			if (n != task_id) {
+			if (n != worker_task_id) {
 				message(ERR "client <---> worker communication problem!\n");
 				return -1;
 			}
@@ -360,11 +357,11 @@ int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter,
 
 			*p_user_time = user_time;
 		} else if (c == 2 && strcmp(ln_part[0], "CHECKSUM") == 0) {
-			uint64_t check_sum = atou64(ln_part[1]);
+			uint64_t checksum = atou64(ln_part[1]);
 
-			assert(p_check_sum != NULL);
+			assert(p_checksum != NULL);
 
-			*p_check_sum = check_sum;
+			*p_checksum = checksum;
 		} else if (c == 1 && strcmp(ln_part[0], "HALTED") == 0) {
 			/* this was expected */
 			success = 1;
@@ -604,8 +601,13 @@ int main(int argc, char *argv[])
 	int threads;
 	int opt;
 	int one_shot = 0;
-	uint64_t *clid;
 	int tid;
+	uint64_t *clid;
+	uint64_t *task_id;
+	uint64_t *task_size;
+	uint64_t *overflow_counter;
+	uint64_t *user_time;
+	uint64_t *checksum;
 
 	if (getenv("SERVER_NAME")) {
 		servername = getenv("SERVER_NAME");
@@ -633,8 +635,13 @@ int main(int argc, char *argv[])
 	}
 
 	clid = malloc(sizeof(uint64_t) * threads);
+	task_id = malloc(sizeof(uint64_t) * threads);
+	task_size = malloc(sizeof(uint64_t) * threads);
+	overflow_counter = malloc(sizeof(uint64_t) * threads);
+	user_time = malloc(sizeof(uint64_t) * threads);
+	checksum = malloc(sizeof(uint64_t) * threads);
 
-	if (clid == NULL) {
+	if (clid == NULL || task_id == NULL || task_size == NULL || overflow_counter == NULL || user_time == NULL || checksum == NULL ) {
 		message(ERR "memory allocation failed!\n");
 		return EXIT_FAILURE;
 	}
@@ -709,7 +716,13 @@ int main(int argc, char *argv[])
 		}
 	}
 #endif
+
 	free(clid);
+	free(task_id);
+	free(task_size);
+	free(overflow_counter);
+	free(user_time);
+	free(checksum);
 
 	message(INFO "client has been halted\n");
 
