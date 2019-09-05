@@ -357,7 +357,20 @@ int read_message(int fd)
 		return -1;
 	}
 
-	if (strcmp(msg, "REQ") == 0) {
+	if (strcmp(msg, "MUL") == 0) {
+		uint64_t threads;
+		int tid;
+
+		read_uint64(fd, &threads);
+
+		message(INFO "received MUL request for %" PRIu64 " threads\n", threads);
+
+		assert(threads < INT_MAX);
+
+		for (tid = 0; tid < (int)threads; ++tid) {
+			read_message(fd);
+		}
+	} else if (strcmp(msg, "REQ") == 0) {
 		/* requested assignment */
 		uint64_t n;
 
