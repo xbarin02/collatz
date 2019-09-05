@@ -368,7 +368,10 @@ int read_message(int fd)
 		assert(threads < INT_MAX);
 
 		for (tid = 0; tid < (int)threads; ++tid) {
-			read_message(fd);
+			if (read_message(fd) < 0) {
+				message(ERR "cannot completely process the MUL request\n");
+				return -1;
+			}
 		}
 	} else if (strcmp(msg, "REQ") == 0) {
 		/* requested assignment */
