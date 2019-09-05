@@ -602,7 +602,7 @@ int main(int argc, char *argv[])
 				request_lowest_incomplete = 1;
 				break;
 			default:
-				message(ERR "Usage: %s [-1] num_threads\n", argv[0]);
+				message(ERR "Usage: %s [-1] [-l] num_threads\n", argv[0]);
 				return EXIT_FAILURE;
 		}
 	}
