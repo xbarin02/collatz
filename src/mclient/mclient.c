@@ -408,10 +408,16 @@ int multiple_requests(int fd, int threads)
 	return 0;
 }
 
-int request_assignment(int fd, uint64_t *n, uint64_t *task_size, uint64_t clid)
+int request_assignment(int fd, int request_lowest_incomplete, uint64_t *n, uint64_t *task_size, uint64_t clid)
 {
-	if (write_(fd, "REQ", 4) < 0) {
-		return -1;
+	if (request_lowest_incomplete) {
+		if (write_(fd, "req", 4) < 0) {
+			return -1;
+		}
+	} else {
+		if (write_(fd, "REQ", 4) < 0) {
+			return -1;
+		}
 	}
 
 	if (write_clid(fd, clid) < 0) {
@@ -433,7 +439,7 @@ int request_assignment(int fd, uint64_t *n, uint64_t *task_size, uint64_t clid)
 	return 0;
 }
 
-int open_socket_and_request_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t clid[])
+int open_socket_and_request_multiple_assignments(int threads, int request_lowest_incomplete, uint64_t n[], uint64_t task_size[], uint64_t clid[])
 {
 	int fd;
 	int tid;
@@ -451,7 +457,7 @@ int open_socket_and_request_multiple_assignments(int threads, uint64_t n[], uint
 	}
 
 	for (tid = 0; tid < threads; ++tid) {
-		if (request_assignment(fd, n+tid, task_size+tid, clid[tid]) < 0) {
+		if (request_assignment(fd, request_lowest_incomplete, n+tid, task_size+tid, clid[tid]) < 0) {
 			message(ERR "request_assignment failed (%i/%i)\n", tid, threads);
 			close(fd);
 			return -1;
@@ -638,6 +644,7 @@ int main(int argc, char *argv[])
 	int threads;
 	int opt;
 	int one_shot = 0;
+	int request_lowest_incomplete = 0;
 	int tid;
 	uint64_t *clid;
 	uint64_t *task_id;
@@ -652,10 +659,13 @@ int main(int argc, char *argv[])
 
 	message(INFO "server to be used: %s\n", servername);
 
-	while ((opt = getopt(argc, argv, "1")) != -1) {
+	while ((opt = getopt(argc, argv, "1l")) != -1) {
 		switch (opt) {
 			case '1':
 				one_shot = 1;
+				break;
+			case 'l':
+				request_lowest_incomplete = 1;
 				break;
 			default:
 				message(ERR "Usage: %s [-1] num_threads\n", argv[0]);
@@ -697,7 +707,7 @@ int main(int argc, char *argv[])
 	signal(SIGUSR2, signal_handler);
 
 	while (!quit) {
-		while (open_socket_and_request_multiple_assignments(threads, task_id, task_size, clid) < 0) {
+		while (open_socket_and_request_multiple_assignments(threads, request_lowest_incomplete, task_id, task_size, clid) < 0) {
 			message(ERR "open_socket_and_request_multiple_assignments failed\n");
 			if (quit)
 				goto end;
