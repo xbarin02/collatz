@@ -446,11 +446,13 @@ int read_message(int fd, int thread_id)
 
 		/* 30 minutes */
 		if (user_time < 30*60) {
-			message(WARN "suspiciously fast calculation!\n");
+			message(ERR "suspiciously fast calculation, rejecting the result!\n");
+			return -1;
 		}
 
 		if ( (checksum>>24) != 98063 ) {
-			message(WARN "suspicious checksum!\n");
+			message(ERR "suspicious checksum, rejecting the result!\n");
+			return -1;
 		}
 
 		message(INFO "assignment returned: %" PRIu64 " (%" PRIu64 " overflows, time %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ", checksum 0x%016" PRIx64 ")\n",
