@@ -51,6 +51,7 @@ int main()
 {
 	uint64_t n;
 	uint64_t min = UINT64_MAX, max = 0;
+	int c = 0;
 
 	g_checksums = open_checksums();
 
@@ -65,6 +66,19 @@ int main()
 
 	printf("min = %" PRIu64 " (0x%" PRIx64 "); min>>24 = %" PRIu64 " (0x%" PRIx64 ")\n", min, min, min>>24, min>>24);
 	printf("max = %" PRIu64 " (0x%" PRIx64 "); max>>24 = %" PRIu64 " (0x%" PRIx64 ")\n", max, max, max>>24, max>>24);
+
+	printf("\n");
+
+	for (n = 91226112; n < ASSIGNMENTS_NO; ++n) {
+		uint64_t checksum = g_checksums[n];
+
+		if (checksum == 0) {
+			printf("missing checksum on the assignment %" PRIu64 "\n", n);
+
+			if (++c == 10)
+				break;
+		}
+	}
 
 	return 0;
 }
