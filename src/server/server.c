@@ -399,7 +399,7 @@ int read_message(int fd)
 		uint64_t task_size = 0;
 		uint64_t overflow_counter = 0;
 		uint64_t user_time = 0;
-		uint64_t check_sum = 0;
+		uint64_t checksum = 0;
 
 		if (read_assignment_no(fd, &n) < 0) {
 			return -1;
@@ -425,7 +425,7 @@ int read_message(int fd)
 			return -1;
 		}
 
-		if (read_check_sum(fd, &check_sum) < 0) {
+		if (read_check_sum(fd, &checksum) < 0) {
 			message(ERR "client does not send the check sum!\n");
 			return -1;
 		}
@@ -434,12 +434,12 @@ int read_message(int fd)
 			message(WARN "client does not send client ID\n");
 		}
 
-		if (user_time == 0 && check_sum == 0) {
+		if (user_time == 0 && checksum == 0) {
 			message(ERR "broken client, discarting the result!\n");
 			return -1;
 		}
 
-		if (check_sum == 0) {
+		if (checksum == 0) {
 			message(ERR "zero checksum is invalid!\n");
 			return -1;
 		}
@@ -449,16 +449,20 @@ int read_message(int fd)
 			message(WARN "suspiciously fast calculation!\n");
 		}
 
+		if ( (checksum>>24) != 98063 ) {
+			message(WARN "suspicious checksum!\n");
+		}
+
 		message(INFO "assignment returned: %" PRIu64 " (%" PRIu64 " overflows, time %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ", checksum 0x%016" PRIx64 ")\n",
-			n, overflow_counter, user_time/60/60, user_time/60%60, user_time%60, check_sum);
+			n, overflow_counter, user_time/60/60, user_time/60%60, user_time%60, checksum);
 
 		set_complete(n);
 
-		if (g_checksums[n] != 0 && g_checksums[n] != check_sum) {
+		if (g_checksums[n] != 0 && g_checksums[n] != checksum) {
 			message(ERR "checksums do not match! (the other checksum is %" PRIu64 ")\n", g_checksums[n]);
 		}
 
-		g_checksums[n] = check_sum;
+		g_checksums[n] = checksum;
 	} else if (strcmp(msg, "req") == 0) {
 		/* requested lowest incomplete assignment */
 		uint64_t n;
