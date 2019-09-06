@@ -24,12 +24,7 @@ const uint64_t *open_checksums()
 		perror("open");
 		abort();
 	}
-/*
-	if (ftruncate(fd, (off_t)CHECKSUMS_SIZE) < 0) {
-		perror("ftruncate");
-		abort();
-	}
-*/
+
 	ptr = mmap(NULL, (size_t)CHECKSUMS_SIZE, PROT_READ, MAP_SHARED, fd, 0);
 
 	if (ptr == MAP_FAILED) {
