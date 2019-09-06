@@ -273,9 +273,9 @@ void unset_assignment(uint64_t n)
 	}
 }
 
-uint64_t get_missed_assignment()
+uint64_t get_missed_assignment(int thread_id)
 {
-	uint64_t n = g_lowest_incomplete;
+	uint64_t n = g_lowest_incomplete + thread_id;
 
 	SET_ASSIGNED(n);
 
@@ -343,7 +343,7 @@ uint64_t *open_checksums()
 	return (uint64_t *)ptr;
 }
 
-int read_message(int fd)
+int read_message(int fd, int thread_id)
 {
 	char msg[4];
 	uint64_t clid;
@@ -368,7 +368,7 @@ int read_message(int fd)
 		assert(threads < INT_MAX);
 
 		for (tid = 0; tid < (int)threads; ++tid) {
-			if (read_message(fd) < 0) {
+			if (read_message(fd, tid) < 0) {
 				message(ERR "cannot completely process the MUL request\n");
 				return -1;
 			}
@@ -467,7 +467,7 @@ int read_message(int fd)
 		/* requested lowest incomplete assignment */
 		uint64_t n;
 
-		n = get_missed_assignment();
+		n = get_missed_assignment(thread_id);
 
 		message(INFO "assignment requested: %" PRIu64 " (lowest incomplete)\n", n);
 
@@ -663,7 +663,7 @@ int main(int argc, char *argv[])
 		}
 #endif
 
-		if (read_message(cl_fd) < 0) {
+		if (read_message(cl_fd, 0) < 0) {
 			message(ERR "client <--> server communication failure!\n");
 		}
 
