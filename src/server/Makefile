@@ -1,7 +1,7 @@
 CFLAGS += -std=c89 -pedantic -Wall -Wextra -fopenmp -march=native -O3 $(EXTRA_CFLAGS)
 LDFLAGS += -fopenmp $(EXTRA_LDFLAGS)
 LDLIBS += $(EXTRA_LDLIBS)
-BINS = server
+BINS = server chk-tool
 
 .PHONY: all
 all: $(BINS)

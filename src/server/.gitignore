@@ -1,4 +1,5 @@
 server
+chk-tool
 *~
 *.gcda
 *.map
