@@ -63,8 +63,8 @@ int main()
 		}
 	}
 
-	printf("min = %" PRIu64 "\n", min);
-	printf("max = %" PRIu64 "\n", max);
+	printf("min = %" PRIu64 " (0x%" PRIx64 ")\n", min, min);
+	printf("max = %" PRIu64 " (0x%" PRIx64 ")\n", max, max);
 
 	return 0;
 }
