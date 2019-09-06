@@ -275,7 +275,15 @@ void unset_assignment(uint64_t n)
 
 uint64_t get_missed_assignment(int thread_id)
 {
-	uint64_t n = g_lowest_incomplete + thread_id;
+	uint64_t n = g_lowest_incomplete;
+	int t;
+
+	for (t = 0; t < thread_id; ++t) {
+		n++;
+		while (IS_COMPLETE(n)) {
+			n++;
+		}
+	}
 
 	SET_ASSIGNED(n);
 
@@ -471,7 +479,7 @@ int read_message(int fd, int thread_id)
 
 		n = get_missed_assignment(thread_id);
 
-		message(INFO "assignment requested: %" PRIu64 " (lowest incomplete)\n", n);
+		message(INFO "assignment requested: %" PRIu64 " (lowest incomplete +%i)\n", n, thread_id);
 
 		if (write_assignment_no(fd, n) < 0) {
 			return -1;
