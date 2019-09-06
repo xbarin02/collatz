@@ -444,6 +444,11 @@ int read_message(int fd)
 			return -1;
 		}
 
+		/* 30 minutes */
+		if (user_time < 30*60) {
+			message(WARN "suspiciously fast calculation!\n");
+		}
+
 		message(INFO "assignment returned: %" PRIu64 " (%" PRIu64 " overflows, time %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ", checksum 0x%016" PRIx64 ")\n",
 			n, overflow_counter, user_time/60/60, user_time/60%60, user_time%60, check_sum);
 
