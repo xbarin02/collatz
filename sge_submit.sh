@@ -26,11 +26,11 @@ cp -r "${SRCDIR}" .
 cd collatz/src
 
 make -C worker clean all
-make -C client clean all
+make -C mclient clean all
 
-cd client
+cd mclient
 
-stdbuf -o0 -e0 ./client -1 1
+stdbuf -o0 -e0 ./mclient -1 1
 
 popd
 rm -rf -- "$TMP"
