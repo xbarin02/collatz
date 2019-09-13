@@ -20,7 +20,6 @@
 
 #define TASK_SIZE 40
 
-#define LUT_SIZE64 41
 #define LUT_SIZE128 81
 #define LUT_SIZEMPZ 512
 
