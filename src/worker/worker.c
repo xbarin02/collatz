@@ -226,7 +226,6 @@ int main(int argc, char *argv[])
 	printf("TASK_SIZE %" PRIu64 "\n", task_size);
 	printf("TASK_ID %" PRIu64 "\n", task_id);
 
-
 	/* n of the form 4n+3 */
 	n     = ( UINT128_C(task_id) << task_size ) + 3;
 	n_sup = ( UINT128_C(task_id) << task_size ) + 3 + (UINT64_C(1) << task_size);
