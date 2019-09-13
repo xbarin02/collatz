@@ -291,7 +291,7 @@ static uint64_t atou64(const char *nptr)
 	return (uint64_t)atoul(nptr);
 }
 
-int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_user_time, uint64_t *p_checksum)
+int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_user_time, uint64_t *p_checksum)
 {
 	int r;
 	char buffer[4096];
@@ -300,7 +300,7 @@ int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter,
 	FILE *output;
 	int success = 0;
 
-	if (sprintf(buffer, "%s %" PRIu64, taskpath, n) < 0) {
+	if (sprintf(buffer, "%s %" PRIu64, taskpath, task_id) < 0) {
 		return -1;
 	}
 
@@ -332,7 +332,7 @@ int run_assignment(uint64_t n, uint64_t task_size, uint64_t *p_overflow_counter,
 		} else if (c == 2 && strcmp(ln_part[0], "TASK_ID") == 0) {
 			uint64_t worker_task_id = atou64(ln_part[1]);
 
-			if (n != worker_task_id) {
+			if (task_id != worker_task_id) {
 				message(ERR "client <---> worker communication problem!\n");
 				return -1;
 			}
@@ -416,7 +416,7 @@ int multiple_requests(int fd, int threads)
 	return 0;
 }
 
-int request_assignment(int fd, int request_lowest_incomplete, uint64_t *n, uint64_t *task_size, uint64_t clid)
+int request_assignment(int fd, int request_lowest_incomplete, uint64_t *task_id, uint64_t *task_size, uint64_t clid)
 {
 	if (request_lowest_incomplete) {
 		if (write_(fd, "req", 4) < 0) {
@@ -432,7 +432,7 @@ int request_assignment(int fd, int request_lowest_incomplete, uint64_t *n, uint6
 		return -1;
 	}
 
-	if (read_assignment_no(fd, n) < 0) {
+	if (read_assignment_no(fd, task_id) < 0) {
 		return -1;
 	}
 
@@ -447,7 +447,7 @@ int request_assignment(int fd, int request_lowest_incomplete, uint64_t *n, uint6
 	return 0;
 }
 
-int open_socket_and_request_multiple_assignments(int threads, int request_lowest_incomplete, uint64_t n[], uint64_t task_size[], uint64_t clid[])
+int open_socket_and_request_multiple_assignments(int threads, int request_lowest_incomplete, uint64_t task_id[], uint64_t task_size[], const uint64_t clid[])
 {
 	int fd;
 	int tid;
@@ -465,7 +465,7 @@ int open_socket_and_request_multiple_assignments(int threads, int request_lowest
 	}
 
 	for (tid = 0; tid < threads; ++tid) {
-		if (request_assignment(fd, request_lowest_incomplete, n+tid, task_size+tid, clid[tid]) < 0) {
+		if (request_assignment(fd, request_lowest_incomplete, task_id+tid, task_size+tid, clid[tid]) < 0) {
 			message(ERR "request_assignment failed (%i/%i)\n", tid, threads);
 			close(fd);
 			return -1;
@@ -610,7 +610,7 @@ int open_urandom_and_read_clid(uint64_t *clid)
 	return 0;
 }
 
-int run_assignments_in_parallel(int threads, uint64_t task_id[], uint64_t task_size[], uint64_t overflow_counter[], uint64_t user_time[], uint64_t checksum[])
+int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uint64_t task_size[], uint64_t overflow_counter[], uint64_t user_time[], uint64_t checksum[])
 {
 	int *success;
 	int tid;
@@ -628,6 +628,11 @@ int run_assignments_in_parallel(int threads, uint64_t task_id[], uint64_t task_s
 		int tid = threads_get_thread_id();
 
 		message(INFO "thread %i: got assignment %" PRIu64 "\n", tid, task_id[tid]);
+
+		/* initialization, since the worker is not mandated to fill these */
+		overflow_counter[tid] = 0;
+		user_time[tid] = 0;
+		checksum[tid] = 0;
 
 		success[tid] = run_assignment(task_id[tid], task_size[tid], overflow_counter+tid, user_time+tid, checksum+tid);
 
