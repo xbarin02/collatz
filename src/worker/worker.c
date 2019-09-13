@@ -68,13 +68,14 @@ static mp_bitcnt_t mpz_ctz(const mpz_t n)
 	return mpz_scan1(n, 0);
 }
 
-static uint64_t g_check_sum = 0;
+static uint64_t g_check_sum_alpha = 0;
+static uint64_t g_check_sum_beta = 0;
 
 /* check convergence */
 static int check(uint128_t n)
 {
 	const uint128_t n0 = n;
-	int e;
+	int alpha, beta;
 
 	if (n == UINT128_MAX) {
 		return 1;
@@ -83,21 +84,25 @@ static int check(uint128_t n)
 	do {
 		n++;
 
-		e = __builtin_ctzx(n);
+		alpha = __builtin_ctzx(n);
 
-		g_check_sum += e;
+		g_check_sum_alpha += alpha;
 
-		n >>= e;
+		n >>= alpha;
 
-		/* now we have an (n,e) pair */
+		/* now we have an (n,alpha) pair */
 
-		if (n > UINT128_MAX >> 2*e || e >= LUT_SIZE128) {
+		if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
 			return 1;
 		}
 
-		n *= g_lut[e];
+		n *= g_lut[alpha];
 
 		n--;
+
+		beta = __builtin_ctzx(n);
+
+		g_check_sum_beta += beta;
 
 		n >>= __builtin_ctzx(n);
 
@@ -128,7 +133,7 @@ static void mpz_check(uint128_t n_)
 {
 	mpz_t n;
 	mpz_t n0;
-	mp_bitcnt_t e;
+	mp_bitcnt_t alpha, beta;
 
 	g_overflow_counter++;
 
@@ -141,25 +146,29 @@ static void mpz_check(uint128_t n_)
 		/* n++ */
 		mpz_add_ui(n, n, 1UL);
 
-		e = mpz_ctz(n);
+		alpha = mpz_ctz(n);
 
-		g_check_sum += e;
+		g_check_sum_alpha += alpha;
 
-		/* n >>= e */
-		mpz_fdiv_q_2exp(n, n, e);
+		/* n >>= alpha */
+		mpz_fdiv_q_2exp(n, n, alpha);
 
-		/* now we have an (n,e) pair */
+		/* now we have an (n,alpha) pair */
 
-		assert( e < LUT_SIZEMPZ && "overflow" );
+		assert( alpha < LUT_SIZEMPZ && "overflow" );
 
-		/* n *= lut[e] */
-		mpz_mul(n, n, g_mpz_lut[e]);
+		/* n *= lut[alpha] */
+		mpz_mul(n, n, g_mpz_lut[alpha]);
 
 		/* n-- */
 		mpz_sub_ui(n, n, 1UL);
 
+		beta = mpz_ctz(n);
+
+		g_check_sum_beta += beta;
+
 		/* n >>= ctz(n) */
-		mpz_fdiv_q_2exp(n, n, mpz_ctz(n));
+		mpz_fdiv_q_2exp(n, n, beta);
 
 		/* now we have a single n */
 
@@ -218,6 +227,7 @@ int main(int argc, char *argv[])
 	printf("TASK_SIZE %" PRIu64 "\n", task_size);
 	printf("TASK_ID %" PRIu64 "\n", task_id);
 
+
 	/* n of the form 4n+3 */
 	n     = ( UINT128_C(task_id) << task_size ) + 3;
 	n_sup = ( UINT128_C(task_id) << task_size ) + 3 + (UINT64_C(1) << task_size);
@@ -253,10 +263,12 @@ int main(int argc, char *argv[])
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 
 	/* zero checksum is always invalid, so the server can implement simple valididty check */
-	if (g_check_sum == 0)
-		g_check_sum = UINT64_MAX;
+	if (g_check_sum_alpha == 0)
+		g_check_sum_alpha = UINT64_MAX;
+	if (g_check_sum_beta == 0)
+		g_check_sum_beta = UINT64_MAX;
 
-	printf("CHECKSUM %" PRIu64 "\n", g_check_sum);
+	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_check_sum_alpha, g_check_sum_beta);
 
 	printf("HALTED\n");
 
