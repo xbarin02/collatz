@@ -75,7 +75,6 @@ int main()
 	uint64_t min = UINT64_MAX, max = 0;
 	uint128_t total_user_time = 0;
 	uint64_t user_time_count = 0;
-	uint64_t avg_user_time;
 	int c = 0;
 
 	g_checksums = open_checksums();
@@ -117,10 +116,12 @@ int main()
 		}
 	}
 
-	avg_user_time = (uint64_t) (total_user_time / user_time_count);
+	if (user_time_count > 0) {
+		uint64_t avg_user_time = (uint64_t) (total_user_time / user_time_count);
 
-	printf("total user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(total_user_time/60/60%60), (uint64_t)(total_user_time/60%60), (uint64_t)(total_user_time%60));
-	printf("average user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_user_time/60/60%60), (uint64_t)(avg_user_time/60%60), (uint64_t)(avg_user_time%60));
+		printf("total user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(total_user_time/60/60%60), (uint64_t)(total_user_time/60%60), (uint64_t)(total_user_time%60));
+		printf("average user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_user_time/60/60%60), (uint64_t)(avg_user_time/60%60), (uint64_t)(avg_user_time%60));
+	}
 
 	return 0;
 }
