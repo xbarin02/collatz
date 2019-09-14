@@ -70,7 +70,7 @@ int main()
 		if (checksum == 0) {
 			printf("missing checksum on the assignment %" PRIu64 "\n", n);
 
-			if (++c == 10)
+			if (++c == 24)
 				break;
 		}
 	}
