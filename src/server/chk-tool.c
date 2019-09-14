@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include "wideint.h"
 
 /* 2^32 assignments (tasks) */
 #define ASSIGNMENTS_NO (UINT64_C(1) << 32)
@@ -72,6 +73,9 @@ int main()
 {
 	uint64_t n;
 	uint64_t min = UINT64_MAX, max = 0;
+	uint128_t total_user_time = 0;
+	uint64_t user_time_count = 0;
+	uint64_t avg_user_time;
 	int c = 0;
 
 	g_checksums = open_checksums();
@@ -101,6 +105,22 @@ int main()
 				break;
 		}
 	}
+
+	printf("\n");
+
+	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+		uint64_t user_time = g_usertimes[n];
+
+		if (user_time != 0) {
+			total_user_time += user_time;
+			user_time_count++;
+		}
+	}
+
+	avg_user_time = (uint64_t) (total_user_time / user_time_count);
+
+	printf("total user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(total_user_time/60/60%60), (uint64_t)(total_user_time/60%60), (uint64_t)(total_user_time%60));
+	printf("average user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_user_time/60/60%60), (uint64_t)(avg_user_time/60%60), (uint64_t)(avg_user_time%60));
 
 	return 0;
 }
