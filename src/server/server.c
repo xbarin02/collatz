@@ -28,11 +28,15 @@ const uint16_t serverport = 5006;
 
 static volatile int quit = 0;
 
+static int fd;
+
 void signal_handler(int i)
 {
 	(void)i;
 
 	quit = 1;
+
+	shutdown(fd, SHUT_RDWR);
 }
 
 #define ERR "ERROR: "
@@ -560,12 +564,13 @@ void set_complete_range_from_hercher()
 
 int main(int argc, char *argv[])
 {
-	int fd = socket(AF_INET, SOCK_STREAM, 0);
 	struct sockaddr_in server_addr;
 	int reuse = 1;
 	struct rlimit rlim;
 	int opt;
 	int clear_incomplete_assigned = 0;
+
+	fd = socket(AF_INET, SOCK_STREAM, 0);
 
 	while ((opt = getopt(argc, argv, "c")) != -1) {
 		switch (opt) {
@@ -662,10 +667,10 @@ int main(int argc, char *argv[])
 		int cl_fd = accept(fd, &sockaddr_in, &sockaddr_len);
 
 		if (-1 == cl_fd) {
-			if (errno == EINTR) {
-				if (quit)
-					break;
-			}
+			if (quit)
+				break;
+
+			message(ERR "cannot accept a connection on a socket!\n");
 		}
 #if 0
 		if (sockaddr_len >= sizeof sockaddr_in && sockaddr_in.sin_family == AF_INET) {
