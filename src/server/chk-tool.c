@@ -120,7 +120,10 @@ int main()
 		uint64_t avg_user_time = (uint64_t) (total_user_time / user_time_count);
 
 		printf("recorded user times: %" PRIu64 "\n", user_time_count);
-		printf("total user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(total_user_time/60/60), (uint64_t)(total_user_time/60%60), (uint64_t)(total_user_time%60));
+		printf("total user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s) = %" PRIu64 " days\n",
+			(uint64_t)(total_user_time/60/60), (uint64_t)(total_user_time/60%60), (uint64_t)(total_user_time%60),
+			(uint64_t)(total_user_time/60/60/24)
+		);
 		printf("average user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_user_time/60/60), (uint64_t)(avg_user_time/60%60), (uint64_t)(avg_user_time%60));
 	}
 
