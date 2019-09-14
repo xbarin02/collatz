@@ -26,7 +26,7 @@
 
 const uint16_t serverport = 5006;
 
-static volatile int quit = 0;
+static volatile sig_atomic_t quit = 0;
 
 static int fd;
 
