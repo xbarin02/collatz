@@ -190,6 +190,7 @@ int read_assignment_no(int fd, uint64_t *n)
 
 #define MAP_SIZE (ASSIGNMENTS_NO >> 3)
 #define CHECKSUMS_SIZE (ASSIGNMENTS_NO * 8)
+#define USERTIMES_SIZE (ASSIGNMENTS_NO * 8)
 
 #define IS_ASSIGNED(n) ( ( g_map_assigned[ (n)>>3 ] >> ((n)&7) ) & 1 )
 #define IS_COMPLETE(n) ( ( g_map_complete[ (n)>>3 ] >> ((n)&7) ) & 1 )
@@ -234,6 +235,7 @@ uint64_t g_lowest_incomplete = 0;
 unsigned char *g_map_assigned;
 unsigned char *g_map_complete;
 uint64_t *g_checksums;
+uint64_t *g_usertimes;
 
 void set_complete(uint64_t n)
 {
@@ -344,6 +346,34 @@ uint64_t *open_checksums()
 	}
 
 	ptr = mmap(NULL, (size_t)CHECKSUMS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+	if (ptr == MAP_FAILED) {
+		perror("mmap");
+		abort();
+	}
+
+	close(fd);
+
+	return (uint64_t *)ptr;
+}
+
+uint64_t *open_usertimes()
+{
+	const char *path = "usertimes.dat";
+	int fd = open(path, O_RDWR | O_CREAT, 0600);
+	void *ptr;
+
+	if (fd < 0) {
+		perror("open");
+		abort();
+	}
+
+	if (ftruncate(fd, (off_t)USERTIMES_SIZE) < 0) {
+		perror("ftruncate");
+		abort();
+	}
+
+	ptr = mmap(NULL, (size_t)USERTIMES_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	if (ptr == MAP_FAILED) {
 		perror("mmap");
@@ -477,6 +507,8 @@ int read_message(int fd, int thread_id)
 		}
 
 		g_checksums[n] = checksum;
+
+		g_usertimes[n] = user_time;
 	} else if (strcmp(msg, "req") == 0) {
 		/* requested lowest incomplete assignment */
 		uint64_t n;
@@ -597,6 +629,7 @@ int main(int argc, char *argv[])
 	g_map_assigned = open_map("assigned.map");
 	g_map_complete = open_map("complete.map");
 	g_checksums = open_checksums();
+	g_usertimes = open_usertimes();
 
 	if (!IS_COMPLETE(0)) {
 		message(INFO "initializing new search...\n");
@@ -695,10 +728,12 @@ int main(int argc, char *argv[])
 	msync(g_map_assigned, MAP_SIZE, MS_SYNC);
 	msync(g_map_complete, MAP_SIZE, MS_SYNC);
 	msync(g_checksums, CHECKSUMS_SIZE, MS_SYNC);
+	msync(g_usertimes, USERTIMES_SIZE, MS_SYNC);
 
 	munmap(g_map_assigned, MAP_SIZE);
 	munmap(g_map_complete, MAP_SIZE);
 	munmap(g_checksums, CHECKSUMS_SIZE);
+	munmap(g_usertimes, USERTIMES_SIZE);
 
 	return 0;
 }
