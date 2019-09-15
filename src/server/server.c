@@ -246,7 +246,7 @@ void set_complete(uint64_t n)
 	}
 
 	if (!IS_ASSIGNED(n)) {
-		message(WARN "assignment %" PRIu64 " was not assigned, discarting the result!\n", n);
+		message(ERR "assignment %" PRIu64 " was not assigned, discarting the result!\n", n);
 		return;
 	}
 
@@ -568,7 +568,8 @@ int read_message(int fd, int thread_id)
 		}
 
 		if (read_clid(fd, &clid) < 0) {
-			message(WARN "client does not send client ID\n");
+			message(ERR "client does not send client ID\n");
+			return -1;
 		}
 	} else if (strcmp(msg, "INT") == 0) {
 		/* interrupted or unable to solve, unreserve the assignment */
