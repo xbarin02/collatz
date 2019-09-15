@@ -15,6 +15,7 @@
 
 #define CHECKSUMS_SIZE (ASSIGNMENTS_NO * 8)
 #define USERTIMES_SIZE (ASSIGNMENTS_NO * 8)
+#define OVERFLOWS_SIZE (ASSIGNMENTS_NO * 8)
 
 const uint64_t *open_checksums()
 {
@@ -62,9 +63,32 @@ const uint64_t *open_usertimes()
 	return (const uint64_t *)ptr;
 }
 
+const uint64_t *open_overflows()
+{
+	const char *path = "overflows.dat";
+	int fd = open(path, O_RDONLY, 0600);
+	const void *ptr;
+
+	if (fd < 0) {
+		perror("open");
+		abort();
+	}
+
+	ptr = mmap(NULL, (size_t)OVERFLOWS_SIZE, PROT_READ, MAP_SHARED, fd, 0);
+
+	if (ptr == MAP_FAILED) {
+		perror("mmap");
+		abort();
+	}
+
+	close(fd);
+
+	return (const uint64_t *)ptr;
+}
 
 const uint64_t *g_checksums = 0;
 const uint64_t *g_usertimes = 0;
+const uint64_t *g_overflows = 0;
 
 #define MIN(a, b) ( ((a) < (b)) ? (a): (b) )
 #define MAX(a, b) ( ((a) > (b)) ? (a): (b) )
@@ -79,6 +103,7 @@ int main()
 
 	g_checksums = open_checksums();
 	g_usertimes = open_usertimes();
+	g_overflows = open_overflows();
 
 	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 		uint64_t checksum = g_checksums[n];
