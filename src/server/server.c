@@ -422,7 +422,6 @@ uint64_t *open_overflows()
 int read_message(int fd, int thread_id)
 {
 	char msg[4];
-	uint64_t clid;
 
 	if (read_(fd, msg, 4) < 0) {
 		return -1;
@@ -452,6 +451,7 @@ int read_message(int fd, int thread_id)
 	} else if (strcmp(msg, "REQ") == 0) {
 		/* requested assignment */
 		uint64_t n;
+		uint64_t clid = 0;
 
 		n = get_assignment();
 
@@ -476,6 +476,7 @@ int read_message(int fd, int thread_id)
 		uint64_t overflow_counter = 0;
 		uint64_t user_time = 0;
 		uint64_t checksum = 0;
+		uint64_t clid = 0;
 
 		if (read_assignment_no(fd, &n) < 0) {
 			return -1;
@@ -548,6 +549,7 @@ int read_message(int fd, int thread_id)
 	} else if (strcmp(msg, "req") == 0) {
 		/* requested lowest incomplete assignment */
 		uint64_t n;
+		uint64_t clid = 0;
 
 		n = get_missed_assignment(thread_id);
 
@@ -569,6 +571,7 @@ int read_message(int fd, int thread_id)
 		/* interrupted or unable to solve, unreserve the assignment */
 		uint64_t n;
 		uint64_t task_size = 0;
+		uint64_t clid = 0;
 
 		if (read_assignment_no(fd, &n) < 0) {
 			return -1;
