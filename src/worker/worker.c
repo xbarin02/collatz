@@ -250,10 +250,16 @@ int main(int argc, char *argv[])
 		    (sizeof(uint64_t) >= sizeof(suseconds_t)) &&
 		    (usage.ru_utime.tv_sec * UINT64_C(1) <= UINT64_MAX / UINT64_C(1000000)) &&
 		    (usage.ru_utime.tv_sec * UINT64_C(1000000) <= UINT64_MAX - usage.ru_utime.tv_usec)) {
+			uint64_t secs = (uint64_t)usage.ru_utime.tv_sec;
 			uint64_t usecs = usage.ru_utime.tv_sec * UINT64_C(1000000) + usage.ru_utime.tv_usec;
-			printf("USERTIME %" PRIu64 " %" PRIu64 "\n", (uint64_t)usage.ru_utime.tv_sec, usecs);
+			if (secs < UINT64_MAX && (uint64_t)usage.ru_utime.tv_usec >= UINT64_C(1000000/2)) {
+				/* round up */
+				secs++;
+			}
+			printf("USERTIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
 		} else if (sizeof(uint64_t) >= sizeof(time_t)) {
-			printf("USERTIME %" PRIu64 "\n", (uint64_t)usage.ru_utime.tv_sec);
+			uint64_t secs = (uint64_t)usage.ru_utime.tv_sec;
+			printf("USERTIME %" PRIu64 "\n", secs);
 		}
 	}
 
