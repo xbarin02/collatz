@@ -274,6 +274,10 @@ uint64_t get_assignment()
 
 void unset_assignment(uint64_t n)
 {
+	if (IS_COMPLETE(n)) {
+		message(WARN "assignment %" PRIu64 " is already complete, invalid interrupt request!\n", n);
+	}
+
 	SET_UNASSIGNED(n);
 
 	if (g_lowest_unassigned > n) {
