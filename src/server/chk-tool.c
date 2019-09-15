@@ -119,13 +119,13 @@ int main()
 	}
 
 	if (user_time_count > 0) {
-		uint64_t avg_user_time = (uint64_t) (total_user_time / user_time_count);
+		uint64_t avg_user_time = (uint64_t) ((total_user_time+(user_time_count/2)) / user_time_count);
 
 		printf("recorded user times: %" PRIu64 "\n", user_time_count);
 		printf("total user time: %" PRIu64 " hours = %" PRIu64 " days = %" PRIu64 " years\n",
 			(uint64_t)((total_user_time+1800)/3600) /* hours (60*60) */,
 			(uint64_t)((total_user_time+43200)/86400), /* days (60*60*24) */
-			(uint64_t)((total_user_time+UINT64_C(15768000))/UINT64_C(31536000)) /* years (60*60*24*365) */
+			(uint64_t)((total_user_time+15768000)/31536000) /* years (60*60*24*365) */
 		);
 		printf("average user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_user_time/60/60), (uint64_t)(avg_user_time/60%60), (uint64_t)(avg_user_time%60));
 	}
