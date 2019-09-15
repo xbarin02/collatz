@@ -467,7 +467,9 @@ int read_message(int fd, int thread_id)
 		}
 
 		if (read_clid(fd, &clid) < 0) {
-			message(WARN "client does not send client ID\n");
+			message(ERR "client does not send client ID\n");
+			unset_assignment(n);
+			return -1;
 		}
 	} else if (strcmp(msg, "RET") == 0) {
 		/* returning assignment */
