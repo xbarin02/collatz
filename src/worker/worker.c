@@ -260,12 +260,6 @@ int main(int argc, char *argv[])
 
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 
-	/* zero checksum is always invalid, so the server can implement simple valididty check */
-	if (g_check_sum_alpha == 0)
-		g_check_sum_alpha = UINT64_MAX;
-	if (g_check_sum_beta == 0)
-		g_check_sum_beta = UINT64_MAX;
-
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_check_sum_alpha, g_check_sum_beta);
 
 	printf("HALTED\n");
