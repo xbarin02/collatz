@@ -634,7 +634,6 @@ void set_complete_range_from_hercher()
 		} else
 			break;
 	}
-
 }
 
 int main(int argc, char *argv[])
