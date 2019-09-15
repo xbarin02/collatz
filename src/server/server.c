@@ -239,7 +239,7 @@ uint64_t *g_checksums;
 uint64_t *g_usertimes;
 uint64_t *g_overflows;
 
-void set_complete(uint64_t n)
+int set_complete(uint64_t n)
 {
 	if (IS_COMPLETE(n)) {
 		message(INFO "assignment %" PRIu64 " was already complete (duplicate result)\n", n);
@@ -247,7 +247,7 @@ void set_complete(uint64_t n)
 
 	if (!IS_ASSIGNED(n)) {
 		message(ERR "assignment %" PRIu64 " was not assigned, discarting the result!\n", n);
-		return;
+		return -1;
 	}
 
 	SET_COMPLETE(n);
@@ -257,6 +257,8 @@ void set_complete(uint64_t n)
 		for (; IS_COMPLETE(g_lowest_incomplete); ++g_lowest_incomplete)
 			;
 	}
+
+	return 0;
 }
 
 uint64_t get_assignment()
@@ -538,10 +540,13 @@ int read_message(int fd, int thread_id)
 		message(INFO "assignment returned: %" PRIu64 " (%" PRIu64 " overflows, time %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ", checksum 0x%016" PRIx64 ")\n",
 			n, overflow_counter, user_time/60/60, user_time/60%60, user_time%60, checksum);
 
-		set_complete(n);
+		if (set_complete(n) < 0) {
+			message(ERR "result rejected!\n");
+			return -1;
+		}
 
 		if (g_checksums[n] != 0 && g_checksums[n] != checksum) {
-			message(ERR "checksums do not match! (the other checksum is %" PRIu64 ")\n", g_checksums[n]);
+			message(ERR "checksums do not match! (the other checksum was %" PRIu64 ")\n", g_checksums[n]);
 		}
 
 		g_checksums[n] = checksum;
