@@ -206,7 +206,6 @@ int main(int argc, char *argv[])
 	uint64_t task_size = TASK_SIZE;
 	int opt;
 	struct rusage usage;
-	uint64_t usecs = 0;
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
@@ -251,7 +250,7 @@ int main(int argc, char *argv[])
 		    (sizeof(uint64_t) >= sizeof(suseconds_t)) &&
 		    (usage.ru_utime.tv_sec * UINT64_C(1) <= UINT64_MAX / UINT64_C(1000000)) &&
 		    (usage.ru_utime.tv_sec * UINT64_C(1000000) <= UINT64_MAX - usage.ru_utime.tv_usec)) {
-			usecs = usage.ru_utime.tv_sec * UINT64_C(1000000) + usage.ru_utime.tv_usec;
+			uint64_t usecs = usage.ru_utime.tv_sec * UINT64_C(1000000) + usage.ru_utime.tv_usec;
 			printf("USERTIME %" PRIu64 " %" PRIu64 "\n", (uint64_t)usage.ru_utime.tv_sec, usecs);
 		} else if (sizeof(uint64_t) >= sizeof(time_t)) {
 			printf("USERTIME %" PRIu64 "\n", (uint64_t)usage.ru_utime.tv_sec);
