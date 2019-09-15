@@ -510,7 +510,8 @@ int read_message(int fd, int thread_id)
 		}
 
 		if (read_clid(fd, &clid) < 0) {
-			message(WARN "client does not send client ID\n");
+			message(ERR "client does not send client ID\n");
+			return -1;
 		}
 
 		if (user_time == 0 && checksum == 0) {
@@ -585,7 +586,8 @@ int read_message(int fd, int thread_id)
 		}
 
 		if (read_clid(fd, &clid) < 0) {
-			message(WARN "client does not send client ID\n");
+			message(ERR "client does not send client ID\n");
+			return -1;
 		}
 
 		if (task_size != TASK_SIZE) {
