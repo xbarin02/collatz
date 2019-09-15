@@ -100,6 +100,7 @@ int main()
 	uint128_t total_user_time = 0;
 	uint64_t user_time_count = 0;
 	int c = 0;
+	int overflow_found = 0;
 
 	g_checksums = open_checksums();
 	g_usertimes = open_usertimes();
@@ -154,6 +155,18 @@ int main()
 		);
 		printf("average user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_user_time/60/60), (uint64_t)(avg_user_time/60%60), (uint64_t)(avg_user_time%60));
 	}
+
+	printf("\n");
+
+	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+		uint64_t overflow = g_overflows[n];
+
+		if (overflow != 0) {
+			overflow_found = 1;
+		}
+	}
+
+	printf("overflow found: %s\n", overflow_found ? "yes" : "no");
 
 	return 0;
 }
