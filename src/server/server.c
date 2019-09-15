@@ -530,7 +530,7 @@ int read_message(int fd, int thread_id)
 			return -1;
 		}
 
-		if ( (checksum>>24) != 98063 ) {
+		if ( (checksum>>23) != 196126 ) {
 			message(ERR "suspicious checksum, rejecting the result!\n");
 			return -1;
 		}
