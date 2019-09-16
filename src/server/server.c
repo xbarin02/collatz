@@ -522,7 +522,7 @@ int read_message(int fd, int thread_id)
 		}
 
 		if (checksum == 0) {
-			message(ERR "zero checksum is invalid!\n");
+			message(ERR "zero checksum is invalid! (assignment %" PRIu64 ")\n", n);
 			return -1;
 		}
 
@@ -754,7 +754,7 @@ int main(int argc, char *argv[])
 
 			message(ERR "cannot accept a connection on a socket!\n");
 		}
-#if 0
+#if 1
 		if (sockaddr_len >= sizeof sockaddr_in && sockaddr_in.sin_family == AF_INET) {
 			message(INFO "client IPv4 %s\n", inet_ntoa(sockaddr_in.sin_addr));
 		}
