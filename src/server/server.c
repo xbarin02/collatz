@@ -558,6 +558,10 @@ int read_message(int fd, int thread_id)
 			return 0;
 		}
 
+		if (g_clientids[n] == 0) {
+			message(WARN "client ID was not recorded, long-running clients are still running...\n");
+		}
+
 		if (user_time == 0 && checksum == 0) {
 			message(ERR "broken client, discarting the result!\n");
 			return -1;
