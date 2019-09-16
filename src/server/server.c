@@ -754,7 +754,7 @@ int main(int argc, char *argv[])
 
 			message(ERR "cannot accept a connection on a socket!\n");
 		}
-#if 1
+#if 0
 		if (sockaddr_len >= sizeof sockaddr_in && sockaddr_in.sin_family == AF_INET) {
 			message(INFO "client IPv4 %s\n", inet_ntoa(sockaddr_in.sin_addr));
 		}
