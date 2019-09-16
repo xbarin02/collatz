@@ -505,7 +505,7 @@ int read_message(int fd, int thread_id)
 		}
 
 		if (g_clientids[n] != 0) {
-			message(WARN "assignment already assigned to another client\n");
+			message(WARN "assignment was already assigned to another client, re-assigning\n");
 		}
 
 		g_clientids[n] = clid;
@@ -553,7 +553,9 @@ int read_message(int fd, int thread_id)
 		}
 
 		if (g_clientids[n] && g_clientids[n] != clid) {
-			message(WARN "assignment was assigned to another client\n");
+			message(WARN "assignment was assigned to another client, ignoring the result!\n");
+			/* this can however be part of MUL request, so do not return -1 */
+			return 0;
 		}
 
 		if (user_time == 0 && checksum == 0) {
@@ -645,7 +647,9 @@ int read_message(int fd, int thread_id)
 		}
 
 		if (g_clientids[n] && g_clientids[n] != clid) {
-			message(WARN "assignment was assigned to another client\n");
+			message(WARN "invalid request, assignment was assigned to another client, ignoring the request!\n");
+			/* this can be part of MUL request, so do not return -1 */
+			return 0;
 		}
 
 		if (task_size != TASK_SIZE) {
