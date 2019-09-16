@@ -552,14 +552,10 @@ int read_message(int fd, int thread_id)
 			return -1;
 		}
 
-		if (g_clientids[n] && g_clientids[n] != clid) {
+		if (g_clientids[n] != clid) {
 			message(WARN "assignment was assigned to another client, ignoring the result!\n");
 			/* this can however be part of MUL request, so do not return -1 */
 			return 0;
-		}
-
-		if (g_clientids[n] == 0) {
-			message(WARN "client ID was not recorded, long-running clients are still running...\n");
 		}
 
 		if (user_time == 0 && checksum == 0) {
@@ -650,7 +646,7 @@ int read_message(int fd, int thread_id)
 			return -1;
 		}
 
-		if (g_clientids[n] && g_clientids[n] != clid) {
+		if (g_clientids[n] != clid) {
 			message(WARN "invalid request, assignment was assigned to another client, ignoring the request!\n");
 			/* this can be part of MUL request, so do not return -1 */
 			return 0;
