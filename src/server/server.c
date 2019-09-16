@@ -504,6 +504,10 @@ int read_message(int fd, int thread_id)
 			return -1;
 		}
 
+		if (g_clientids[n] != 0) {
+			message(WARN "assignment already assigned to another client\n");
+		}
+
 		g_clientids[n] = clid;
 	} else if (strcmp(msg, "RET") == 0) {
 		/* returning assignment */
@@ -546,6 +550,10 @@ int read_message(int fd, int thread_id)
 		if (read_clid(fd, &clid) < 0) {
 			message(ERR "client does not send client ID\n");
 			return -1;
+		}
+
+		if (g_clientids[n] && g_clientids[n] != clid) {
+			message(WARN "assignment was assigned to another client\n");
 		}
 
 		if (user_time == 0 && checksum == 0) {
@@ -611,6 +619,10 @@ int read_message(int fd, int thread_id)
 			return -1;
 		}
 
+		if (g_clientids[n] != 0) {
+			message(WARN "re-assigning the assignment\n");
+		}
+
 		g_clientids[n] = clid;
 	} else if (strcmp(msg, "INT") == 0) {
 		/* interrupted or unable to solve, unreserve the assignment */
@@ -630,6 +642,10 @@ int read_message(int fd, int thread_id)
 		if (read_clid(fd, &clid) < 0) {
 			message(ERR "client does not send client ID\n");
 			return -1;
+		}
+
+		if (g_clientids[n] && g_clientids[n] != clid) {
+			message(WARN "assignment was assigned to another client\n");
 		}
 
 		if (task_size != TASK_SIZE) {
