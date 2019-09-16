@@ -656,6 +656,8 @@ int read_message(int fd, int thread_id)
 		message(INFO "assignment interrupted: %" PRIu64 "\n", n);
 
 		unset_assignment(n);
+
+		g_clientids[n] = 0;
 	} else if (strcmp(msg, "LOI") == 0) {
 		if (write_assignment_no(fd, g_lowest_incomplete) < 0) {
 			return -1;
