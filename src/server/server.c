@@ -440,7 +440,7 @@ int read_message(int fd, int thread_id)
 
 		read_uint64(fd, &threads);
 
-		message(INFO "received MUL request for %" PRIu64 " threads\n", threads);
+		message(INFO "received multiple requests for %" PRIu64 " threads\n", threads);
 
 		assert(threads < INT_MAX);
 
