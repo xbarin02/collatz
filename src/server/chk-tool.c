@@ -16,6 +16,7 @@
 #define CHECKSUMS_SIZE (ASSIGNMENTS_NO * 8)
 #define USERTIMES_SIZE (ASSIGNMENTS_NO * 8)
 #define OVERFLOWS_SIZE (ASSIGNMENTS_NO * 8)
+#define CLIENTIDS_SIZE (ASSIGNMENTS_NO * 8)
 
 const uint64_t *open_checksums()
 {
@@ -86,9 +87,33 @@ const uint64_t *open_overflows()
 	return (const uint64_t *)ptr;
 }
 
+const uint64_t *open_clientids()
+{
+	const char *path = "clientids.dat";
+	int fd = open(path, O_RDONLY, 0600);
+	const void *ptr;
+
+	if (fd < 0) {
+		perror("open");
+		abort();
+	}
+
+	ptr = mmap(NULL, (size_t)CLIENTIDS_SIZE, PROT_READ, MAP_SHARED, fd, 0);
+
+	if (ptr == MAP_FAILED) {
+		perror("mmap");
+		abort();
+	}
+
+	close(fd);
+
+	return (const uint64_t *)ptr;
+}
+
 const uint64_t *g_checksums = 0;
 const uint64_t *g_usertimes = 0;
 const uint64_t *g_overflows = 0;
+const uint64_t *g_clientids = 0;
 
 #define MIN(a, b) ( ((a) < (b)) ? (a): (b) )
 #define MAX(a, b) ( ((a) > (b)) ? (a): (b) )
@@ -101,10 +126,12 @@ int main()
 	uint64_t user_time_count = 0;
 	int c = 0;
 	int overflow_found = 0;
+	uint64_t clientids_count = 0;
 
 	g_checksums = open_checksums();
 	g_usertimes = open_usertimes();
 	g_overflows = open_overflows();
+	g_clientids = open_clientids();
 
 	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 		uint64_t checksum = g_checksums[n];
@@ -167,6 +194,17 @@ int main()
 	}
 
 	printf("overflow found: %s\n", overflow_found ? "yes" : "no");
+	printf("\n");
+
+	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+		uint64_t clid = g_clientids[n];
+
+		if (clid != 0) {
+			clientids_count++;
+		}
+	}
+
+	printf("found %" PRIu64 " active assignments (client IDs)\n", clientids_count);
 
 	return 0;
 }
