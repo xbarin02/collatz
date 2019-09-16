@@ -204,7 +204,7 @@ int main()
 		}
 	}
 
-	printf("recorded %" PRIu64 " clids\n", clientids_count);
+	printf("found %" PRIu64 " active assignments (client IDs)\n", clientids_count);
 
 	return 0;
 }
