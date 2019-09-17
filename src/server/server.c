@@ -451,7 +451,7 @@ uint64_t *open_clientids()
 	return (uint64_t *)ptr;
 }
 
-int read_message(int fd, int thread_id)
+int read_message(int fd, int thread_id, const char *ipv4)
 {
 	char msg[4];
 
@@ -470,12 +470,12 @@ int read_message(int fd, int thread_id)
 
 		read_uint64(fd, &threads);
 
-		message(INFO "received multiple requests for %" PRIu64 " threads\n", threads);
+		message(INFO "received multiple requests for %" PRIu64 " threads from address %s\n", threads, ipv4);
 
 		assert(threads < INT_MAX);
 
 		for (tid = 0; tid < (int)threads; ++tid) {
-			if (read_message(fd, tid) < 0) {
+			if (read_message(fd, tid, ipv4) < 0) {
 				message(ERR "cannot completely process the MUL request\n");
 				return -1;
 			}
@@ -806,6 +806,7 @@ int main(int argc, char *argv[])
 		struct sockaddr_in sockaddr_in;
 		socklen_t sockaddr_len = sizeof sockaddr_in;
 		int cl_fd = accept(fd, &sockaddr_in, &sockaddr_len);
+		const char *ipv4 = "(unknown)";
 
 		if (-1 == cl_fd) {
 			if (quit)
@@ -813,13 +814,12 @@ int main(int argc, char *argv[])
 
 			message(ERR "cannot accept a connection on a socket!\n");
 		}
-#if 0
-		if (sockaddr_len >= sizeof sockaddr_in && sockaddr_in.sin_family == AF_INET) {
-			message(INFO "client IPv4 %s\n", inet_ntoa(sockaddr_in.sin_addr));
-		}
-#endif
 
-		if (read_message(cl_fd, 0) < 0) {
+		if (sockaddr_len >= sizeof sockaddr_in && sockaddr_in.sin_family == AF_INET) {
+			ipv4 = inet_ntoa(sockaddr_in.sin_addr);
+		}
+
+		if (read_message(cl_fd, 0, ipv4) < 0) {
 			message(ERR "client <--> server communication failure!\n");
 		}
 
