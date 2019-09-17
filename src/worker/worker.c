@@ -4,9 +4,10 @@
  *
  * @author David Barina <ibarina@fit.vutbr.cz>
  */
-#define _XOPEN_SOURCE
 #include <stdio.h>
-#include <gmp.h>
+#ifdef _USE_GMP
+#	include <gmp.h>
+#endif
 #include <stdlib.h>
 #include <assert.h>
 #include <limits.h>
@@ -18,13 +19,22 @@
 
 #include "wideint.h"
 
+#ifdef __GNUC__
+#	define likely(x)   __builtin_expect((x), 1)
+#	define unlikely(x) __builtin_expect((x), 0)
+#endif
+
 #define TASK_SIZE 40
 
 #define LUT_SIZE128 81
-#define LUT_SIZEMPZ 512
+#ifdef _USE_GMP
+#	define LUT_SIZEMPZ 512
+#endif
 
 uint128_t g_lut[LUT_SIZE128];
+#ifdef _USE_GMP
 mpz_t g_mpz_lut[LUT_SIZEMPZ];
+#endif
 
 /* 3^n */
 uint128_t pow3x(uint128_t n)
@@ -40,11 +50,13 @@ uint128_t pow3x(uint128_t n)
 	return r;
 }
 
+#ifdef _USE_GMP
 /* 3^n */
 static void mpz_pow3(mpz_t r, unsigned long n)
 {
 	mpz_ui_pow_ui(r, 3UL, n);
 }
+#endif
 
 /* init lookup tables */
 void init_lut()
@@ -55,17 +67,21 @@ void init_lut()
 		g_lut[a] = pow3x((uint128_t)a);
 	}
 
+#ifdef _USE_GMP
 	for (a = 0; a < LUT_SIZEMPZ; ++a) {
 		mpz_init(g_mpz_lut[a]);
 		mpz_pow3(g_mpz_lut[a], (unsigned long)a);
 	}
+#endif
 }
 
+#ifdef _USE_GMP
 /* count trailing zeros */
 static mp_bitcnt_t mpz_ctz(const mpz_t n)
 {
 	return mpz_scan1(n, 0);
 }
+#endif
 
 static uint64_t g_check_sum_alpha = 0;
 static uint64_t g_check_sum_beta = 0;
@@ -115,6 +131,7 @@ static int check(uint128_t n)
 
 static uint64_t g_overflow_counter = 0;
 
+#ifdef _USE_GMP
 static void mpz_init_set_u128(mpz_t rop, uint128_t op)
 {
 	uint64_t nh = (uint64_t)(op>>64);
@@ -126,7 +143,9 @@ static void mpz_init_set_u128(mpz_t rop, uint128_t op)
 	mpz_mul_2exp(rop, rop, (mp_bitcnt_t)64);
 	mpz_add_ui(rop, rop, (unsigned long)nl);
 }
+#endif
 
+#ifdef _USE_GMP
 /* check convergence */
 static void mpz_check(uint128_t n_)
 {
@@ -181,9 +200,7 @@ static void mpz_check(uint128_t n_)
 
 	return;
 }
-
-#define likely(x)       __builtin_expect((x),1)
-#define unlikely(x)     __builtin_expect((x),0)
+#endif
 
 /* DEPRECATED */
 static unsigned long atoul(const char *nptr)
@@ -236,8 +253,12 @@ int main(int argc, char *argv[])
 
 	for (; n < n_sup; n += 4) {
 		if (unlikely(check(n))) {
+#ifdef _USE_GMP
 			/* the function cannot verify the convergence using 128-bit arithmetic, use libgmp */
 			mpz_check(n);
+#else
+			abort();
+#endif
 		}
 	}
 
