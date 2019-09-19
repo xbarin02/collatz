@@ -13,7 +13,9 @@
 #include <limits.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include <sys/resource.h>
+#ifndef __WIN32__
+#	include <sys/resource.h>
+#endif
 #include <stdint.h>
 #include <inttypes.h>
 
@@ -222,7 +224,9 @@ int main(int argc, char *argv[])
 	uint64_t task_id = 0;
 	uint64_t task_size = TASK_SIZE;
 	int opt;
+#ifndef __WIN32__
 	struct rusage usage;
+#endif
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
@@ -262,6 +266,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
+#ifndef __WIN32__
 	/* the total amount of time spent executing in user mode, expressed in a timeval structure (seconds plus microseconds) */
 	if (getrusage(RUSAGE_SELF, &usage) < 0) {
 		/* errno is set appropriately. */
@@ -283,6 +288,7 @@ int main(int argc, char *argv[])
 			printf("USERTIME %" PRIu64 "\n", secs);
 		}
 	}
+#endif
 
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 
