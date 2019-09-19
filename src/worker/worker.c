@@ -15,6 +15,8 @@
 #include <sys/time.h>
 #ifndef __WIN32__
 #	include <sys/resource.h>
+#else
+#	include <windows.h>
 #endif
 #include <stdint.h>
 #include <inttypes.h>
@@ -274,6 +276,18 @@ int main(int argc, char *argv[])
 		} else if (sizeof(uint64_t) >= sizeof(time_t)) {
 			uint64_t secs = (uint64_t)usage.ru_utime.tv_sec;
 			printf("USERTIME %" PRIu64 "\n", secs);
+		}
+	}
+#else
+	if (1) {
+		HANDLE hProcess = GetCurrentProcess();
+		FILETIME ftCreation, ftExit, ftUser, ftKernel;
+		if (GetProcessTimes(hProcess, &ftCreation, &ftExit, &ftKernel, &ftUser)) {
+			uint64_t t = ((uint64_t)ftUser.dwHighDateTime << 32) + ftUser.dwLowDateTime;
+			/* Contains a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC). */
+			uint64_t secs = (t + 10000000/2) / 10000000;
+			uint64_t usecs = (t + 10/2) / 10;
+			printf("USERTIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
 		}
 	}
 #endif
