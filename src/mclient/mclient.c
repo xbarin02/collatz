@@ -117,7 +117,7 @@ ssize_t write_(int fd, const char *buf, size_t count)
 
 	while ((size_t)written < count) {
 #ifdef __WIN32__
-		int t = send(fd, buf+written, count - written, 0);
+		int t = send(fd, buf + written, count - written, 0);
 
 		if (t == SOCKET_ERROR) {
 			message(ERR, "send() failed\n");
@@ -126,7 +126,7 @@ ssize_t write_(int fd, const char *buf, size_t count)
 
 		written += t;
 #else
-		ssize_t t = write(fd, buf+written, count - written);
+		ssize_t t = write(fd, buf + written, count - written);
 
 		if (t < 0) {
 			/* errno is set appropriately */
