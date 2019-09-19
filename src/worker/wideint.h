@@ -29,8 +29,6 @@ typedef __int128 int128_t;
 #define INT128_MAX ( (int128_t)(UINT128_MAX >> 1) )
 #define INT128_MIN ( -INT128_MAX - 1 )
 
-#include <limits.h>
-
 #include "compat.h"
 
 /* count trailing zeros */
