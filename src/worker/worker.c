@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+#include "compat.h"
 #include "wideint.h"
 
 #ifdef __GNUC__
@@ -101,7 +102,7 @@ static int check(uint128_t n)
 	do {
 		n++;
 
-		alpha = __builtin_ctzx(n);
+		alpha = __builtin_ctzu128(n);
 
 		g_check_sum_alpha += alpha;
 
@@ -117,11 +118,11 @@ static int check(uint128_t n)
 
 		n--;
 
-		beta = __builtin_ctzx(n);
+		beta = __builtin_ctzu128(n);
 
 		g_check_sum_beta += beta;
 
-		n >>= __builtin_ctzx(n);
+		n >>= __builtin_ctzu128(n);
 
 		/* now we have a single n */
 
@@ -203,19 +204,6 @@ static void mpz_check(uint128_t n_)
 	return;
 }
 #endif
-
-/* DEPRECATED */
-static unsigned long atoul(const char *nptr)
-{
-	return strtoul(nptr, NULL, 10);
-}
-
-static uint64_t atou64(const char *nptr)
-{
-	assert( sizeof(uint64_t) == sizeof(unsigned long) );
-
-	return (uint64_t)atoul(nptr);
-}
 
 int main(int argc, char *argv[])
 {

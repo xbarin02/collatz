@@ -1,4 +1,5 @@
 worker
+worker.exe
 *~
 *.gcda
 *.txt

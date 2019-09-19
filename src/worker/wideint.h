@@ -31,14 +31,16 @@ typedef __int128 int128_t;
 
 #include <limits.h>
 
+#include "compat.h"
+
 /* count trailing zeros */
 __attribute__ ((unused))
-static int __builtin_ctzx(uint128_t n)
+static int __builtin_ctzu128(uint128_t n)
 {
-	if ((unsigned long)n == 0)
-		return (sizeof(unsigned long) * CHAR_BIT) + __builtin_ctzl((unsigned long)(n >> (sizeof(unsigned long) * CHAR_BIT)));
+	if ((uint64_t)n == 0)
+		return 64 + __builtin_ctzu64((uint64_t)(n >> 64));
 	else
-		return __builtin_ctzl((unsigned long)n);
+		return __builtin_ctzu64((uint64_t)n);
 }
 
 #else
