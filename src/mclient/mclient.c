@@ -228,22 +228,6 @@ int write_uint64(int fd, uint64_t n)
 	return 0;
 }
 
-/* DEPRECATED */
-int read_ul(int fd, unsigned long *nptr)
-{
-	assert( sizeof(unsigned long) == sizeof(uint64_t) );
-
-	return read_uint64(fd, (uint64_t *)nptr);
-}
-
-/* DEPRECATED */
-int write_ul(int fd, unsigned long n)
-{
-	assert( sizeof(unsigned long) == sizeof(uint64_t) );
-
-	return write_uint64(fd, (uint64_t)n);
-}
-
 int write_clid(int fd, uint64_t clid)
 {
 	return write_uint64(fd, clid);
