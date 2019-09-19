@@ -6,10 +6,18 @@
 	#include <omp.h>
 #endif
 #include <sys/types.h>
-#include <sys/socket.h>
+#ifndef __WIN32__
+#	include <sys/socket.h>
+#	include <netdb.h>
+#	include <arpa/inet.h>
+#	include <netinet/tcp.h>
+#else
+#	include <winsock2.h>
+#	include <windows.h>
+#	define WIFEXITED(r) (1)
+#	define clone(fd) closesocket(fd)
+#endif
 #include <unistd.h>
-#include <netdb.h>
-#include <arpa/inet.h>
 #include <strings.h>
 #include <string.h>
 #include <errno.h>
@@ -19,7 +27,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <inttypes.h>
-#include <netinet/tcp.h>
+
+#include "compat.h"
 
 #define SLEEP_INTERVAL 10
 
@@ -82,7 +91,11 @@ int init_sockaddr(struct sockaddr_in *name, const char *hostname, uint16_t port)
 
 	assert(name);
 
+#ifndef __WIN32__
 	bzero(name, sizeof(struct sockaddr_in));
+#else
+	ZeroMemory(name, sizeof(struct sockaddr_in));
+#endif
 
 	name->sin_family = AF_INET;
 	name->sin_port = htons(port);
@@ -103,18 +116,31 @@ ssize_t write_(int fd, const char *buf, size_t count)
 	ssize_t written = 0;
 
 	while ((size_t)written < count) {
-		ssize_t t = write(fd, buf+written, count - written);
+#ifdef __WIN32__
+		int t = send(fd, buf+written, count - written, 0);
 
-		if (t < 0) {
-			/* errno is set appropriately */
-			return -1;
-		}
-		if (t == 0 && (size_t)(written + t) != count) {
-			/* zero indicates nothing was written */
+		if (t == SOCKET_ERROR) {
+			message(ERR, "send() failed\n");
 			return -1;
 		}
 
 		written += t;
+#else
+		ssize_t t = write(fd, buf+written, count - written);
+
+		if (t < 0) {
+			/* errno is set appropriately */
+			message(ERR "write() failed\n");
+			return -1;
+		}
+		if (t == 0 && (size_t)(written + t) != count) {
+			/* zero indicates nothing was written */
+			message(ERR "nothing was written\n");
+			return -1;
+		}
+
+		written += t;
+#endif
 	}
 
 	return written;
@@ -126,18 +152,31 @@ ssize_t read_(int fd, char *buf, size_t count)
 	ssize_t readen = 0;
 
 	while ((size_t)readen < count) {
-		ssize_t t = read(fd, buf + readen, count - readen);
+#ifdef __WIN32__
+		int t = recv(fd, buf + readen, count - readen, 0);
 
-		if (t < 0) {
-			/*  errno is set appropriately */
-			return -1;
-		}
-		if (t == 0 && (size_t)(readen + t) != count) {
-			/* zero indicates end of file */
+		if (t == SOCKET_ERROR) {
+			message(ERR "recv() failed\n");
 			return -1;
 		}
 
 		readen += t;
+#else
+		ssize_t t = read(fd, buf + readen, count - readen);
+
+		if (t < 0) {
+			/*  errno is set appropriately */
+			message(ERR "read() failed\n");
+			return -1;
+		}
+		if (t == 0 && (size_t)(readen + t) != count) {
+			/* zero indicates end of file */
+			message(ERR "end of file\n");
+			return -1;
+		}
+
+		readen += t;
+#endif
 	}
 
 	return readen;
@@ -255,40 +294,31 @@ int open_socket_to_server()
 
 	if (fd < 0) {
 		/* errno is set appropriately */
+		message(ERR "socket() failed\n");
 		return -1;
 	}
 
 	/* TCP_NODELAY have to be either enabled or disabled on both sides (server as well as client), not just on one side! */
 	if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *)&i, sizeof i) < 0) {
+		message(ERR "setsockopt() failed\n");
 		close(fd);
 		return -1;
 	}
 
 	if (init_sockaddr(&server_addr, servername, serverport) < 0 ) {
+		message(ERR "init_sockaddr() failed\n");
 		close(fd);
 		return -1;
 	}
 
 	if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
 		/* errno is set appropriately */
+		message(ERR "connect() failed\n");
 		close(fd);
 		return -1;
 	}
 
 	return fd;
-}
-
-/* DEPRECATED */
-static unsigned long atoul(const char *nptr)
-{
-	return strtoul(nptr, NULL, 10);
-}
-
-static uint64_t atou64(const char *nptr)
-{
-	assert( sizeof(uint64_t) == sizeof(unsigned long) );
-
-	return (uint64_t)atoul(nptr);
 }
 
 int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_user_time, uint64_t *p_checksum)
@@ -406,10 +436,12 @@ int write_group_size(int fd, int threads)
 int multiple_requests(int fd, int threads)
 {
 	if (write_(fd, "MUL", 4) < 0) {
+		message(ERR "write_() failed\n");
 		return -1;
 	}
 
 	if (write_group_size(fd, threads) < 0) {
+		message(ERR "write_group_size() failed\n");
 		return -1;
 	}
 
@@ -420,19 +452,23 @@ int request_assignment(int fd, int request_lowest_incomplete, uint64_t *task_id,
 {
 	if (request_lowest_incomplete) {
 		if (write_(fd, "req", 4) < 0) {
+			message(ERR "write_() failed\n");
 			return -1;
 		}
 	} else {
 		if (write_(fd, "REQ", 4) < 0) {
+			message(ERR "write_() failed\n");
 			return -1;
 		}
 	}
 
 	if (write_clid(fd, clid) < 0) {
+		message(ERR "write_clid() failed\n");
 		return -1;
 	}
 
 	if (read_assignment_no(fd, task_id) < 0) {
+		message(ERR "read_assignment_no() failed\n");
 		return -1;
 	}
 
@@ -455,6 +491,7 @@ int open_socket_and_request_multiple_assignments(int threads, int request_lowest
 	fd = open_socket_to_server();
 
 	if (fd < 0) {
+		message(ERR "open_socket_to_server() failed\n");
 		return -1;
 	}
 
@@ -666,6 +703,15 @@ int main(int argc, char *argv[])
 	uint64_t *user_time;
 	uint64_t *checksum;
 
+#ifdef __WIN32__
+	WORD versionWanted = MAKEWORD(1, 1);
+	WSADATA wsaData;
+	if (WSAStartup(versionWanted, &wsaData)) {
+		message(ERR "WSAStartup failed\n");
+		return -1;
+	}
+#endif
+
 	if (getenv("SERVER_NAME")) {
 		servername = getenv("SERVER_NAME");
 	}
@@ -708,16 +754,22 @@ int main(int argc, char *argv[])
 
 	for (tid = 0; tid < threads; ++tid) {
 		clid[tid] = 0;
+#ifndef __WIN32__
 		if (open_urandom_and_read_clid(clid+tid) < 0) {
 			message(WARN "unable to generate random client ID");
 		}
+#else
+		clid[tid] = 42; /* chosen randomly */
+#endif
 	}
 
 	signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
+#ifndef __WIN32__
 	signal(SIGALRM, signal_handler);
 	signal(SIGUSR1, signal_handler);
 	signal(SIGUSR2, signal_handler);
+#endif
 
 	while (!quit) {
 		while (open_socket_and_request_multiple_assignments(threads, request_lowest_incomplete, task_id, task_size, clid) < 0) {
@@ -761,6 +813,10 @@ int main(int argc, char *argv[])
 	free(clid);
 
 	message(INFO "client has been halted\n");
+
+#ifdef __WIN32__
+	 WSACleanup();
+#endif
 
 	return EXIT_SUCCESS;
 }
