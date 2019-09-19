@@ -258,7 +258,7 @@ int open_socket_to_server()
 		return -1;
 	}
 
-	/* This probably doesn't do anything at all. */
+	/* TCP_NODELAY have to be either enabled or disabled on both sides (server as well as client), not just on one side! */
 	if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *)&i, sizeof i) < 0) {
 		close(fd);
 		return -1;
