@@ -711,13 +711,17 @@ int main(int argc, char *argv[])
 	struct rlimit rlim;
 	int opt;
 	int clear_incomplete_assigned = 0;
+	int fix_records = 0;
 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 
-	while ((opt = getopt(argc, argv, "c")) != -1) {
+	while ((opt = getopt(argc, argv, "cf")) != -1) {
 		switch (opt) {
 			case 'c':
 				clear_incomplete_assigned = 1;
+				break;
+			case 'f':
+				fix_records = 1;
 				break;
 			default:
 				message(ERR "Usage: %s [-c]\n", argv[0]);
@@ -746,6 +750,36 @@ int main(int argc, char *argv[])
 	if (!IS_COMPLETE(0)) {
 		message(INFO "initializing new search...\n");
 		set_complete_range_from_hercher();
+	}
+
+	/* fix records the *.map and *.dat */
+	if (fix_records) {
+		uint64_t n;
+		uint64_t c0 = 0, c1 = 0, c2 = 0;
+
+		message(WARN "Processing the records...\n");
+
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			/* complete ==> assigned */
+			if (IS_COMPLETE(n) && !IS_ASSIGNED(n)) {
+				SET_ASSIGNED(n);
+				c0++;
+			}
+
+			/* complete ==> zero clid */
+			if (IS_COMPLETE(n) && g_clientids[n] != 0) {
+				g_clientids[n] = 0;
+				c1++;
+			}
+
+			/* not assigned ==> no clid */
+			if (!IS_ASSIGNED(n) && g_clientids[n] != 0) {
+				g_clientids[n] = 0;
+				c2++;
+			}
+		}
+
+		message(WARN "These corrections have been made: %" PRIu64 " %" PRIu64 " %" PRIu64 "\n", c0, c1, c2);
 	}
 
 	for (g_lowest_unassigned = 0; IS_ASSIGNED(g_lowest_unassigned); ++g_lowest_unassigned)
