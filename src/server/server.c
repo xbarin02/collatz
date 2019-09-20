@@ -528,7 +528,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		}
 
 		if (task_size != TASK_SIZE) {
-			message(ERR "TASK_SIZE mismatch!\n");
+			message(ERR "TASK_SIZE mismatch! (client sent %" PRIu64 ")\n", task_size);
 			return -1;
 		}
 
@@ -553,9 +553,13 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		}
 
 		if (g_clientids[n] != clid) {
-			message(WARN "assignment was assigned to another client, ignoring the result!\n");
+			message(WARN "assignment %" PRIu64 " was assigned to another client, ignoring the result!\n", n);
 			/* this can however be part of MUL request, so do not return -1 */
 			return 0;
+		}
+
+		if (clid == 42) {
+			message(WARN "client ID is 42 :(\n");
 		}
 
 		if (user_time == 0 && checksum == 0) {
@@ -570,12 +574,12 @@ int read_message(int fd, int thread_id, const char *ipv4)
 
 		/* 30 minutes */
 		if (user_time < 30*60) {
-			message(ERR "suspiciously fast calculation, rejecting the result!\n");
+			message(ERR "suspiciously fast calculation, rejecting the result! (assignment %" PRIu64 ")\n", n);
 			return -1;
 		}
 
-		if ( (checksum>>23) != 196126 ) {
-			message(ERR "suspicious checksum, rejecting the result!\n");
+		if ((checksum>>23) != 196126) {
+			message(ERR "suspicious checksum, rejecting the result! (assignment %" PRIu64 ")\n", n);
 			return -1;
 		}
 
