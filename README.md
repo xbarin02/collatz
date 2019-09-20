@@ -1,5 +1,5 @@
 # collatz
-Simple tools that check convergence of the Collatz problem.
+Distributed computing project to check convergence of the Collatz problem.
 
 [![Build Status](https://travis-ci.com/xbarin02/collatz.svg?branch=master)](https://travis-ci.com/xbarin02/collatz)
 
