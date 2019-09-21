@@ -1,3 +1,3 @@
 #!/bin/bash
 
-~/collatz-$(hostname-s)/scripts/update.sh
+~/collatz-$(hostname -s)/scripts/update.sh
