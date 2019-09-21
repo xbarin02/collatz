@@ -13,7 +13,7 @@ export LANG=C
 # module load libgmp
 ml GMP
 
-# tunel from login1 to pcbarina2 must already exist
+# tunel from login1 to pcbarina/pcbarina2 must already exist
 ssh -TN -f -L 5006:localhost:5006 login1
 
 # tunel from localhost to login1 has been established
