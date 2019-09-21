@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export SERVER_NAME=pcbarina.fit.vutbr.cz
+
 cd ~/collatz-$(hostname -s)/src
 
 make -C worker clean all
