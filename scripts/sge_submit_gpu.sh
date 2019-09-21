@@ -14,12 +14,14 @@ set -e
 
 export LANG=C
 
+export SERVER_NAME=pcbarina.fit.vutbr.cz
+
 TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
 
 mkdir -p -- "$TMP"
 pushd -- "$TMP"
 
-SRCDIR=${SGE_O_WORKDIR}/
+SRCDIR=/mnt/matylda1/ibarina/sge/collatz/
 
 cp -r "${SRCDIR}" .
 
