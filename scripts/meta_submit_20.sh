@@ -16,7 +16,7 @@ echo "cpu model name=$(cat /proc/cpuinfo | grep "model name" | head -n1)"
 echo "cpus=$(cat /proc/cpuinfo | grep "model name" | wc -l)"
 
 # check the connection
-if ! ping -c1 -q pcbarina2.fit.vutbr.cz; then
+if ! ping -c1 -q "${SERVER_NAME}"; then
 	echo "No connection!"
 	exit
 fi
