@@ -14,4 +14,4 @@ killall worker
 
 sleep 1
 
-~/collatz-$(hostname -s)/bootstrap.sh
+~/collatz-$(hostname -s)/scripts/bootstrap.sh
