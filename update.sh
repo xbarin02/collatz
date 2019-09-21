@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ./collatz-$(hostname -s)/
+cd ~/collatz-$(hostname -s)/
 
 git pull
 
@@ -14,4 +14,4 @@ killall worker
 
 sleep 1
 
-./collatz-$(hostname -s)/bootstrap.sh
+~/collatz-$(hostname -s)/bootstrap.sh
