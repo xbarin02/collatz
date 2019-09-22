@@ -21,7 +21,7 @@
 #include <inttypes.h>
 #include <netinet/tcp.h>
 
-const char *servername = "pcbarina2.fit.vutbr.cz";
+const char *servername = "localhost";
 const uint16_t serverport = 5006;
 
 #define ERR "ERROR: "

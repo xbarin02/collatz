@@ -32,7 +32,7 @@
 
 #define SLEEP_INTERVAL 10
 
-const char *servername = "pcbarina2.fit.vutbr.cz";
+const char *servername = "localhost";
 const uint16_t serverport = 5006;
 
 const char *taskpath = "../worker/worker";
