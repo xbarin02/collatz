@@ -588,7 +588,8 @@ int read_message(int fd, int thread_id, const char *ipv4)
 
 		if (set_complete(n) < 0) {
 			message(ERR "result rejected!\n");
-			return -1;
+			/* this can however be part of MUL request, so do not return -1 */
+			return 0;
 		}
 
 		if (g_checksums[n] != 0 && g_checksums[n] != checksum) {
