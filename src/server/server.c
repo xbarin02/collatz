@@ -505,7 +505,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		}
 
 		if (g_clientids[n] != 0) {
-			message(WARN "assignment was already assigned to another client, re-assigning\n");
+			message(WARN "assignment %" PRIu64 " was already assigned to another client, re-assigning\n", n);
 		}
 
 		g_clientids[n] = clid;
