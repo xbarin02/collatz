@@ -1,11 +1,11 @@
 #!/bin/bash
 #
 #$ -S /bin/bash
-#$ -N collatz
+#$ -N collatz-harvester
 #$ -M ibarina@fit.vutbr.cz
-#$ -m a
-#$ -o /dev/null
-#$ -e /dev/null
+#$ -m bea
+#$ -o /mnt/matylda1/ibarina/sge/collatz/logs/harvester.out
+#$ -e /mnt/matylda1/ibarina/sge/collatz/logs/harvester.err
 #$ -q long.q@@stable
 #$ -pe smp 28
 
