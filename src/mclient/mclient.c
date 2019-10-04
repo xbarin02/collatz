@@ -799,7 +799,7 @@ int main(int argc, char *argv[])
 	message(INFO "client has been halted\n");
 
 #ifdef __WIN32__
-	 WSACleanup();
+	WSACleanup();
 #endif
 
 	return EXIT_SUCCESS;
