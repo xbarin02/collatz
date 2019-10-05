@@ -392,6 +392,10 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 
 	r = pclose(output);
 
+	if (!success) {
+		message(WARN "worker terminated and did not print HALTED\n");
+	}
+
 	if (r == -1) {
 		return -1;
 	}
