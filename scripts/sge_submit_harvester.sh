@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #$ -S /bin/bash
-#$ -N collatz-harvester
+#$ -N harvester
 #$ -M ibarina@fit.vutbr.cz
 #$ -m bea
 #$ -o /mnt/matylda1/ibarina/sge/collatz/logs/harvester.out
@@ -27,7 +27,7 @@ cp -r "${SRCDIR}" .
 
 cd collatz/src
 
-make -C worker clean all
+make -C worker clean all USE_LIBGMP=1
 make -C mclient clean all
 
 cd mclient
