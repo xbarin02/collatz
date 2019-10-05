@@ -196,7 +196,7 @@ int main()
 			overflow_count++;
 
 			if (++c < 24) {
-				printf("overflow fount on the assignment %" PRIu64 "\n", n);
+				printf("overflow found on the assignment %" PRIu64 "\n", n);
 			}
 		}
 	}
