@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
 	n     = ( UINT128_C(task_id) << task_size ) + 3;
 	n_sup = ( UINT128_C(task_id) << task_size ) + 3 + (UINT64_C(1) << task_size);
 
-	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " .. 0x%016" PRIx64 ":%016" PRIx64 "\n",
+	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
 		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
 
 	init_lut();
