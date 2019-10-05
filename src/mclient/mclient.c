@@ -416,6 +416,7 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 		return -1;
 
 	} else {
+		message(ERR "WIFEXITED: the child terminated abnormally\n");
 		return -1;
 	}
 }
