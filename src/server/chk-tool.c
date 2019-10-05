@@ -201,6 +201,8 @@ int main()
 		}
 	}
 
+	printf("\n");
+
 	printf("overflow found: %s (%" PRIu64 ")\n", overflow_found ? "yes" : "no", overflow_count);
 	printf("\n");
 
