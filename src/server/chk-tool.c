@@ -127,6 +127,7 @@ int main()
 	int c = 0;
 	int overflow_found = 0;
 	uint64_t clientids_count = 0;
+	uint64_t overflow_count = 0;
 
 	g_checksums = open_checksums();
 	g_usertimes = open_usertimes();
@@ -190,10 +191,11 @@ int main()
 
 		if (overflow != 0) {
 			overflow_found = 1;
+			overflow_count++;
 		}
 	}
 
-	printf("overflow found: %s\n", overflow_found ? "yes" : "no");
+	printf("overflow found: %s (%" PRIu64 ")\n", overflow_found ? "yes" : "no", overflow_count);
 	printf("\n");
 
 	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
