@@ -251,6 +251,7 @@ int main(int argc, char *argv[])
 			/* the function cannot verify the convergence using 128-bit arithmetic, use libgmp */
 			mpz_check(n);
 #else
+			printf("worker error: cannot verify the convergence using 128-bit arithmetic & libgmp not enabled :(\n");
 			abort();
 #endif
 		}
