@@ -154,7 +154,7 @@ int main()
 		uint64_t checksum = g_checksums[n];
 
 		if (checksum == 0) {
-			printf("missing checksum on the assignment %" PRIu64 "\n", n);
+			printf("- missing checksum on the assignment %" PRIu64 "\n", n);
 
 			if (++c == 24)
 				break;
@@ -196,7 +196,7 @@ int main()
 			overflow_count++;
 
 			if (++c < 24) {
-				printf("overflow found on the assignment %" PRIu64 "\n", n);
+				printf("- found %" PRIu64 " overflows on the assignment %" PRIu64 "\n", overflow, n);
 			}
 		}
 	}
