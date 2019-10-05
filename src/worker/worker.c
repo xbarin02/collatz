@@ -216,6 +216,9 @@ int main(int argc, char *argv[])
 	int opt;
 #ifndef __WIN32__
 	struct rusage usage;
+#else
+	FILETIME ftCreation, ftExit, ftUser, ftKernel;
+	HANDLE hProcess = GetCurrentProcess();
 #endif
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
@@ -280,16 +283,12 @@ int main(int argc, char *argv[])
 		}
 	}
 #else
-	if (1) {
-		HANDLE hProcess = GetCurrentProcess();
-		FILETIME ftCreation, ftExit, ftUser, ftKernel;
-		if (GetProcessTimes(hProcess, &ftCreation, &ftExit, &ftKernel, &ftUser)) {
-			uint64_t t = ((uint64_t)ftUser.dwHighDateTime << 32) + ftUser.dwLowDateTime;
-			/* Contains a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC). */
-			uint64_t secs = (t + 10000000/2) / 10000000;
-			uint64_t usecs = (t + 10/2) / 10;
-			printf("USERTIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
-		}
+	if (GetProcessTimes(hProcess, &ftCreation, &ftExit, &ftKernel, &ftUser)) {
+		uint64_t t = ((uint64_t)ftUser.dwHighDateTime << 32) + ftUser.dwLowDateTime;
+		/* Contains a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC). */
+		uint64_t secs = (t + 10000000/2) / 10000000;
+		uint64_t usecs = (t + 10/2) / 10;
+		printf("USERTIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
 	}
 #endif
 
