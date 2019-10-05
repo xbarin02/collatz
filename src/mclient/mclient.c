@@ -402,6 +402,7 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 	}
 
 	if (r == -1) {
+		message(ERR "pclose failed: if wait4(2) returns an error, or some other error is detected\n");
 		return -1;
 	}
 
