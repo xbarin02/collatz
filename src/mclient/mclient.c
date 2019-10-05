@@ -387,7 +387,10 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 		} else if (c == 1 && strcmp(ln_part[0], "HALTED") == 0) {
 			/* this was expected */
 			success = 1;
-		} /* other cases... */
+		} else {
+			/* other cases... */
+			printf("worker printed unknown message: %s", line);
+		}
 	}
 
 	r = pclose(output);
