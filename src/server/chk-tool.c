@@ -186,12 +186,18 @@ int main()
 
 	printf("\n");
 
+	c = 0;
+
 	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 		uint64_t overflow = g_overflows[n];
 
 		if (overflow != 0) {
 			overflow_found = 1;
 			overflow_count++;
+
+			if (++c < 24) {
+				printf("overflow fount on the assignment %" PRIu64 "\n", n);
+			}
 		}
 	}
 
