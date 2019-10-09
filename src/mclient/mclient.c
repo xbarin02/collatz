@@ -684,6 +684,11 @@ int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uin
 	return 0;
 }
 
+unsigned long atoul(const char *nptr)
+{
+	return strtoul(nptr, NULL, 10);
+}
+
 int main(int argc, char *argv[])
 {
 	int threads;
@@ -697,7 +702,9 @@ int main(int argc, char *argv[])
 	uint64_t *overflow_counter;
 	uint64_t *user_time;
 	uint64_t *checksum;
-
+#ifndef __WIN32__
+	unsigned long alarm_seconds = 0;
+#endif
 #ifdef __WIN32__
 	WORD versionWanted = MAKEWORD(1, 1);
 	WSADATA wsaData;
@@ -713,7 +720,7 @@ int main(int argc, char *argv[])
 
 	message(INFO "server to be used: %s\n", servername);
 
-	while ((opt = getopt(argc, argv, "1l")) != -1) {
+	while ((opt = getopt(argc, argv, "1la:")) != -1) {
 		switch (opt) {
 			case '1':
 				one_shot = 1;
@@ -721,6 +728,11 @@ int main(int argc, char *argv[])
 			case 'l':
 				request_lowest_incomplete = 1;
 				break;
+#ifndef __WIN32__
+			case 'a':
+				alarm_seconds = atoul(optarg);
+				break;
+#endif
 			default:
 				message(ERR "Usage: %s [-1] num_threads\n", argv[0]);
 				return EXIT_FAILURE;
@@ -733,6 +745,10 @@ int main(int argc, char *argv[])
 
 	if (one_shot) {
 		message(INFO "one shot mode activated!\n");
+	}
+
+	if (alarm_seconds) {
+		message(INFO "a signal to be delivered to workers in %lu seconds!\n", alarm_seconds);
 	}
 
 	task_id = malloc(sizeof(uint64_t) * threads);
