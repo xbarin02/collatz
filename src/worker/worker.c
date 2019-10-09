@@ -207,6 +207,11 @@ static void mpz_check(uint128_t n_)
 }
 #endif
 
+unsigned long atoul(const char *nptr)
+{
+	return strtoul(nptr, NULL, 10);
+}
+
 int main(int argc, char *argv[])
 {
 	uint128_t n;
@@ -223,11 +228,18 @@ int main(int argc, char *argv[])
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
-	while ((opt = getopt(argc, argv, "t:")) != -1) {
+	while ((opt = getopt(argc, argv, "t:a:")) != -1) {
 		switch (opt) {
+			unsigned long seconds;
 			case 't':
 				task_size = atou64(optarg);
 				break;
+#ifndef __WIN32__
+			case 'a':
+				alarm(seconds = atoul(optarg));
+				printf("ALARM %lu\n", seconds);
+				break;
+#endif
 			default:
 				fprintf(stderr, "Usage: %s [-t task_size] task_id\n", argv[0]);
 				return EXIT_FAILURE;
