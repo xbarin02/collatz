@@ -305,6 +305,11 @@ int open_socket_to_server()
 	return fd;
 }
 
+unsigned long atoul(const char *nptr)
+{
+	return strtoul(nptr, NULL, 10);
+}
+
 int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_user_time, uint64_t *p_checksum, unsigned long alarm_seconds)
 {
 	int r;
@@ -393,11 +398,17 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 		} else if (c == 1 && strcmp(ln_part[0], "HALTED") == 0) {
 			/* this was expected */
 			success = 1;
+		} else if (c == 2 && strcmp(ln_part[0], "ALARM") == 0) {
+			unsigned long seconds = atoul(ln_part[1]);
+
+			if (seconds != alarm_seconds) {
+				message(WARN "worker misinterpreted the alarm\n");
+			}
 		} else if (c == 3 && strcmp(ln_part[0], "RANGE") == 0) {
 			/* range */
 		} else {
 			/* other cases... */
-			printf("worker printed unknown message: %s", line);
+			message(WARN "worker printed unknown message: %s", line);
 		}
 	}
 
@@ -688,11 +699,6 @@ int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uin
 	free(success);
 
 	return 0;
-}
-
-unsigned long atoul(const char *nptr)
-{
-	return strtoul(nptr, NULL, 10);
 }
 
 int main(int argc, char *argv[])
