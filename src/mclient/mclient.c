@@ -314,11 +314,14 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 	FILE *output;
 	int success = 0;
 
-	/* TODO */
-	(void)alarm_seconds;
-
-	if (sprintf(buffer, "%s %" PRIu64, taskpath, task_id) < 0) {
-		return -1;
+	if (alarm_seconds) {
+		if (sprintf(buffer, "%s -a %lu %" PRIu64, taskpath, alarm_seconds, task_id) < 0) {
+			return -1;
+		}
+	} else {
+		if (sprintf(buffer, "%s %" PRIu64, taskpath, task_id) < 0) {
+			return -1;
+		}
 	}
 
 	output = popen(buffer, "r");
