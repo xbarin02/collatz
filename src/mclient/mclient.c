@@ -305,7 +305,7 @@ int open_socket_to_server()
 	return fd;
 }
 
-int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_user_time, uint64_t *p_checksum)
+int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_user_time, uint64_t *p_checksum, unsigned long alarm_seconds)
 {
 	int r;
 	char buffer[4096];
@@ -313,6 +313,9 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 	char ln_part[4][64];
 	FILE *output;
 	int success = 0;
+
+	/* TODO */
+	(void)alarm_seconds;
 
 	if (sprintf(buffer, "%s %" PRIu64, taskpath, task_id) < 0) {
 		return -1;
@@ -642,7 +645,7 @@ int open_urandom_and_read_clid(uint64_t *clid)
 	return 0;
 }
 
-int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uint64_t task_size[], uint64_t overflow_counter[], uint64_t user_time[], uint64_t checksum[])
+int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uint64_t task_size[], uint64_t overflow_counter[], uint64_t user_time[], uint64_t checksum[], unsigned long alarm_seconds)
 {
 	int *success;
 	int tid;
@@ -666,7 +669,7 @@ int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uin
 		user_time[tid] = 0;
 		checksum[tid] = 0;
 
-		success[tid] = run_assignment(task_id[tid], task_size[tid], overflow_counter+tid, user_time+tid, checksum+tid);
+		success[tid] = run_assignment(task_id[tid], task_size[tid], overflow_counter+tid, user_time+tid, checksum+tid, alarm_seconds);
 
 		if (success[tid] < 0) {
 			message(ERR "thread %i: run_assignment failed\n", tid);
@@ -702,9 +705,8 @@ int main(int argc, char *argv[])
 	uint64_t *overflow_counter;
 	uint64_t *user_time;
 	uint64_t *checksum;
-#ifndef __WIN32__
 	unsigned long alarm_seconds = 0;
-#endif
+
 #ifdef __WIN32__
 	WORD versionWanted = MAKEWORD(1, 1);
 	WSADATA wsaData;
@@ -790,7 +792,7 @@ int main(int argc, char *argv[])
 			sleep(SLEEP_INTERVAL);
 		}
 
-		if (run_assignments_in_parallel(threads, task_id, task_size, overflow_counter, user_time, checksum) < 0) {
+		if (run_assignments_in_parallel(threads, task_id, task_size, overflow_counter, user_time, checksum, alarm_seconds) < 0) {
 			while (open_socket_and_revoke_multiple_assignments(threads, task_id, task_size, clid) < 0) {
 				message(ERR "open_socket_and_revoke_multiple_assignments failed\n");
 				sleep(SLEEP_INTERVAL);
