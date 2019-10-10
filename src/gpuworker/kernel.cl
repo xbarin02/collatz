@@ -45,6 +45,13 @@ __kernel void worker(
 	unsigned long private_checksum_alpha = 0;
 	size_t id = get_global_id(0);
 
+	uint128_t lut[81];
+
+	unsigned long i;
+	for (i = 0; i < 81; ++i) {
+		lut[i] = pow3(i);
+	}
+
 	/* n (local) */
 	uint128_t n_     = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 0) << (task_size - task_units)) + 3;
 	/* n_sup (local) */
@@ -61,7 +68,11 @@ __kernel void worker(
 				private_overflow_counter++;
 				break;
 			}
+#if 0
 			n *= pow3(alpha);
+#else
+			n *= lut[alpha];
+#endif
 			n--;
 			n >>= ctzu128(n);
 			if (n < n0) {
