@@ -1,6 +1,6 @@
 size_t ctzl(unsigned long n)
 {
-        return 63 - clz(n & -n);
+	return 63 - clz(n & -n);
 }
 
 typedef unsigned __int128 uint128_t;
@@ -9,26 +9,29 @@ typedef unsigned __int128 uint128_t;
 
 size_t ctzu128(uint128_t n)
 {
-        size_t a = ctzl(n);
+	size_t a = ctzl(n);
 
-        if (a == ~0UL)
-                return 64 + ctzl(n>>64);
+	if (a == ~0UL) {
+		return 64 + ctzl(n>>64);
+	}
 
-        return a;
+	return a;
 }
 
 uint128_t pow3(size_t n)
 {
-        uint128_t r = 1;
-        uint128_t b = 3;
-        while (n) {
-                if (n & 1) {
-                        r *= b;
-                }
-                b *= b;
-                n >>= 1;
-        }
-        return r;
+	uint128_t r = 1;
+	uint128_t b = 3;
+
+	while (n) {
+		if (n & 1) {
+			r *= b;
+		}
+		b *= b;
+		n >>= 1;
+	}
+
+	return r;
 }
 
 __kernel void worker(
