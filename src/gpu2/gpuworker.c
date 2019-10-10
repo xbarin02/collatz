@@ -248,6 +248,11 @@ int solve(uint64_t task_id, uint64_t task_size)
 	free(overflow_counter);
 	free(checksum_alpha);
 
+	if (g_overflow_counter) {
+		g_checksum_alpha = 0;
+		return -1;
+	}
+
 	return 0;
 }
 
