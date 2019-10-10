@@ -1,0 +1,318 @@
+/*
+ * https://www.eriksmistad.no/getting-started-with-opencl-and-gpu-computing/
+ */
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <limits.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <CL/cl.h>
+
+#include "compat.h"
+#include "wideint.h"
+
+/* in log2 */
+#define TASK_SIZE 40
+
+static uint64_t g_checksum_alpha = 0;
+static uint64_t g_checksum_beta = 0;
+static uint64_t g_overflow_counter = 0;
+
+unsigned long atoul(const char *nptr)
+{
+	return strtoul(nptr, NULL, 10);
+}
+
+/* in log2 */
+#define TASK_UNITS 20
+
+char *load_source(size_t *size)
+{
+	FILE *fp;
+	char *str;
+
+	assert(size != NULL);
+
+	fp = fopen("kernel.cl", "r");
+
+	if (fp == NULL) {
+		return NULL;
+	}
+
+	str = malloc(1<<20);
+
+	if (str == NULL) {
+		return NULL;
+	}
+
+	*size = fread(str, 1, 1<<20, fp);
+
+	fclose(fp);
+
+	return str;
+}
+
+int solve(uint64_t task_id, uint64_t task_size)
+{
+	uint64_t task_units = TASK_UNITS;
+	uint128_t n;
+	uint128_t n_sup;
+	/* arrays */
+	uint64_t *overflow_counter;
+	uint64_t *checksum_alpha;
+
+	cl_mem mem_obj_overflow_counter;
+	cl_mem mem_obj_checksum_alpha;
+
+	cl_int ret;
+	cl_platform_id platform_id = NULL;
+	cl_uint ret_num_platforms;
+
+	cl_device_id device_id = NULL;
+	cl_uint num_devices;
+
+	cl_context context;
+
+	cl_command_queue command_queue;
+
+	char *program_string;
+	size_t program_length;
+
+	cl_program program;
+
+	cl_kernel kernel;
+
+	size_t global_work_size;
+
+	size_t i;
+
+	ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id, &num_devices);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	printf("[DEBUG] num_devices = %u\n", num_devices);
+
+	context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &ret);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	command_queue = clCreateCommandQueue(context, device_id, 0, &ret);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	mem_obj_overflow_counter = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned long) << task_units, NULL, &ret);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	mem_obj_checksum_alpha = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned long) << task_units, NULL, &ret);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	program_string = load_source(&program_length);
+
+	if (program_string == NULL) {
+		return -1;
+	}
+
+	program = clCreateProgramWithSource(context, 1, (const char **)&program_string, (const size_t *)&program_length, &ret);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	kernel = clCreateKernel(program, "worker", &ret);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&mem_obj_overflow_counter);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&mem_obj_checksum_alpha);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	assert(sizeof(cl_ulong) == sizeof(uint64_t));
+
+	ret = clSetKernelArg(kernel, 2, sizeof(cl_ulong), (void *)&task_id);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	ret = clSetKernelArg(kernel, 3, sizeof(cl_ulong), (void *)&task_size);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	ret = clSetKernelArg(kernel, 4, sizeof(cl_ulong), (void *)&task_units);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	global_work_size = (size_t)1 << task_units;
+
+	printf("[DEBUG] global_work_size = %lu\n", global_work_size);
+
+	assert(task_units + 2 <= task_size);
+
+	ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	/* allocate arrays */
+	overflow_counter = malloc(sizeof(uint64_t *) << task_units);
+	checksum_alpha = malloc(sizeof(uint64_t *) << task_units);
+
+	if (overflow_counter == NULL || checksum_alpha == NULL) {
+		return -1;
+	}
+
+	ret = clEnqueueReadBuffer(command_queue, mem_obj_overflow_counter, CL_TRUE, 0, sizeof(uint64_t) << task_units, overflow_counter, 0, NULL, NULL);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	ret = clEnqueueReadBuffer(command_queue, mem_obj_checksum_alpha, CL_TRUE, 0, sizeof(uint64_t) << task_units, checksum_alpha, 0, NULL, NULL);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	ret = clFlush(command_queue);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	ret = clFinish(command_queue);
+
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	ret = clReleaseKernel(kernel);
+	ret = clReleaseProgram(program);
+	ret = clReleaseCommandQueue(command_queue);
+	ret = clReleaseContext(context);
+
+	for (i = 0; i < global_work_size; ++i) {
+		g_overflow_counter += overflow_counter[i];
+		g_checksum_alpha += checksum_alpha[i];
+	}
+
+	/* n of the form 4n+3 */
+	n     = ( UINT128_C(task_id) << task_size ) + 3;
+	n_sup = ( UINT128_C(task_id) << task_size ) + 3 + (UINT64_C(1) << task_size);
+
+	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
+		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
+
+	free(overflow_counter);
+	free(checksum_alpha);
+
+	return 0;
+}
+
+int main(int argc, char *argv[])
+{
+	uint64_t task_id = 0;
+	uint64_t task_size = TASK_SIZE;
+	int opt;
+	struct rusage usage;
+
+	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+	while ((opt = getopt(argc, argv, "t:a:")) != -1) {
+		switch (opt) {
+			unsigned long seconds;
+			case 't':
+				task_size = atou64(optarg);
+				break;
+			case 'a':
+				alarm(seconds = atoul(optarg));
+				printf("ALARM %lu\n", seconds);
+				break;
+			default:
+				fprintf(stderr, "Usage: %s [-t task_size] task_id\n", argv[0]);
+				return EXIT_FAILURE;
+		}
+	}
+
+	task_id = (optind < argc) ? atou64(argv[optind]) : 0;
+
+	printf("TASK_SIZE %" PRIu64 "\n", task_size);
+	printf("TASK_ID %" PRIu64 "\n", task_id);
+
+	if (solve(task_id, task_size)) {
+		printf("ERROR\n");
+		abort();
+	}
+
+	/* the total amount of time spent executing in user mode, expressed in a timeval structure (seconds plus microseconds) */
+	if (getrusage(RUSAGE_SELF, &usage) < 0) {
+		/* errno is set appropriately. */
+		perror("getrusage");
+	} else {
+		if ((sizeof(uint64_t) >= sizeof(time_t)) &&
+		    (sizeof(uint64_t) >= sizeof(suseconds_t)) &&
+		    (usage.ru_utime.tv_sec * UINT64_C(1) <= UINT64_MAX / UINT64_C(1000000)) &&
+		    (usage.ru_utime.tv_sec * UINT64_C(1000000) <= UINT64_MAX - usage.ru_utime.tv_usec)) {
+			uint64_t secs = (uint64_t)usage.ru_utime.tv_sec;
+			uint64_t usecs = usage.ru_utime.tv_sec * UINT64_C(1000000) + usage.ru_utime.tv_usec;
+			if (secs < UINT64_MAX && (uint64_t)usage.ru_utime.tv_usec >= UINT64_C(1000000/2)) {
+				/* round up */
+				secs++;
+			}
+			printf("USERTIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
+		} else if (sizeof(uint64_t) >= sizeof(time_t)) {
+			uint64_t secs = (uint64_t)usage.ru_utime.tv_sec;
+			printf("USERTIME %" PRIu64 "\n", secs);
+		}
+	}
+
+	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
+
+	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, g_checksum_beta);
+
+	printf("HALTED\n");
+
+	return 0;
+}
