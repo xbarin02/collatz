@@ -90,6 +90,13 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 	size_t i;
 
+	/* n of the form 4n+3 */
+	n     = ( UINT128_C(task_id) << task_size ) + 3;
+	n_sup = ( UINT128_C(task_id) << task_size ) + 3 + (UINT64_C(1) << task_size);
+
+	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
+		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
+
 	ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
 
 	if (ret != CL_SUCCESS) {
@@ -237,13 +244,6 @@ int solve(uint64_t task_id, uint64_t task_size)
 		g_overflow_counter += overflow_counter[i];
 		g_checksum_alpha += checksum_alpha[i];
 	}
-
-	/* n of the form 4n+3 */
-	n     = ( UINT128_C(task_id) << task_size ) + 3;
-	n_sup = ( UINT128_C(task_id) << task_size ) + 3 + (UINT64_C(1) << task_size);
-
-	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
-		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
 
 	free(overflow_counter);
 	free(checksum_alpha);
