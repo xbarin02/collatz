@@ -28,7 +28,7 @@ unsigned long atoul(const char *nptr)
 }
 
 /* in log2 */
-#define TASK_UNITS 20
+#define TASK_UNITS 16
 
 char *load_source(size_t *size)
 {
@@ -110,6 +110,29 @@ int solve(uint64_t task_id, uint64_t task_size)
 	}
 
 	printf("[DEBUG] num_devices = %u\n", num_devices);
+
+#if 1
+	{
+		size_t max_wg_size;
+		cl_uint max_cu;
+
+		ret = clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &max_wg_size, NULL);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		printf("[DEBUG] CL_DEVICE_MAX_WORK_GROUP_SIZE = %lu\n", (unsigned long)max_wg_size);
+
+		ret = clGetDeviceInfo(device_id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_cu, NULL);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		printf("[DEBUG] CL_DEVICE_MAX_COMPUTE_UNITS = %u\n", (uint32_t)max_cu);
+	}
+#endif
 
 	context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &ret);
 
