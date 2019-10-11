@@ -123,7 +123,6 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices);
 
-
 	if (ret != CL_SUCCESS) {
 		return -1;
 	}
@@ -165,149 +164,164 @@ int solve(uint64_t task_id, uint64_t task_size)
 	}
 #endif
 
-	context = clCreateContext(NULL, 1, &device_id[device_index], NULL, NULL, &ret);
+	for (; (cl_uint)device_index < num_devices; ++device_index) {
+		printf("[DEBUG] device_index = %i...\n", device_index);
 
-	if (ret != CL_SUCCESS) {
-		printf("[ERROR] clCreateContext failed with %s\n", errcode_to_cstr(ret));
-		return -1;
+		context = clCreateContext(NULL, 1, &device_id[device_index], NULL, NULL, &ret);
+
+		if (ret == CL_INVALID_DEVICE) {
+			continue;
+		}
+
+		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clCreateContext failed with %s\n", errcode_to_cstr(ret));
+			return -1;
+		}
+
+		printf("[DEBUG] context created @ device_index = %i\n", device_index);
+
+		command_queue = clCreateCommandQueue(context, device_id[device_index], 0, &ret);
+
+		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clCreateCommandQueue failed\n");
+			return -1;
+		}
+
+		mem_obj_overflow_counter = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned long) << task_units, NULL, &ret);
+
+		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clCreateBuffer failed\n");
+			return -1;
+		}
+
+		mem_obj_checksum_alpha = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned long) << task_units, NULL, &ret);
+
+		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clCreateBuffer failed\n");
+			return -1;
+		}
+
+		program_string = load_source(&program_length);
+
+		if (program_string == NULL) {
+			printf("[ERROR] load_source failed\n");
+			return -1;
+		}
+
+		program = clCreateProgramWithSource(context, 1, (const char **)&program_string, (const size_t *)&program_length, &ret);
+
+		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clCreateProgramWithSource failed\n");
+			return -1;
+		}
+
+		ret = clBuildProgram(program, 1, &device_id[device_index], NULL, NULL, NULL);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		kernel = clCreateKernel(program, "worker", &ret);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&mem_obj_overflow_counter);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&mem_obj_checksum_alpha);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		assert(sizeof(cl_ulong) == sizeof(uint64_t));
+
+		ret = clSetKernelArg(kernel, 2, sizeof(cl_ulong), (void *)&task_id);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clSetKernelArg(kernel, 3, sizeof(cl_ulong), (void *)&task_size);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clSetKernelArg(kernel, 4, sizeof(cl_ulong), (void *)&task_units);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		global_work_size = (size_t)1 << task_units;
+
+		printf("[DEBUG] global_work_size = %lu\n", global_work_size);
+
+		assert(task_units + 2 <= task_size);
+
+		ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		/* allocate arrays */
+		overflow_counter = malloc(sizeof(uint64_t *) << task_units);
+		checksum_alpha = malloc(sizeof(uint64_t *) << task_units);
+
+		if (overflow_counter == NULL || checksum_alpha == NULL) {
+			return -1;
+		}
+
+		ret = clEnqueueReadBuffer(command_queue, mem_obj_overflow_counter, CL_TRUE, 0, sizeof(uint64_t) << task_units, overflow_counter, 0, NULL, NULL);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clEnqueueReadBuffer(command_queue, mem_obj_checksum_alpha, CL_TRUE, 0, sizeof(uint64_t) << task_units, checksum_alpha, 0, NULL, NULL);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clFlush(command_queue);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clFinish(command_queue);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clReleaseKernel(kernel);
+		ret = clReleaseProgram(program);
+		ret = clReleaseCommandQueue(command_queue);
+		ret = clReleaseContext(context);
+
+		for (i = 0; i < global_work_size; ++i) {
+			g_overflow_counter += overflow_counter[i];
+			g_checksum_alpha += checksum_alpha[i];
+		}
+
+		free(overflow_counter);
+		free(checksum_alpha);
+
+		goto done;
 	}
 
-	command_queue = clCreateCommandQueue(context, device_id[device_index], 0, &ret);
+	return -1;
 
-	if (ret != CL_SUCCESS) {
-		printf("[ERROR] clCreateCommandQueue failed\n");
-		return -1;
-	}
-
-	mem_obj_overflow_counter = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned long) << task_units, NULL, &ret);
-
-	if (ret != CL_SUCCESS) {
-		printf("[ERROR] clCreateBuffer failed\n");
-		return -1;
-	}
-
-	mem_obj_checksum_alpha = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned long) << task_units, NULL, &ret);
-
-	if (ret != CL_SUCCESS) {
-		printf("[ERROR] clCreateBuffer failed\n");
-		return -1;
-	}
-
-	program_string = load_source(&program_length);
-
-	if (program_string == NULL) {
-		printf("[ERROR] load_source failed\n");
-		return -1;
-	}
-
-	program = clCreateProgramWithSource(context, 1, (const char **)&program_string, (const size_t *)&program_length, &ret);
-
-	if (ret != CL_SUCCESS) {
-		printf("[ERROR] clCreateProgramWithSource failed\n");
-		return -1;
-	}
-
-	ret = clBuildProgram(program, 1, &device_id[device_index], NULL, NULL, NULL);
-
-	if (ret != CL_SUCCESS) {
-		return -1;
-	}
-
-	kernel = clCreateKernel(program, "worker", &ret);
-
-	if (ret != CL_SUCCESS) {
-		return -1;
-	}
-
-	ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&mem_obj_overflow_counter);
-
-	if (ret != CL_SUCCESS) {
-		return -1;
-	}
-
-	ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&mem_obj_checksum_alpha);
-
-	if (ret != CL_SUCCESS) {
-		return -1;
-	}
-
-	assert(sizeof(cl_ulong) == sizeof(uint64_t));
-
-	ret = clSetKernelArg(kernel, 2, sizeof(cl_ulong), (void *)&task_id);
-
-	if (ret != CL_SUCCESS) {
-		return -1;
-	}
-
-	ret = clSetKernelArg(kernel, 3, sizeof(cl_ulong), (void *)&task_size);
-
-	if (ret != CL_SUCCESS) {
-		return -1;
-	}
-
-	ret = clSetKernelArg(kernel, 4, sizeof(cl_ulong), (void *)&task_units);
-
-	if (ret != CL_SUCCESS) {
-		return -1;
-	}
-
-	global_work_size = (size_t)1 << task_units;
-
-	printf("[DEBUG] global_work_size = %lu\n", global_work_size);
-
-	assert(task_units + 2 <= task_size);
-
-	ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
-
-	if (ret != CL_SUCCESS) {
-		return -1;
-	}
-
-	/* allocate arrays */
-	overflow_counter = malloc(sizeof(uint64_t *) << task_units);
-	checksum_alpha = malloc(sizeof(uint64_t *) << task_units);
-
-	if (overflow_counter == NULL || checksum_alpha == NULL) {
-		return -1;
-	}
-
-	ret = clEnqueueReadBuffer(command_queue, mem_obj_overflow_counter, CL_TRUE, 0, sizeof(uint64_t) << task_units, overflow_counter, 0, NULL, NULL);
-
-	if (ret != CL_SUCCESS) {
-		return -1;
-	}
-
-	ret = clEnqueueReadBuffer(command_queue, mem_obj_checksum_alpha, CL_TRUE, 0, sizeof(uint64_t) << task_units, checksum_alpha, 0, NULL, NULL);
-
-	if (ret != CL_SUCCESS) {
-		return -1;
-	}
-
-	ret = clFlush(command_queue);
-
-	if (ret != CL_SUCCESS) {
-		return -1;
-	}
-
-	ret = clFinish(command_queue);
-
-	if (ret != CL_SUCCESS) {
-		return -1;
-	}
-
-	ret = clReleaseKernel(kernel);
-	ret = clReleaseProgram(program);
-	ret = clReleaseCommandQueue(command_queue);
-	ret = clReleaseContext(context);
-
-	for (i = 0; i < global_work_size; ++i) {
-		g_overflow_counter += overflow_counter[i];
-		g_checksum_alpha += checksum_alpha[i];
-	}
-
-	free(overflow_counter);
-	free(checksum_alpha);
-
+done:
 	free(device_id);
 
 	if (g_overflow_counter) {
