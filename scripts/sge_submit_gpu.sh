@@ -7,7 +7,7 @@
 #$ -o /dev/null
 #$ -e /dev/null
 #$ -q all.q@@gpu
-#$ -tc 10
+#$ -tc 1000
 #$ -l gpu=1
 
 set -u
