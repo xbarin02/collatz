@@ -64,7 +64,9 @@ const char *errcode_to_cstr(cl_int errcode)
 		case CL_INVALID_PLATFORM: return "CL_INVALID_PLATFORM";
 		case CL_INVALID_VALUE: return "CL_INVALID_VALUE";
 		case CL_INVALID_DEVICE: return "CL_INVALID_DEVICE";
+		case CL_INVALID_DEVICE_TYPE: return "CL_INVALID_DEVICE_TYPE";
 		case CL_DEVICE_NOT_AVAILABLE: return "CL_DEVICE_NOT_AVAILABLE";
+		case CL_DEVICE_NOT_FOUND: return "CL_DEVICE_NOT_FOUND";
 		case CL_OUT_OF_HOST_MEMORY: return "CL_OUT_OF_HOST_MEMORY";
 		default: return "";
 	}
@@ -116,6 +118,7 @@ int solve(uint64_t task_id, uint64_t task_size)
 	ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
 
 	if (ret != CL_SUCCESS) {
+		printf("[ERROR] clGetPlarformIDs failed\n");
 		return -1;
 	}
 
@@ -124,6 +127,7 @@ int solve(uint64_t task_id, uint64_t task_size)
 	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices);
 
 	if (ret != CL_SUCCESS) {
+		printf("[ERROR] clGetDeviceIDs failed with %s\n", errcode_to_cstr(ret));
 		return -1;
 	}
 
