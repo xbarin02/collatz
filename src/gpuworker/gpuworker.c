@@ -92,7 +92,7 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 	cl_int ret;
 	cl_platform_id platform_id = NULL;
-	cl_uint ret_num_platforms;
+	cl_uint num_platforms;
 
 	cl_device_id *device_id = NULL;
 	cl_uint num_devices;
@@ -121,7 +121,9 @@ int solve(uint64_t task_id, uint64_t task_size)
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
 		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
 
-	ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
+	ret = clGetPlatformIDs(1, &platform_id, &num_platforms);
+
+	printf("[DEBUG] num_platforms = %u\n", (unsigned)num_platforms);
 
 	if (ret != CL_SUCCESS) {
 		printf("[ERROR] clGetPlarformIDs failed\n");
@@ -130,7 +132,7 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 	num_devices = 0;
 
-	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices);
+	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices);
 
 	if (ret != CL_SUCCESS) {
 		printf("[ERROR] clGetDeviceIDs failed with %s\n", errcode_to_cstr(ret));
@@ -145,7 +147,7 @@ int solve(uint64_t task_id, uint64_t task_size)
 		return -1;
 	}
 
-	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ALL, num_devices, &device_id[0], NULL);
+	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, num_devices, &device_id[0], NULL);
 
 	if (ret != CL_SUCCESS) {
 		return -1;
