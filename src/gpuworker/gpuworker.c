@@ -1,5 +1,6 @@
 /*
  * https://www.eriksmistad.no/getting-started-with-opencl-and-gpu-computing/
+ * https://anteru.net/blog/2012/getting-started-with-opencl-part-1/
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,7 +86,7 @@ int solve(uint64_t task_id, uint64_t task_size)
 	cl_platform_id platform_id = NULL;
 	cl_uint ret_num_platforms;
 
-	cl_device_id device_id = NULL;
+	cl_device_id device_id[64];
 	cl_uint num_devices;
 
 	cl_context context;
@@ -103,6 +104,8 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 	size_t i;
 
+	int device_index = 0;
+
 	/* n of the form 4n+3 */
 	n     = ( UINT128_C(task_id) << task_size ) + 3;
 	n_sup = ( UINT128_C(task_id) << task_size ) + 3 + (UINT64_C(1) << task_size);
@@ -116,15 +119,23 @@ int solve(uint64_t task_id, uint64_t task_size)
 		return -1;
 	}
 
-	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1, &device_id, &num_devices);
+	num_devices = 0;
+
+	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices);
+
+	printf("[DEBUG] num_devices = %u\n", num_devices);
 
 	if (ret != CL_SUCCESS) {
 		return -1;
 	}
 
-	printf("[DEBUG] num_devices = %u\n", num_devices);
+	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, num_devices, &device_id[0], NULL);
 
-#if 1
+	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+#if 0
 	{
 		size_t max_wg_size;
 		cl_uint max_cu;
@@ -147,44 +158,49 @@ int solve(uint64_t task_id, uint64_t task_size)
 	}
 #endif
 
-	context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &ret);
+	context = clCreateContext(NULL, 1, &device_id[device_index], NULL, NULL, &ret);
 
 	if (ret != CL_SUCCESS) {
 		printf("[ERROR] clCreateContext failed with %s\n", errcode_to_cstr(ret));
 		return -1;
 	}
 
-	command_queue = clCreateCommandQueue(context, device_id, 0, &ret);
+	command_queue = clCreateCommandQueue(context, device_id[device_index], 0, &ret);
 
 	if (ret != CL_SUCCESS) {
+		printf("[ERROR] clCreateCommandQueue failed\n");
 		return -1;
 	}
 
 	mem_obj_overflow_counter = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned long) << task_units, NULL, &ret);
 
 	if (ret != CL_SUCCESS) {
+		printf("[ERROR] clCreateBuffer failed\n");
 		return -1;
 	}
 
 	mem_obj_checksum_alpha = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned long) << task_units, NULL, &ret);
 
 	if (ret != CL_SUCCESS) {
+		printf("[ERROR] clCreateBuffer failed\n");
 		return -1;
 	}
 
 	program_string = load_source(&program_length);
 
 	if (program_string == NULL) {
+		printf("[ERROR] load_source failed\n");
 		return -1;
 	}
 
 	program = clCreateProgramWithSource(context, 1, (const char **)&program_string, (const size_t *)&program_length, &ret);
 
 	if (ret != CL_SUCCESS) {
+		printf("[ERROR] clCreateProgramWithSource failed\n");
 		return -1;
 	}
 
-	ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
+	ret = clBuildProgram(program, 1, &device_id[device_index], NULL, NULL, NULL);
 
 	if (ret != CL_SUCCESS) {
 		return -1;
