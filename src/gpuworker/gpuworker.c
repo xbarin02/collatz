@@ -197,14 +197,14 @@ int solve(uint64_t task_id, uint64_t task_size)
 			return -1;
 		}
 
-		mem_obj_overflow_counter = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned long) << task_units, NULL, &ret);
+		mem_obj_overflow_counter = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
 
 		if (ret != CL_SUCCESS) {
 			printf("[ERROR] clCreateBuffer failed\n");
 			return -1;
 		}
 
-		mem_obj_checksum_alpha = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(unsigned long) << task_units, NULL, &ret);
+		mem_obj_checksum_alpha = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
 
 		if (ret != CL_SUCCESS) {
 			printf("[ERROR] clCreateBuffer failed\n");
