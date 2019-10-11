@@ -285,12 +285,14 @@ int solve(uint64_t task_id, uint64_t task_size)
 		printf("[DEBUG] kernel enqueued\n");
 
 		/* allocate arrays */
-		overflow_counter = malloc(sizeof(uint64_t *) << task_units);
-		checksum_alpha = malloc(sizeof(uint64_t *) << task_units);
+		overflow_counter = malloc(sizeof(uint64_t) << task_units);
+		checksum_alpha = malloc(sizeof(uint64_t) << task_units);
 
 		if (overflow_counter == NULL || checksum_alpha == NULL) {
 			return -1;
 		}
+
+		printf("[DEBUG] host buffers allocated\n");
 
 		ret = clEnqueueReadBuffer(command_queue, mem_obj_overflow_counter, CL_TRUE, 0, sizeof(uint64_t) << task_units, overflow_counter, 0, NULL, NULL);
 
