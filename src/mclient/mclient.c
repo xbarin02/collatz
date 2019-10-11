@@ -36,6 +36,7 @@ const char *servername = "localhost";
 const uint16_t serverport = 5006;
 
 const char *taskpath = "../worker/worker";
+const char *taskpath_gpu = "../gpuworker/gpuworker";
 
 static volatile sig_atomic_t quit = 0;
 
@@ -310,7 +311,7 @@ unsigned long atoul(const char *nptr)
 	return strtoul(nptr, NULL, 10);
 }
 
-int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_user_time, uint64_t *p_checksum, unsigned long alarm_seconds)
+int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_user_time, uint64_t *p_checksum, unsigned long alarm_seconds, int gpu_mode)
 {
 	int r;
 	char buffer[4096];
@@ -320,11 +321,11 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 	int success = 0;
 
 	if (alarm_seconds) {
-		if (sprintf(buffer, "%s -a %lu %" PRIu64, taskpath, alarm_seconds, task_id) < 0) {
+		if (sprintf(buffer, "%s -a %lu %" PRIu64, gpu_mode ? taskpath_gpu : taskpath, alarm_seconds, task_id) < 0) {
 			return -1;
 		}
 	} else {
-		if (sprintf(buffer, "%s %" PRIu64, taskpath, task_id) < 0) {
+		if (sprintf(buffer, "%s %" PRIu64, gpu_mode ? taskpath_gpu : taskpath, task_id) < 0) {
 			return -1;
 		}
 	}
@@ -659,7 +660,7 @@ int open_urandom_and_read_clid(uint64_t *clid)
 	return 0;
 }
 
-int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uint64_t task_size[], uint64_t overflow_counter[], uint64_t user_time[], uint64_t checksum[], unsigned long alarm_seconds)
+int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uint64_t task_size[], uint64_t overflow_counter[], uint64_t user_time[], uint64_t checksum[], unsigned long alarm_seconds, int gpu_mode)
 {
 	int *success;
 	int tid;
@@ -683,7 +684,7 @@ int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uin
 		user_time[tid] = 0;
 		checksum[tid] = 0;
 
-		success[tid] = run_assignment(task_id[tid], task_size[tid], overflow_counter+tid, user_time+tid, checksum+tid, alarm_seconds);
+		success[tid] = run_assignment(task_id[tid], task_size[tid], overflow_counter+tid, user_time+tid, checksum+tid, alarm_seconds, gpu_mode);
 
 		if (success[tid] < 0) {
 			message(ERR "thread %i: run_assignment failed\n", tid);
@@ -715,6 +716,7 @@ int main(int argc, char *argv[])
 	uint64_t *user_time;
 	uint64_t *checksum;
 	unsigned long alarm_seconds = 0;
+	int gpu_mode = 0;
 
 #ifdef __WIN32__
 	WORD versionWanted = MAKEWORD(1, 1);
@@ -806,7 +808,7 @@ int main(int argc, char *argv[])
 			sleep(SLEEP_INTERVAL);
 		}
 
-		if (run_assignments_in_parallel(threads, task_id, task_size, overflow_counter, user_time, checksum, alarm_seconds) < 0) {
+		if (run_assignments_in_parallel(threads, task_id, task_size, overflow_counter, user_time, checksum, alarm_seconds, gpu_mode) < 0) {
 			while (open_socket_and_revoke_multiple_assignments(threads, task_id, task_size, clid) < 0) {
 				message(ERR "open_socket_and_revoke_multiple_assignments failed\n");
 				sleep(SLEEP_INTERVAL);
