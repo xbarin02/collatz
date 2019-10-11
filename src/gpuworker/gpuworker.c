@@ -86,7 +86,7 @@ int solve(uint64_t task_id, uint64_t task_size)
 	cl_platform_id platform_id = NULL;
 	cl_uint ret_num_platforms;
 
-	cl_device_id device_id[64];
+	cl_device_id *device_id = NULL;
 	cl_uint num_devices;
 
 	cl_context context;
@@ -123,9 +123,16 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices);
 
-	printf("[DEBUG] num_devices = %u\n", num_devices);
 
 	if (ret != CL_SUCCESS) {
+		return -1;
+	}
+
+	printf("[DEBUG] num_devices = %u\n", num_devices);
+
+	device_id = malloc(sizeof(cl_device_id) * num_devices);
+
+	if (device_id == NULL) {
 		return -1;
 	}
 
@@ -300,6 +307,8 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 	free(overflow_counter);
 	free(checksum_alpha);
+
+	free(device_id);
 
 	if (g_overflow_counter) {
 		g_checksum_alpha = 0;
