@@ -34,6 +34,8 @@ uint128_t pow3(size_t n)
 	return r;
 }
 
+#define LUT_SIZE128 81
+
 __kernel void worker(
 	__global unsigned long *overflow_counter,
 	__global unsigned long *checksum_alpha,
@@ -45,10 +47,10 @@ __kernel void worker(
 	unsigned long private_checksum_alpha = 0;
 	size_t id = get_global_id(0);
 
-	uint128_t lut[81];
+	uint128_t lut[LUT_SIZE128];
 
 	unsigned long i;
-	for (i = 0; i < 81; ++i) {
+	for (i = 0; i < LUT_SIZE128; ++i) {
 		lut[i] = pow3(i);
 	}
 
@@ -64,15 +66,11 @@ __kernel void worker(
 			size_t alpha = ctzu128(n);
 			private_checksum_alpha += alpha;
 			n >>= alpha;
-			if(n > UINT128_MAX >> 2*alpha || alpha >= 81) {
+			if(n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
 				private_overflow_counter++;
 				break;
 			}
-#if 0
-			n *= pow3(alpha);
-#else
 			n *= lut[alpha];
-#endif
 			n--;
 			n >>= ctzu128(n);
 			if (n < n0) {
