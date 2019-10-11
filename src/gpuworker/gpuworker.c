@@ -124,7 +124,7 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 	num_devices = 0;
 
-	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices);
+	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices);
 
 	if (ret != CL_SUCCESS) {
 		printf("[ERROR] clGetDeviceIDs failed with %s\n", errcode_to_cstr(ret));
@@ -139,7 +139,7 @@ int solve(uint64_t task_id, uint64_t task_size)
 		return -1;
 	}
 
-	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, num_devices, &device_id[0], NULL);
+	ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_ALL, num_devices, &device_id[0], NULL);
 
 	if (ret != CL_SUCCESS) {
 		return -1;
@@ -275,6 +275,8 @@ int solve(uint64_t task_id, uint64_t task_size)
 			return -1;
 		}
 
+		printf("[DEBUG] kernel enqueued\n");
+
 		/* allocate arrays */
 		overflow_counter = malloc(sizeof(uint64_t *) << task_units);
 		checksum_alpha = malloc(sizeof(uint64_t *) << task_units);
@@ -295,11 +297,15 @@ int solve(uint64_t task_id, uint64_t task_size)
 			return -1;
 		}
 
+		printf("[DEBUG] buffers transferred\n");
+
 		ret = clFlush(command_queue);
 
 		if (ret != CL_SUCCESS) {
 			return -1;
 		}
+
+		printf("[DEBUG] flushed\n");
 
 		ret = clFinish(command_queue);
 
