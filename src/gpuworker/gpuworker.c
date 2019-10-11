@@ -143,11 +143,21 @@ int solve(uint64_t task_id, uint64_t task_size)
 		return -1;
 	}
 
+next_platform:
+	printf("[DEBUG] platform = %i\n", platform_index);
+
 	assert((cl_uint)platform_index < num_platforms);
 
 	num_devices = 0;
 
 	ret = clGetDeviceIDs(platform_id[platform_index], CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices);
+
+	if (ret == CL_DEVICE_NOT_FOUND) {
+		if ((cl_uint)platform_index + 1 < num_platforms) {
+			platform_index++;
+			goto next_platform;
+		}
+	}
 
 	if (ret != CL_SUCCESS) {
 		printf("[ERROR] clGetDeviceIDs failed with %s\n", errcode_to_cstr(ret));
