@@ -312,12 +312,14 @@ int solve(uint64_t task_id, uint64_t task_size)
 		ret = clEnqueueReadBuffer(command_queue, mem_obj_overflow_counter, CL_TRUE, 0, sizeof(uint64_t) << task_units, overflow_counter, 0, NULL, NULL);
 
 		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clEnqueueReadBuffer failed with %s\n", errcode_to_cstr(ret));
 			return -1;
 		}
 
 		ret = clEnqueueReadBuffer(command_queue, mem_obj_checksum_alpha, CL_TRUE, 0, sizeof(uint64_t) << task_units, checksum_alpha, 0, NULL, NULL);
 
 		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clEnqueueReadBuffer failed with %s\n", errcode_to_cstr(ret));
 			return -1;
 		}
 
