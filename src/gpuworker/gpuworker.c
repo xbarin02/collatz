@@ -197,6 +197,8 @@ int solve(uint64_t task_id, uint64_t task_size)
 			return -1;
 		}
 
+		assert(sizeof(cl_ulong) == sizeof(uint64_t));
+
 		mem_obj_overflow_counter = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
 
 		if (ret != CL_SUCCESS) {
