@@ -10,7 +10,7 @@ killall mclient
 
 sleep 1
 
-killall worker
+killall worker gpuworker
 
 sleep 1
 
