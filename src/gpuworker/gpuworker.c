@@ -61,6 +61,12 @@ const char *errcode_to_cstr(cl_int errcode)
 {
 	switch (errcode) {
 		case CL_SUCCESS: return "CL_SUCCESS";
+		case CL_BUILD_PROGRAM_FAILURE: return "CL_BUILD_PROGRAM_FAILURE";
+		case CL_COMPILER_NOT_AVAILABLE: return "CL_COMPILER_NOT_AVAILABLE";
+		case CL_INVALID_OPERATION: return "CL_INVALID_OPERATION";
+		case CL_INVALID_BUILD_OPTIONS: return "CL_INVALID_BUILD_OPTIONS";
+		case CL_INVALID_BINARY: return "CL_INVALID_BINARY";
+		case CL_INVALID_PROGRAM: return "CL_INVALID_PROGRAM";
 		case CL_INVALID_PLATFORM: return "CL_INVALID_PLATFORM";
 		case CL_INVALID_VALUE: return "CL_INVALID_VALUE";
 		case CL_INVALID_DEVICE: return "CL_INVALID_DEVICE";
@@ -222,6 +228,7 @@ int solve(uint64_t task_id, uint64_t task_size)
 		ret = clBuildProgram(program, 1, &device_id[device_index], NULL, NULL, NULL);
 
 		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clBuildProgram failed with %s\n", errcode_to_cstr(ret));
 			return -1;
 		}
 
