@@ -731,17 +731,22 @@ int main(int argc, char *argv[])
 
 	message(INFO "server to be used: %s\n", servername);
 
-	while ((opt = getopt(argc, argv, "1la:")) != -1) {
+	while ((opt = getopt(argc, argv, "1la:b:")) != -1) {
 		switch (opt) {
+			unsigned long seconds;
 			case '1':
 				one_shot = 1;
 				break;
 			case 'l':
 				request_lowest_incomplete = 1;
 				break;
-#ifndef __WIN32__
 			case 'a':
 				alarm_seconds = atoul(optarg);
+				break;
+#ifndef __WIN32__
+			case 'b':
+				alarm(seconds = atoul(optarg));
+				printf("MCLIENT ALARM %lu\n", seconds);
 				break;
 #endif
 			default:
