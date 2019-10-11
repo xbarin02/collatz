@@ -229,6 +229,19 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 		ret = clBuildProgram(program, 1, &device_id[device_index], NULL, NULL, NULL);
 
+		if (ret == CL_BUILD_PROGRAM_FAILURE) {
+			size_t log_size;
+			char *log;
+
+			clGetProgramBuildInfo(program, device_id[device_index], CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+
+			log = malloc(log_size);
+
+			clGetProgramBuildInfo(program, device_id[device_index], CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+
+			printf("%s\n", log);
+		}
+
 		if (ret != CL_SUCCESS) {
 			printf("[ERROR] clBuildProgram failed with %s\n", errcode_to_cstr(ret));
 			return -1;
