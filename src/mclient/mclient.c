@@ -733,7 +733,7 @@ int main(int argc, char *argv[])
 
 	message(INFO "server to be used: %s\n", servername);
 
-	while ((opt = getopt(argc, argv, "1la:b:")) != -1) {
+	while ((opt = getopt(argc, argv, "1la:b:g")) != -1) {
 		switch (opt) {
 			unsigned long seconds;
 			case '1':
@@ -748,9 +748,13 @@ int main(int argc, char *argv[])
 #ifndef __WIN32__
 			case 'b':
 				alarm(seconds = atoul(optarg));
-				printf("MCLIENT ALARM %lu\n", seconds);
+				message(DBG "MCLIENT ALARM %lu\n", seconds);
 				break;
 #endif
+			case 'g':
+				gpu_mode = 1;
+				message(INFO "gpu mode activated!\n");
+				break;
 			default:
 				message(ERR "Usage: %s [-1] num_threads\n", argv[0]);
 				return EXIT_FAILURE;
