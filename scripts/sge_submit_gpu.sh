@@ -34,7 +34,8 @@ make -C mclient clean all
 
 cd mclient
 
-stdbuf -o0 -e0 ./mclient -a 14300 -b 7200 -g 1
+# 20 minutes for mclient; 4 hours minus 100 secs for the (gpu)worker
+stdbuf -o0 -e0 ./mclient -a 14300 -b 1200 -g 1
 
 popd
 rm -rf -- "$TMP"
