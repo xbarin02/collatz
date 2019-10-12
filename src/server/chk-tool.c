@@ -197,6 +197,8 @@ int main()
 		printf("average user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_user_time/60/60), (uint64_t)(avg_user_time/60%60), (uint64_t)(avg_user_time%60));
 	}
 
+	printf("\n");
+
 	if (user_time_count_short > 0) {
 		uint64_t avg_user_time = (uint64_t) ((total_user_time_short+(user_time_count_short/2)) / user_time_count_short);
 
@@ -208,6 +210,8 @@ int main()
 		);
 		printf("average user time (short): %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_user_time/60/60), (uint64_t)(avg_user_time/60%60), (uint64_t)(avg_user_time%60));
 	}
+
+	printf("\n");
 
 	if (user_time_count_long > 0) {
 		uint64_t avg_user_time = (uint64_t) ((total_user_time_long+(user_time_count_long/2)) / user_time_count_long);
