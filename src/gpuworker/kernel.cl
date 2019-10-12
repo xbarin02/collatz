@@ -57,7 +57,7 @@ __kernel void worker(
 	/* n (local) */
 	uint128_t n_     = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 0) << (task_size - task_units)) + 3;
 	/* n_sup (local) */
-        uint128_t n_sup_ = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 1) << (task_size - task_units)) + 3;
+	uint128_t n_sup_ = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 1) << (task_size - task_units)) + 3;
 
 	for (; n_ < n_sup_; n_ += 4) {
 		uint128_t n = n_, n0 = n_;
