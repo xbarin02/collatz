@@ -74,7 +74,7 @@ const char *errcode_to_cstr(cl_int errcode)
 		case CL_DEVICE_NOT_AVAILABLE: return "CL_DEVICE_NOT_AVAILABLE";
 		case CL_DEVICE_NOT_FOUND: return "CL_DEVICE_NOT_FOUND";
 		case CL_OUT_OF_HOST_MEMORY: return "CL_OUT_OF_HOST_MEMORY";
-		default: return "";
+		default: return "(unknown error code)";
 	}
 }
 
@@ -124,12 +124,12 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 	ret = clGetPlatformIDs(0, NULL, &num_platforms);
 
-	printf("[DEBUG] num_platforms = %u\n", (unsigned)num_platforms);
-
 	if (ret != CL_SUCCESS) {
-		printf("[ERROR] clGetPlarformIDs failed\n");
+		printf("[ERROR] clGetPlarformIDs failed with = %s\n", errcode_to_cstr(ret));
 		return -1;
 	}
+
+	printf("[DEBUG] num_platforms = %u\n", (unsigned)num_platforms);
 
 	if (num_platforms == 0) {
 		printf("[ERROR] no platform\n");
