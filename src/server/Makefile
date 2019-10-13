@@ -3,6 +3,11 @@ LDFLAGS += -fopenmp $(EXTRA_LDFLAGS)
 LDLIBS += $(EXTRA_LDLIBS)
 BINS = server chk-tool find-overflows verify-result
 
+ifeq ($(USE_LIBGMP), 1)
+	CFLAGS+=-D_USE_GMP
+	LDLIBS+=-lgmp
+endif
+
 .PHONY: all
 all: $(BINS)
 

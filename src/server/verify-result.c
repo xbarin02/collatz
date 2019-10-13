@@ -164,8 +164,6 @@ static void mpz_check(uint128_t n_)
 	mpz_t n0;
 	mp_bitcnt_t alpha, beta;
 
-	g_overflow_counter++;
-
 	mpz_init_set_u128(n, n_);
 
 	/* n0 = n */
