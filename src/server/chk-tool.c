@@ -238,7 +238,7 @@ int main()
 			overflow_sum += overflow;
 
 			if (++c < 24) {
-				printf("- found %" PRIu64 " overflows on the assignment %" PRIu64 "\n", overflow, n);
+				printf("- found %" PRIu64 " overflows on the assignment %" PRIu64 " (below %" PRIu64 " x 2^60)\n", overflow, n, (n >> 20) + 1);
 			}
 		}
 	}
