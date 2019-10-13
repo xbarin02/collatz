@@ -159,7 +159,7 @@ int main()
 		uint64_t checksum = g_checksums[n];
 
 		if (checksum == 0) {
-			printf("- missing checksum on the assignment %" PRIu64 "\n", n);
+			printf("- missing checksum on the assignment %" PRIu64 " (below %" PRIu64 " x 2^60)\n", n, (n >> 20) + 1);
 
 			if (++c == 24)
 				break;
