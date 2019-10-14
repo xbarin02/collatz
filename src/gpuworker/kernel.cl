@@ -66,13 +66,17 @@ __kernel void worker(
 			size_t alpha = ctzu128(n);
 			private_checksum_alpha += alpha;
 			n >>= alpha;
+
 			if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
 				private_overflow_counter++;
 				break;
 			}
+
 			n *= lut[alpha];
+
 			n--;
 			n >>= ctzu128(n);
+
 			if (n < n0) {
 				break;
 			}
