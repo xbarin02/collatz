@@ -1,7 +1,3 @@
-/*
- * https://www.eriksmistad.no/getting-started-with-opencl-and-gpu-computing/
- * https://anteru.net/blog/2012/getting-started-with-opencl-part-1/
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
