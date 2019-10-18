@@ -178,29 +178,6 @@ next_platform:
 		return -1;
 	}
 
-#if 0
-	{
-		size_t max_wg_size;
-		cl_uint max_cu;
-
-		ret = clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &max_wg_size, NULL);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
-
-		printf("[DEBUG] CL_DEVICE_MAX_WORK_GROUP_SIZE = %lu\n", (unsigned long)max_wg_size);
-
-		ret = clGetDeviceInfo(device_id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_cu, NULL);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
-
-		printf("[DEBUG] CL_DEVICE_MAX_COMPUTE_UNITS = %u\n", (uint32_t)max_cu);
-	}
-#endif
-
 	for (; (cl_uint)device_index < num_devices; ++device_index) {
 		printf("[DEBUG] device_index = %i...\n", device_index);
 
@@ -355,6 +332,7 @@ next_platform:
 		ret = clFlush(command_queue);
 
 		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clFlush failed with %s\n", errcode_to_cstr(ret));
 			return -1;
 		}
 
@@ -363,6 +341,7 @@ next_platform:
 		ret = clFinish(command_queue);
 
 		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clFinish failed with %s\n", errcode_to_cstr(ret));
 			return -1;
 		}
 
@@ -389,6 +368,7 @@ done:
 
 	if (g_overflow_counter) {
 		g_checksum_alpha = 0;
+		printf("[ERROR] overflow occured!\n");
 		return -1;
 	}
 
