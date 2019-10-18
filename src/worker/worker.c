@@ -264,6 +264,7 @@ int main(int argc, char *argv[])
 		if (unlikely(check(n))) {
 #ifdef _USE_GMP
 			/* the function cannot verify the convergence using 128-bit arithmetic, use libgmp */
+			/* FIXME: correct the alpha & beta checksums */
 			mpz_check(n);
 #else
 			printf("worker error: cannot verify the convergence using 128-bit arithmetic & libgmp not enabled :(\n");
