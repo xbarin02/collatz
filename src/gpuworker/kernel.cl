@@ -47,7 +47,7 @@ __kernel void worker(
 	unsigned long private_checksum_alpha = 0;
 	size_t id = get_global_id(0);
 
-#if 0
+#if 1
 	__local uint128_t lut[LUT_SIZE128];
 
 	unsigned long i;
