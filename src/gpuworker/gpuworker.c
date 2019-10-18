@@ -289,6 +289,49 @@ next_platform:
 			return -1;
 		}
 
+#if 1
+		{
+			size_t size;
+			cl_ulong ulong;
+
+			ret = clGetKernelWorkGroupInfo(kernel, device_id[device_index], CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &size, NULL);
+
+			if (ret != CL_SUCCESS) {
+				printf("[ERROR] clGetKernelWorkGroupInfo failed\n");
+				return -1;
+			}
+
+			printf("[DEBUG] CL_KERNEL_WORK_GROUP_SIZE = %lu\n", (unsigned long)size);
+
+			ret = clGetKernelWorkGroupInfo(kernel, device_id[device_index], CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(size_t), &size, NULL);
+
+			if (ret != CL_SUCCESS) {
+				printf("[ERROR] clGetKernelWorkGroupInfo failed\n");
+				return -1;
+			}
+
+			printf("[DEBUG] CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE = %lu\n", (unsigned long)size);
+
+			ret = clGetKernelWorkGroupInfo(kernel, device_id[device_index], CL_KERNEL_PRIVATE_MEM_SIZE, sizeof(cl_ulong), &ulong, NULL);
+
+			if (ret != CL_SUCCESS) {
+				printf("[ERROR] clGetKernelWorkGroupInfo failed\n");
+				return -1;
+			}
+
+			printf("[DEBUG] CL_KERNEL_PRIVATE_MEM_SIZE = %lu\n", (unsigned long)ulong);
+
+			ret = clGetKernelWorkGroupInfo(kernel, device_id[device_index], CL_KERNEL_LOCAL_MEM_SIZE, sizeof(cl_ulong), &ulong, NULL);
+
+			if (ret != CL_SUCCESS) {
+				printf("[ERROR] clGetKernelWorkGroupInfo failed\n");
+				return -1;
+			}
+
+			printf("[DEBUG] CL_KERNEL_LOCAL_MEM_SIZE = %lu\n", (unsigned long)ulong);
+		}
+#endif
+
 		ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&mem_obj_overflow_counter);
 
 		if (ret != CL_SUCCESS) {
