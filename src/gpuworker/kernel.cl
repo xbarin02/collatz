@@ -67,9 +67,7 @@ __kernel void worker(
 	}
 #endif
 
-	/* n (local) */
 	uint128_t n0    = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 0) << (task_size - task_units)) + 3;
-	/* n_sup (local) */
 	uint128_t n_sup = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 1) << (task_size - task_units)) + 3;
 
 	for (; n0 < n_sup; n0 += 4) {
