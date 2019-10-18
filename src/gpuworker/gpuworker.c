@@ -194,6 +194,38 @@ next_platform:
 
 		printf("[DEBUG] context created @ device_index = %i\n", device_index);
 
+#if 1
+		{
+			size_t size;
+			cl_uint uint;
+			cl_ulong ulong;
+
+			ret = clGetDeviceInfo(device_id[device_index], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &size, NULL);
+
+			if (ret != CL_SUCCESS) {
+				return -1;
+			}
+
+			printf("[DEBUG] CL_DEVICE_MAX_WORK_GROUP_SIZE = %lu\n", (unsigned long)size);
+
+			ret = clGetDeviceInfo(device_id[device_index], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &uint, NULL);
+
+			if (ret != CL_SUCCESS) {
+				return -1;
+			}
+
+			printf("[DEBUG] CL_DEVICE_MAX_COMPUTE_UNITS = %u\n", (unsigned)uint);
+
+			ret = clGetDeviceInfo(device_id[device_index], CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong), &ulong, NULL);
+
+			if (ret != CL_SUCCESS) {
+				return -1;
+			}
+
+			printf("[DEBUG] CL_DEVICE_LOCAL_MEM_SIZE = %lu B\n", (unsigned long)ulong);
+		}
+#endif
+
 		command_queue = clCreateCommandQueue(context, device_id[device_index], 0, &ret);
 
 		if (ret != CL_SUCCESS) {
