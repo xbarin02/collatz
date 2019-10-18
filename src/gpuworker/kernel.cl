@@ -56,6 +56,7 @@ __kernel void worker(
 			lut[i] = pow3(i);
 		}
 	}
+
 	barrier(CLK_LOCAL_MEM_FENCE);
 #else
 	uint128_t lut[LUT_SIZE128];
