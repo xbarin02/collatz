@@ -24,11 +24,6 @@
 #include "compat.h"
 #include "wideint.h"
 
-#ifdef __GNUC__
-#	define likely(x)   __builtin_expect((x), 1)
-#	define unlikely(x) __builtin_expect((x), 0)
-#endif
-
 #define TASK_SIZE 40
 
 #define LUT_SIZE128 81
