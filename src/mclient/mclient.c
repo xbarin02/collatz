@@ -201,7 +201,7 @@ int read_uint64(int fd, uint64_t *nptr)
 
 	n = ((uint64_t)nh << 32) + nl;
 
-	assert( nptr != NULL );
+	assert(nptr != NULL);
 
 	*nptr = n;
 
@@ -441,7 +441,7 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 
 int write_group_size(int fd, int threads)
 {
-	assert( threads > 0 );
+	assert(threads > 0);
 
 	return write_uint64(fd, (uint64_t)threads);
 }
