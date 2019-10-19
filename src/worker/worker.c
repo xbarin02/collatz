@@ -212,8 +212,6 @@ static void check(uint128_t n)
 
 		n >>= alpha;
 
-		/* now we have an (n,alpha) pair */
-
 		if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
 			check2(n0, n, alpha);
 			return;
@@ -228,8 +226,6 @@ static void check(uint128_t n)
 		g_checksum_beta += beta;
 
 		n >>= __builtin_ctzu128(n);
-
-		/* now we have a single n */
 
 		if (n < n0) {
 			return;
