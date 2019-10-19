@@ -17,11 +17,6 @@
 #include "compat.h"
 #include "wideint.h"
 
-#ifdef __GNUC__
-#	define likely(x)   __builtin_expect((x), 1)
-#	define unlikely(x) __builtin_expect((x), 0)
-#endif
-
 #define TASK_SIZE 40
 
 #define LUT_SIZE64 41
@@ -70,76 +65,28 @@ void init_lut()
 }
 
 #ifdef ENABLE_ALPHA
-static uint64_t g_check_sum_alpha = 0;
+static uint64_t g_checksum_alpha = 0;
 #endif
 #ifdef ENABLE_BETA
-static uint64_t g_check_sum_beta = 0;
+static uint64_t g_checksum_beta = 0;
 #endif
+static uint64_t g_overflow64_counter = 0;
 
-static int check(uint64_t n)
+static void checkx2(uint128_t n0, uint128_t n, int alpha)
 {
-	const uint64_t n0 = n;
-	int alpha;
 #ifdef ENABLE_BETA
 	int beta;
 #endif
-
-	if (n == UINT64_MAX) {
-		return 1;
-	}
+	g_overflow64_counter++;
 
 	do {
-		n++;
-
-		alpha = __builtin_ctzu64(n);
-#ifdef ENABLE_ALPHA
-		g_check_sum_alpha += alpha;
+		if (alpha >= LUT_SIZE128 || n > UINT128_MAX / g_lut128[alpha]) {
+#ifdef _USE_GMP
+			mpz_check2(n0, n, alpha);
+#else
+			abort();
 #endif
-		n >>= alpha;
-
-		if (n > UINT64_MAX >> 2*alpha || alpha >= LUT_SIZE64) {
-			return 1;
-		}
-
-		n *= g_lut64[alpha];
-
-		n--;
-#ifdef ENABLE_BETA
-		beta = __builtin_ctzu64(n);
-
-		g_check_sum_beta += beta;
-#endif
-		n >>= __builtin_ctzu64(n);
-
-		if (n < n0) {
-			return 0;
-		}
-	} while (1);
-}
-
-static int checkx(uint128_t n)
-{
-	const uint128_t n0 = n;
-	int alpha;
-#ifdef ENABLE_BETA
-	int beta;
-#endif
-
-	if (n == UINT128_MAX) {
-		return 1;
-	}
-
-	do {
-		n++;
-
-		alpha = __builtin_ctzu128(n);
-#ifdef ENABLE_ALPHA
-		g_check_sum_alpha += alpha;
-#endif
-		n >>= alpha;
-
-		if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
-			return 1;
+			return;
 		}
 
 		n *= g_lut128[alpha];
@@ -148,17 +95,69 @@ static int checkx(uint128_t n)
 #ifdef ENABLE_BETA
 		beta = __builtin_ctzu128(n);
 
-		g_check_sum_beta += beta;
+		g_checksum_beta += beta;
 #endif
 		n >>= __builtin_ctzu128(n);
 
 		if (n < n0) {
-			return 0;
+			return;
 		}
+
+		n++;
+
+		alpha = __builtin_ctzu128(n);
+#ifdef ENABLE_ALPHA
+		g_checksum_alpha += alpha;
+#endif
+		n >>= alpha;
 	} while (1);
 }
 
-static uint64_t g_overflow64_counter = 0;
+static void check(uint64_t n)
+{
+	const uint64_t n0 = n;
+	int alpha;
+#ifdef ENABLE_BETA
+	int beta;
+#endif
+
+	if (n == UINT64_MAX) {
+#ifdef ENABLE_ALPHA
+		g_checksum_alpha += 64;
+#endif
+		checkx2(n0, UINT128_C(1), 64);
+		return;
+	}
+
+	do {
+		n++;
+
+		alpha = __builtin_ctzu64(n);
+#ifdef ENABLE_ALPHA
+		g_checksum_alpha += alpha;
+#endif
+		n >>= alpha;
+
+		if (n > UINT64_MAX >> 2*alpha || alpha >= LUT_SIZE64) {
+			checkx2((uint128_t)n0, (uint128_t)n, alpha);
+			return;
+		}
+
+		n *= g_lut64[alpha];
+
+		n--;
+#ifdef ENABLE_BETA
+		beta = __builtin_ctzu64(n);
+
+		g_checksum_beta += beta;
+#endif
+		n >>= __builtin_ctzu64(n);
+
+		if (n < n0) {
+			return;
+		}
+	} while (1);
+}
 
 unsigned long atoul(const char *nptr)
 {
@@ -207,14 +206,7 @@ int main(int argc, char *argv[])
 	init_lut();
 
 	for (; n < n_sup; n += 4) {
-		if (unlikely(check(n))) {
-			g_overflow64_counter++;
-			/* FIXME: correct the alpha & beta checksums */
-			if (unlikely(checkx((uint128_t)n))) {
-				printf("worker error: cannot verify the convergence using 128-bit arithmetic :(\n");
-				abort();
-			}
-		}
+		check(n);
 	}
 
 	if (getrusage(RUSAGE_SELF, &usage) < 0) {
@@ -239,9 +231,9 @@ int main(int argc, char *argv[])
 	printf("OVERFLOW 64 %" PRIu64 "\n", g_overflow64_counter);
 
 #if defined(ENABLE_ALPHA) && defined(ENABLE_BETA)
-	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_check_sum_alpha, g_check_sum_beta);
+	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, g_checksum_beta);
 #elif defined(ENABLE_ALPHA)
-	printf("CHECKSUM %" PRIu64 "\n", g_check_sum_alpha);
+	printf("CHECKSUM %" PRIu64 "\n", g_checksum_alpha);
 #else
 	printf("CHECKSUM\n");
 #endif
