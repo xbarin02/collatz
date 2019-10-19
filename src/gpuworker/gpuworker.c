@@ -15,6 +15,9 @@
 /* in log2 */
 #define TASK_SIZE 40
 
+/* in log2 */
+#define TASK_UNITS 16
+
 static uint64_t g_checksum_alpha = 0;
 static uint64_t g_checksum_beta = 0;
 static uint64_t g_overflow_counter = 0;
@@ -23,9 +26,6 @@ unsigned long atoul(const char *nptr)
 {
 	return strtoul(nptr, NULL, 10);
 }
-
-/* in log2 */
-#define TASK_UNITS 16
 
 char *load_source(size_t *size)
 {
