@@ -56,28 +56,28 @@ char *load_source(size_t *size)
 const char *errcode_to_cstr(cl_int errcode)
 {
 	switch (errcode) {
-		case CL_SUCCESS: return "CL_SUCCESS";
 		case CL_BUILD_PROGRAM_FAILURE: return "CL_BUILD_PROGRAM_FAILURE";
 		case CL_COMPILER_NOT_AVAILABLE: return "CL_COMPILER_NOT_AVAILABLE";
-		case CL_INVALID_OPERATION: return "CL_INVALID_OPERATION";
-		case CL_INVALID_BUILD_OPTIONS: return "CL_INVALID_BUILD_OPTIONS";
+		case CL_DEVICE_NOT_AVAILABLE: return "CL_DEVICE_NOT_AVAILABLE";
+		case CL_DEVICE_NOT_FOUND: return "CL_DEVICE_NOT_FOUND";
+		case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST: return "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
 		case CL_INVALID_BINARY: return "CL_INVALID_BINARY";
+		case CL_INVALID_BUILD_OPTIONS: return "CL_INVALID_BUILD_OPTIONS";
 		case CL_INVALID_COMMAND_QUEUE: return "CL_INVALID_COMMAND_QUEUE";
 		case CL_INVALID_CONTEXT: return "CL_INVALID_CONTEXT";
-		case CL_INVALID_MEM_OBJECT: return "CL_INVALID_MEM_OBJECT";
-		case CL_MEM_OBJECT_ALLOCATION_FAILURE: return "CL_MEM_OBJECT_ALLOCATION_FAILURE";
-		case CL_INVALID_PROGRAM: return "CL_INVALID_PROGRAM";
-		case CL_INVALID_PLATFORM: return "CL_INVALID_PLATFORM";
-		case CL_INVALID_VALUE: return "CL_INVALID_VALUE";
 		case CL_INVALID_DEVICE: return "CL_INVALID_DEVICE";
 		case CL_INVALID_DEVICE_TYPE: return "CL_INVALID_DEVICE_TYPE";
 		case CL_INVALID_EVENT_WAIT_LIST: return "CL_INVALID_EVENT_WAIT_LIST";
+		case CL_INVALID_MEM_OBJECT: return "CL_INVALID_MEM_OBJECT";
+		case CL_INVALID_OPERATION: return "CL_INVALID_OPERATION";
+		case CL_INVALID_PLATFORM: return "CL_INVALID_PLATFORM";
+		case CL_INVALID_PROGRAM: return "CL_INVALID_PROGRAM";
+		case CL_INVALID_VALUE: return "CL_INVALID_VALUE";
+		case CL_MEM_OBJECT_ALLOCATION_FAILURE: return "CL_MEM_OBJECT_ALLOCATION_FAILURE";
 		case CL_MISALIGNED_SUB_BUFFER_OFFSET: return "CL_MISALIGNED_SUB_BUFFER_OFFSET";
-		case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST: return "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
-		case CL_DEVICE_NOT_AVAILABLE: return "CL_DEVICE_NOT_AVAILABLE";
-		case CL_DEVICE_NOT_FOUND: return "CL_DEVICE_NOT_FOUND";
 		case CL_OUT_OF_HOST_MEMORY: return "CL_OUT_OF_HOST_MEMORY";
 		case CL_OUT_OF_RESOURCES: return "CL_OUT_OF_RESOURCES";
+		case CL_SUCCESS: return "CL_SUCCESS";
 		default: return "(unknown error code)";
 	}
 }
@@ -120,8 +120,8 @@ int solve(uint64_t task_id, uint64_t task_size)
 	int device_index = 0;
 
 	/* n of the form 4n+3 */
-	n     = ( UINT128_C(task_id) << task_size ) + 3;
-	n_sup = ( UINT128_C(task_id) << task_size ) + 3 + (UINT64_C(1) << task_size);
+	n     = ((uint128_t)(task_id) << task_size) + 3;
+	n_sup = ((uint128_t)(task_id) << task_size) + 3 + (UINT64_C(1) << task_size);
 
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
 		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
