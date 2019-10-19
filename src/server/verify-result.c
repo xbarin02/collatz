@@ -47,11 +47,6 @@ const uint64_t *open_checksums()
 
 const uint64_t *g_checksums = 0;
 
-#ifdef __GNUC__
-#	define likely(x)   __builtin_expect((x), 1)
-#	define unlikely(x) __builtin_expect((x), 0)
-#endif
-
 #define LUT_SIZE128 81
 #ifdef _USE_GMP
 #	define LUT_SIZEMPZ 512
