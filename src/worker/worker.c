@@ -47,7 +47,7 @@ uint128_t pow3x(uint128_t n)
 	uint128_t r = 1;
 
 	for (; n > 0; --n) {
-		assert( r <= UINT128_MAX / 3 );
+		assert(r <= UINT128_MAX / 3);
 
 		r *= 3;
 	}
@@ -169,7 +169,7 @@ static void mpz_init_set_u128(mpz_t rop, uint128_t op)
 	uint64_t nh = (uint64_t)(op>>64);
 	uint64_t nl = (uint64_t)(op);
 
-	assert( sizeof(unsigned long) == sizeof(uint64_t) );
+	assert(sizeof(unsigned long) == sizeof(uint64_t));
 
 	mpz_init_set_ui(rop, (unsigned long)nh);
 	mpz_mul_2exp(rop, rop, (mp_bitcnt_t)64);
@@ -205,7 +205,7 @@ static void mpz_check(uint128_t n_)
 
 		/* now we have an (n,alpha) pair */
 
-		assert( alpha < LUT_SIZEMPZ && "overflow" );
+		assert(alpha < LUT_SIZEMPZ && "overflow");
 
 		/* n *= lut[alpha] */
 		mpz_mul(n, n, g_mpz_lut[alpha]);
