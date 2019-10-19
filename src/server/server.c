@@ -200,6 +200,7 @@ int read_assignment_no(int fd, uint64_t *n)
 #define SET_ASSIGNED(n)   ( g_map_assigned[(n)>>3] |= (1<<((n)&7)) )
 #define SET_UNASSIGNED(n) ( g_map_assigned[(n)>>3] &= UCHAR_MAX ^ (1<<((n)&7)) )
 #define SET_COMPLETE(n)   ( g_map_complete[(n)>>3] |= (1<<((n)&7)) )
+#define SET_INCOMPLETE(n) ( g_map_complete[(n)>>3] &= UCHAR_MAX ^ (1<<((n)&7)) )
 
 int write_task_size(int fd)
 {
@@ -707,16 +708,20 @@ int main(int argc, char *argv[])
 	int opt;
 	int clear_incomplete_assigned = 0;
 	int fix_records = 0;
+	int invalidate_overflows = 0;
 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 
-	while ((opt = getopt(argc, argv, "cf")) != -1) {
+	while ((opt = getopt(argc, argv, "cfi")) != -1) {
 		switch (opt) {
 			case 'c':
 				clear_incomplete_assigned = 1;
 				break;
 			case 'f':
 				fix_records = 1;
+				break;
+			case 'i':
+				invalidate_overflows = 1;
 				break;
 			default:
 				message(ERR "Usage: %s [-c]\n", argv[0]);
@@ -745,6 +750,24 @@ int main(int argc, char *argv[])
 	if (!IS_COMPLETE(0)) {
 		message(INFO "initializing new search...\n");
 		set_complete_range_from_hercher();
+	}
+
+	if (invalidate_overflows) {
+		uint64_t n;
+
+		message(WARN "Invalidating overflows...\n");
+
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			uint64_t overflow = g_overflows[n];
+
+			if (overflow != 0) {
+				printf("- resetting the assignment %" PRIu64 " due to overflow\n", n);
+#if 0
+				SET_UNASSIGNED(n);
+				SET_INCOMPLETE(n);
+#endif
+			}
+		}
 	}
 
 	/* fix records the *.map and *.dat */
