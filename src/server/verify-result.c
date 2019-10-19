@@ -52,6 +52,18 @@ const uint64_t *g_checksums = 0;
 #	define unlikely(x) __builtin_expect((x), 0)
 #endif
 
+#define LUT_SIZE128 81
+#ifdef _USE_GMP
+#	define LUT_SIZEMPZ 512
+#endif
+
+uint128_t g_lut[LUT_SIZE128];
+#ifdef _USE_GMP
+mpz_t g_mpz_lut[LUT_SIZEMPZ];
+#endif
+
+static uint64_t g_checksum_alpha = 0;
+
 uint128_t pow3x(uint128_t n)
 {
 	uint128_t r = 1;
@@ -72,16 +84,6 @@ static void mpz_pow3(mpz_t r, unsigned long n)
 }
 #endif
 
-#define LUT_SIZE128 81
-#ifdef _USE_GMP
-#	define LUT_SIZEMPZ 512
-#endif
-
-uint128_t g_lut[LUT_SIZE128];
-#ifdef _USE_GMP
-mpz_t g_mpz_lut[LUT_SIZEMPZ];
-#endif
-
 void init_lut()
 {
 	int a;
@@ -96,70 +98,6 @@ void init_lut()
 		mpz_pow3(g_mpz_lut[a], (unsigned long)a);
 	}
 #endif
-}
-
-static uint64_t g_checksum_alpha = 0;
-
-static int check2(uint128_t n0, uint128_t n, int alpha)
-{
-	do {
-		if (alpha >= LUT_SIZE128 || n > UINT128_MAX / g_lut[alpha]) {
-			return 1;
-		}
-
-		n *= g_lut[alpha];
-
-		n--;
-
-		n >>= __builtin_ctzx(n);
-
-		if (n < n0) {
-			return 0;
-		}
-
-		n++;
-
-		alpha = __builtin_ctzx(n);
-
-		g_checksum_alpha += alpha;
-
-		n >>= alpha;
-	} while (1);
-}
-
-/* check convergence */
-static int check(uint128_t n)
-{
-	const uint128_t n0 = n;
-	int alpha;
-
-	if (n == UINT128_MAX) {
-		return 1;
-	}
-
-	do {
-		n++;
-
-		alpha = __builtin_ctzx(n);
-
-		g_checksum_alpha += alpha;
-
-		n >>= alpha;
-
-		if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
-			return check2(n0, n, alpha);
-		}
-
-		n *= g_lut[alpha];
-
-		n--;
-
-		n >>= __builtin_ctzx(n);
-
-		if (n < n0) {
-			return 0;
-		}
-	} while (1);
 }
 
 #ifdef _USE_GMP
@@ -184,30 +122,22 @@ static void mpz_init_set_u128(mpz_t rop, uint128_t op)
 #endif
 
 #ifdef _USE_GMP
-/* check convergence */
-static void mpz_check(uint128_t n_)
+static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 {
+	mp_bitcnt_t alpha, beta;
 	mpz_t n;
 	mpz_t n0;
-	mp_bitcnt_t alpha, beta;
+
+	assert(alpha_ >= 0);
+	alpha = (mp_bitcnt_t)alpha_;
 
 	mpz_init_set_u128(n, n_);
-
-	/* n0 = n */
-	mpz_init_set(n0, n);
+	mpz_init_set_u128(n0, n0_);
 
 	do {
-		/* n++ */
-		mpz_add_ui(n, n, 1UL);
-
-		alpha = mpz_ctz(n);
-
-		g_checksum_alpha += alpha;
-
-		/* n >>= alpha */
-		mpz_fdiv_q_2exp(n, n, alpha);
-
-		assert(alpha < LUT_SIZEMPZ && "overflow");
+		if (alpha >= LUT_SIZEMPZ) {
+			abort();
+		}
 
 		/* n *= lut[alpha] */
 		mpz_mul(n, n, g_mpz_lut[alpha]);
@@ -223,14 +153,91 @@ static void mpz_check(uint128_t n_)
 		if (mpz_cmp(n, n0) < 0) {
 			break;
 		}
+
+		/* n++ */
+		mpz_add_ui(n, n, 1UL);
+
+		alpha = mpz_ctz(n);
+
+		g_checksum_alpha += alpha;
+
+		/* n >>= alpha */
+		mpz_fdiv_q_2exp(n, n, alpha);
 	} while (1);
 
 	mpz_clear(n);
 	mpz_clear(n0);
-
-	return;
 }
 #endif
+
+static void check2(uint128_t n0, uint128_t n, int alpha)
+{
+	do {
+		if (alpha >= LUT_SIZE128 || n > UINT128_MAX / g_lut[alpha]) {
+#ifdef _USE_GMP
+			mpz_check2(n0, n, alpha);
+#else
+			abort();
+#endif
+			return;
+		}
+
+		n *= g_lut[alpha];
+
+		n--;
+
+		n >>= __builtin_ctzx(n);
+
+		if (n < n0) {
+			return;
+		}
+
+		n++;
+
+		alpha = __builtin_ctzx(n);
+
+		g_checksum_alpha += alpha;
+
+		n >>= alpha;
+	} while (1);
+}
+
+static void check(uint128_t n)
+{
+	const uint128_t n0 = n;
+	int alpha;
+
+	if (n == UINT128_MAX) {
+		g_checksum_alpha += 128;
+		check2(n0, UINT128_C(1), 128);
+		return;
+	}
+
+	do {
+		n++;
+
+		alpha = __builtin_ctzx(n);
+
+		g_checksum_alpha += alpha;
+
+		n >>= alpha;
+
+		if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
+			check2(n0, n, alpha);
+			return;
+		}
+
+		n *= g_lut[alpha];
+
+		n--;
+
+		n >>= __builtin_ctzx(n);
+
+		if (n < n0) {
+			return;
+		}
+	} while (1);
+}
 
 int main(int argc, char *argv[])
 {
@@ -261,16 +268,7 @@ int main(int argc, char *argv[])
 	printf("[DEBUG] computing checksum...\n");
 
 	for (; n < n_sup; n += 4) {
-		if (unlikely(check(n))) {
-#ifdef _USE_GMP
-			/* FIXME correct the alpha & beta checksums */
-			/* the function cannot verify the convergence using 128-bit arithmetic, use libgmp */
-			mpz_check(n);
-#else
-			printf("[ERROR] cannot verify the convergence using 128-bit arithmetic & libgmp not enabled :(\n");
-			abort();
-#endif
-		}
+		check(n);
 	}
 
 	printf("CHECKSUM %" PRIu64 " (computed)\n", g_checksum_alpha);
