@@ -572,11 +572,6 @@ int read_message(int fd, int thread_id, const char *ipv4)
 			return -1;
 		}
 
-		/* less than 30 minutes */
-		if (user_time < 30*60) {
-			message(WARN "suspiciously fast calculation! (assignment %" PRIu64 ")\n", n);
-		}
-
 		if ((checksum>>23) != 196126) {
 			message(ERR "suspicious checksum, rejecting the result! (assignment %" PRIu64 ")\n", n);
 			return -1;
