@@ -100,6 +100,33 @@ void init_lut()
 
 static uint64_t g_checksum_alpha = 0;
 
+static int check2(uint128_t n0, uint128_t n, int alpha)
+{
+	do {
+		if (alpha >= LUT_SIZE128 || n > UINT128_MAX / g_lut[alpha]) {
+			return 1;
+		}
+
+		n *= g_lut[alpha];
+
+		n--;
+
+		n >>= __builtin_ctzx(n);
+
+		if (n < n0) {
+			return 0;
+		}
+
+		n++;
+
+		alpha = __builtin_ctzx(n);
+
+		g_checksum_alpha += alpha;
+
+		n >>= alpha;
+	} while (1);
+}
+
 /* check convergence */
 static int check(uint128_t n)
 {
@@ -120,7 +147,7 @@ static int check(uint128_t n)
 		n >>= alpha;
 
 		if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
-			return 1;
+			return check2(n0, n, alpha);
 		}
 
 		n *= g_lut[alpha];
