@@ -762,10 +762,9 @@ int main(int argc, char *argv[])
 
 			if (overflow != 0) {
 				printf("- resetting the assignment %" PRIu64 " due to overflow\n", n);
-#if 0
+
 				SET_UNASSIGNED(n);
 				SET_INCOMPLETE(n);
-#endif
 			}
 		}
 	}
