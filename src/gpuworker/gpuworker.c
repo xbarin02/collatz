@@ -16,7 +16,9 @@
 #define TASK_SIZE 40
 
 /* in log2 */
+#ifndef TASK_UNITS
 #define TASK_UNITS 16
+#endif
 
 static uint64_t g_checksum_alpha = 0;
 static uint64_t g_checksum_beta = 0;
