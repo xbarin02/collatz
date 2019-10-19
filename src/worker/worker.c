@@ -278,8 +278,8 @@ int main(int argc, char *argv[])
 	printf("TASK_ID %" PRIu64 "\n", task_id);
 
 	/* n of the form 4n+3 */
-	n     = ( UINT128_C(task_id) << task_size ) + 3;
-	n_sup = ( UINT128_C(task_id) << task_size ) + 3 + (UINT64_C(1) << task_size);
+	n     = ((uint128_t)(task_id) << task_size) + 3;
+	n_sup = ((uint128_t)(task_id) << task_size) + 3 + (UINT64_C(1) << task_size);
 
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
 		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
