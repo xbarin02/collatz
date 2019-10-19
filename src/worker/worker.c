@@ -41,6 +41,10 @@ uint128_t g_lut[LUT_SIZE128];
 mpz_t g_mpz_lut[LUT_SIZEMPZ];
 #endif
 
+static uint64_t g_checksum_alpha = 0;
+static uint64_t g_checksum_beta = 0;
+static uint64_t g_overflow_counter = 0;
+
 /* 3^n */
 uint128_t pow3x(uint128_t n)
 {
@@ -88,81 +92,6 @@ static mp_bitcnt_t mpz_ctz(const mpz_t n)
 }
 #endif
 
-static uint64_t g_checksum_alpha = 0;
-static uint64_t g_checksum_beta = 0;
-
-static int check2(uint128_t n0, uint128_t n, int alpha)
-{
-	do {
-		if (alpha >= LUT_SIZE128 || n > UINT128_MAX / g_lut[alpha]) {
-			return 1;
-		}
-
-		n *= g_lut[alpha];
-
-		n--;
-
-		n >>= __builtin_ctzu128(n);
-
-		if (n < n0) {
-			return 0;
-		}
-
-		n++;
-
-		alpha = __builtin_ctzu128(n);
-
-		g_checksum_alpha += alpha;
-
-		n >>= alpha;
-	} while (1);
-}
-
-/* check convergence */
-static int check(uint128_t n)
-{
-	const uint128_t n0 = n;
-	int alpha, beta;
-
-	if (n == UINT128_MAX) {
-		return 1;
-	}
-
-	do {
-		n++;
-
-		alpha = __builtin_ctzu128(n);
-
-		g_checksum_alpha += alpha;
-
-		n >>= alpha;
-
-		/* now we have an (n,alpha) pair */
-
-		if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
-			return check2(n0, n, alpha);
-		}
-
-		n *= g_lut[alpha];
-
-		n--;
-
-		beta = __builtin_ctzu128(n);
-
-		g_checksum_beta += beta;
-
-		n >>= __builtin_ctzu128(n);
-
-		/* now we have a single n */
-
-		if (n < n0) {
-			return 0;
-		}
-	} while (1);
-}
-
-static uint64_t g_overflow_counter = 0;
-
 #ifdef _USE_GMP
 static void mpz_init_set_u128(mpz_t rop, uint128_t op)
 {
@@ -178,34 +107,22 @@ static void mpz_init_set_u128(mpz_t rop, uint128_t op)
 #endif
 
 #ifdef _USE_GMP
-/* check convergence */
-static void mpz_check(uint128_t n_)
+static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 {
+	mp_bitcnt_t alpha, beta;
 	mpz_t n;
 	mpz_t n0;
-	mp_bitcnt_t alpha, beta;
 
-	g_overflow_counter++;
+	assert(alpha_ >= 0);
+	alpha = (mp_bitcnt_t)alpha_;
 
 	mpz_init_set_u128(n, n_);
-
-	/* n0 = n */
-	mpz_init_set(n0, n);
+	mpz_init_set_u128(n0, n0_);
 
 	do {
-		/* n++ */
-		mpz_add_ui(n, n, 1UL);
-
-		alpha = mpz_ctz(n);
-
-		g_checksum_alpha += alpha;
-
-		/* n >>= alpha */
-		mpz_fdiv_q_2exp(n, n, alpha);
-
-		/* now we have an (n,alpha) pair */
-
-		assert(alpha < LUT_SIZEMPZ && "overflow");
+		if (alpha >= LUT_SIZEMPZ) {
+			abort();
+		}
 
 		/* n *= lut[alpha] */
 		mpz_mul(n, n, g_mpz_lut[alpha]);
@@ -220,19 +137,110 @@ static void mpz_check(uint128_t n_)
 		/* n >>= ctz(n) */
 		mpz_fdiv_q_2exp(n, n, beta);
 
-		/* now we have a single n */
-
 		if (mpz_cmp(n, n0) < 0) {
 			break;
 		}
+
+		/* n++ */
+		mpz_add_ui(n, n, 1UL);
+
+		alpha = mpz_ctz(n);
+
+		g_checksum_alpha += alpha;
+
+		/* n >>= alpha */
+		mpz_fdiv_q_2exp(n, n, alpha);
 	} while (1);
 
 	mpz_clear(n);
 	mpz_clear(n0);
-
-	return;
 }
 #endif
+
+static void check2(uint128_t n0, uint128_t n, int alpha)
+{
+	int beta;
+
+	g_overflow_counter++;
+
+	do {
+		if (alpha >= LUT_SIZE128 || n > UINT128_MAX / g_lut[alpha]) {
+#ifdef _USE_GMP
+			mpz_check2(n0, n, alpha);
+#else
+			abort();
+#endif
+			return;
+		}
+
+		n *= g_lut[alpha];
+
+		n--;
+
+		beta = __builtin_ctzu128(n);
+
+		g_checksum_beta += beta;
+
+		n >>= __builtin_ctzu128(n);
+
+		if (n < n0) {
+			return;
+		}
+
+		n++;
+
+		alpha = __builtin_ctzu128(n);
+
+		g_checksum_alpha += alpha;
+
+		n >>= alpha;
+	} while (1);
+}
+
+static void check(uint128_t n)
+{
+	const uint128_t n0 = n;
+	int alpha, beta;
+
+	if (n == UINT128_MAX) {
+		g_checksum_alpha += 128;
+		check2(n0, UINT128_C(1), 128);
+		return;
+	}
+
+	do {
+		n++;
+
+		alpha = __builtin_ctzu128(n);
+
+		g_checksum_alpha += alpha;
+
+		n >>= alpha;
+
+		/* now we have an (n,alpha) pair */
+
+		if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
+			check2(n0, n, alpha);
+			return;
+		}
+
+		n *= g_lut[alpha];
+
+		n--;
+
+		beta = __builtin_ctzu128(n);
+
+		g_checksum_beta += beta;
+
+		n >>= __builtin_ctzu128(n);
+
+		/* now we have a single n */
+
+		if (n < n0) {
+			return;
+		}
+	} while (1);
+}
 
 unsigned long atoul(const char *nptr)
 {
@@ -288,16 +296,7 @@ int main(int argc, char *argv[])
 	init_lut();
 
 	for (; n < n_sup; n += 4) {
-		if (unlikely(check(n))) {
-#ifdef _USE_GMP
-			/* the function cannot verify the convergence using 128-bit arithmetic, use libgmp */
-			/* FIXME: correct the alpha & beta checksums */
-			mpz_check(n);
-#else
-			printf("worker error: cannot verify the convergence using 128-bit arithmetic & libgmp not enabled :(\n");
-			abort();
-#endif
-		}
+		check(n);
 	}
 
 #ifndef __WIN32__
