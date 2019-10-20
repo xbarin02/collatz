@@ -24,9 +24,128 @@ static uint64_t g_checksum_alpha = 0;
 static uint64_t g_checksum_beta = 0;
 static uint64_t g_overflow_counter = 0;
 
+static uint64_t g_private_overflow_counter;
+static uint64_t g_private_checksum_alpha;
+
 unsigned long atoul(const char *nptr)
 {
 	return strtoul(nptr, NULL, 10);
+}
+
+uint128_t pow3x(uint128_t n)
+{
+	uint128_t r = 1;
+
+	for (; n > 0; --n) {
+		assert(r <= UINT128_MAX / 3);
+
+		r *= 3;
+	}
+
+	return r;
+}
+
+#define LUT_SIZE128 81
+
+uint128_t g_lut[LUT_SIZE128];
+
+void init_lut()
+{
+	int a;
+
+	for (a = 0; a < LUT_SIZE128; ++a) {
+		g_lut[a] = pow3x((uint128_t)a);
+	}
+}
+
+static void check2(uint128_t n0, uint128_t n, int alpha)
+{
+	int beta;
+
+	g_private_overflow_counter++;
+
+	do {
+		if (alpha >= LUT_SIZE128 || n > UINT128_MAX / g_lut[alpha]) {
+#ifdef _USE_GMP
+			mpz_check2(n0, n, alpha);
+#else
+			abort();
+#endif
+			return;
+		}
+
+		n *= g_lut[alpha];
+
+		n--;
+
+		beta = __builtin_ctzu128(n);
+#if 0
+		g_private_checksum_beta += beta;
+#endif
+		n >>= beta;
+
+		if (n < n0) {
+			return;
+		}
+
+		n++;
+
+		alpha = __builtin_ctzu128(n);
+
+		g_private_checksum_alpha += alpha;
+
+		n >>= alpha;
+	} while (1);
+}
+
+void cpu_worker(
+	uint64_t *overflow_counter,
+	uint64_t *checksum_alpha,
+	unsigned long task_id,
+	unsigned long task_size /* in log2 */,
+	unsigned long task_units /* in log2 */,
+	size_t id)
+{
+	uint128_t n0    = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 0) << (task_size - task_units)) + 3;
+	uint128_t n_sup = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 1) << (task_size - task_units)) + 3;
+
+	g_private_overflow_counter = 0;
+	g_private_checksum_alpha = 0;
+
+	printf("[DEBUG] verifying block (thread id %lu / %lu) on CPU...\n", (unsigned long)id, (size_t)1 << task_units);
+
+	if (n0 == UINT128_MAX) {
+		abort();
+	}
+
+	for (; n0 < n_sup; n0 += 4) {
+		uint128_t n = n0;
+
+		do {
+			int alpha;
+
+			n++;
+			alpha = __builtin_ctzu128(n);
+			g_private_checksum_alpha += alpha;
+			n >>= alpha;
+
+			if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
+				check2(n0, n, alpha);
+				continue; /* next n0 */
+			}
+
+			n *= g_lut[alpha];
+
+			n--;
+			n >>= __builtin_ctzu128(n);
+		} while (n >= n0);
+	}
+
+	assert(overflow_counter != NULL);
+	assert(checksum_alpha != NULL);
+
+	overflow_counter[id] = g_private_overflow_counter; /* non-zero value returned here */
+	checksum_alpha[id] = g_private_checksum_alpha;
 }
 
 char *load_source(size_t *size)
@@ -434,6 +553,9 @@ next_platform:
 		ret = clReleaseContext(context);
 
 		for (i = 0; i < global_work_size; ++i) {
+			if (overflow_counter[i] != 0) {
+				cpu_worker(overflow_counter, checksum_alpha, task_id, task_size, task_units, i);
+			}
 			g_overflow_counter += overflow_counter[i];
 			g_checksum_alpha += checksum_alpha[i];
 		}
@@ -450,9 +572,7 @@ done:
 	free(device_id);
 
 	if (g_overflow_counter) {
-		g_checksum_alpha = 0;
-		printf("[ERROR] overflow occured!\n");
-		return -1;
+		printf("[DEBUG] overflow occured!\n");
 	}
 
 	return 0;
@@ -487,6 +607,8 @@ int main(int argc, char *argv[])
 
 	printf("TASK_SIZE %" PRIu64 "\n", task_size);
 	printf("TASK_ID %" PRIu64 "\n", task_id);
+
+	init_lut();
 
 	if (solve(task_id, task_size)) {
 		printf("ERROR\n");
