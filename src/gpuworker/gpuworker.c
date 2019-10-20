@@ -79,9 +79,7 @@ static void check2(uint128_t n0, uint128_t n, int alpha)
 		n--;
 
 		beta = __builtin_ctzu128(n);
-#if 0
-		g_private_checksum_beta += beta;
-#endif
+
 		n >>= beta;
 
 		if (n < n0) {
@@ -114,15 +112,17 @@ void cpu_worker(
 
 	printf("[DEBUG] verifying block (thread id %lu / %lu) on CPU...\n", (unsigned long)id, (size_t)1 << task_units);
 
-	if (n0 == UINT128_MAX) {
-		abort();
-	}
-
 	for (; n0 < n_sup; n0 += 4) {
 		uint128_t n = n0;
 
 		do {
 			int alpha;
+
+			if (n == UINT128_MAX) {
+				g_private_checksum_alpha += 128;
+				check2(n0, UINT128_C(1), 128);
+				continue; /* next n0 */
+			}
 
 			n++;
 			alpha = __builtin_ctzu128(n);
