@@ -214,7 +214,7 @@ void cpu_worker(
 			if (n == UINT128_MAX) {
 				g_private_checksum_alpha += 128;
 				check2(n0, UINT128_C(1), 128);
-				continue; /* next n0 */
+				break; /* next n0 */
 			}
 
 			n++;
@@ -224,7 +224,7 @@ void cpu_worker(
 
 			if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
 				check2(n0, n, alpha);
-				continue; /* next n0 */
+				break; /* next n0 */
 			}
 
 			n *= g_lut[alpha];
