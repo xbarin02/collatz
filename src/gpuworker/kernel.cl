@@ -4,24 +4,14 @@ size_t ctzl(unsigned long n)
 }
 
 typedef unsigned __int128 uint128_t;
+typedef unsigned long uint64_t;
 
 #define UINT128_MAX (~(uint128_t)0)
 
-size_t ctzu128(uint128_t n)
+uint64_t pow3(size_t n)
 {
-	size_t a = ctzl(n);
-
-	if (a == ~0UL) {
-		return 64 + ctzl(n>>64);
-	}
-
-	return a;
-}
-
-uint128_t pow3(size_t n)
-{
-	uint128_t r = 1;
-	uint128_t b = 3;
+	uint64_t r = 1;
+	uint64_t b = 3;
 
 	while (n) {
 		if (n & 1) {
@@ -34,7 +24,7 @@ uint128_t pow3(size_t n)
 	return r;
 }
 
-#define LUT_SIZE128 81
+#define LUT_SIZE64 41
 
 __kernel void worker(
 	__global unsigned long *overflow_counter,
@@ -48,21 +38,21 @@ __kernel void worker(
 	size_t id = get_global_id(0);
 
 #if 1
-	__local uint128_t lut[LUT_SIZE128];
+	__local uint64_t lut[LUT_SIZE64];
 
 	unsigned long i;
 	if (get_local_id(0) == 0) {
-		for (i = 0; i < LUT_SIZE128; ++i) {
+		for (i = 0; i < LUT_SIZE64; ++i) {
 			lut[i] = pow3(i);
 		}
 	}
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 #else
-	uint128_t lut[LUT_SIZE128];
+	uint64_t lut[LUT_SIZE64];
 
 	unsigned long i;
-	for (i = 0; i < LUT_SIZE128; ++i) {
+	for (i = 0; i < LUT_SIZE64; ++i) {
 		lut[i] = pow3(i);
 	}
 #endif
@@ -74,11 +64,17 @@ __kernel void worker(
 		uint128_t n = n0;
 		do {
 			n++;
-			size_t alpha = ctzu128(n);
+
+			/* returns 1, 2, .., 63, or ~0UL */
+			size_t alpha = ctzl(n);
+			if (alpha >= LUT_SIZE64) {
+				alpha = LUT_SIZE64 - 1;
+			}
+
 			private_checksum_alpha += alpha;
 			n >>= alpha;
 
-			if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
+			if (n > UINT128_MAX >> 2*alpha) {
 				private_overflow_counter++;
 				break;
 			}
@@ -86,7 +82,10 @@ __kernel void worker(
 			n *= lut[alpha];
 
 			n--;
-			n >>= ctzu128(n);
+			size_t beta = ctzl(n);
+			if (beta == ~0UL)
+				beta = 64;
+			n >>= beta;
 		} while (n >= n0);
 	}
 
