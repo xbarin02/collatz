@@ -7,6 +7,7 @@
 #include <sys/resource.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <string.h>
 #include <CL/cl.h>
 #ifdef _USE_GMP
 #	include <gmp.h>
@@ -241,6 +242,9 @@ void cpu_worker(
 	checksum_alpha[id] = g_private_checksum_alpha;
 }
 
+static const char *default_kernel = "kernel.cl";
+static const char *kernel = NULL;
+
 char *load_source(size_t *size)
 {
 	FILE *fp;
@@ -248,7 +252,9 @@ char *load_source(size_t *size)
 
 	assert(size != NULL);
 
-	fp = fopen("kernel.cl", "r");
+	printf("KERNEL %s\n", kernel);
+
+	fp = fopen(kernel, "r");
 
 	if (fp == NULL) {
 		return NULL;
@@ -680,7 +686,7 @@ int main(int argc, char *argv[])
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
-	while ((opt = getopt(argc, argv, "t:a:")) != -1) {
+	while ((opt = getopt(argc, argv, "t:a:k:")) != -1) {
 		switch (opt) {
 			unsigned long seconds;
 			case 't':
@@ -690,10 +696,17 @@ int main(int argc, char *argv[])
 				alarm(seconds = atoul(optarg));
 				printf("ALARM %lu\n", seconds);
 				break;
+			case 'k':
+				kernel = strdup(optarg);
+				break;
 			default:
 				fprintf(stderr, "Usage: %s [-t task_size] task_id\n", argv[0]);
 				return EXIT_FAILURE;
 		}
+	}
+
+	if (kernel == NULL) {
+		kernel = default_kernel;
 	}
 
 	task_id = (optind < argc) ? atou64(argv[optind]) : 0;
@@ -706,6 +719,10 @@ int main(int argc, char *argv[])
 	if (solve(task_id, task_size)) {
 		printf("ERROR\n");
 		abort();
+	}
+
+	if (kernel != default_kernel) {
+		free((void *)kernel);
 	}
 
 	/* the total amount of time spent executing in user mode, expressed in a timeval structure (seconds plus microseconds) */
