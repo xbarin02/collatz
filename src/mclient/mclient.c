@@ -1,4 +1,3 @@
-#define _XOPEN_SOURCE
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -20,6 +19,8 @@
 #include <unistd.h>
 #include <strings.h>
 #include <string.h>
+#include <unistd.h>
+#include <libgen.h>
 #include <errno.h>
 #include <signal.h>
 #include <time.h>
@@ -311,6 +312,11 @@ unsigned long atoul(const char *nptr)
 	return strtoul(nptr, NULL, 10);
 }
 
+const char *get_task_path(int gpu_mode)
+{
+	return gpu_mode ? taskpath_gpu : taskpath;
+}
+
 int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_user_time, uint64_t *p_checksum, unsigned long alarm_seconds, int gpu_mode)
 {
 	int r;
@@ -319,20 +325,34 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 	char ln_part[4][64];
 	FILE *output;
 	int success = 0;
+	const char *path = get_task_path(gpu_mode);
+	char *dirc = strdup(path);
+	char *basec = strdup(path);
+	char *dname;
 
 	if (alarm_seconds) {
-		if (sprintf(buffer, "%s -a %lu %" PRIu64, gpu_mode ? taskpath_gpu : taskpath, alarm_seconds, task_id) < 0) {
+		if (sprintf(buffer, "./%s -a %lu %" PRIu64, basename(basec), alarm_seconds, task_id) < 0) {
 			return -1;
 		}
 	} else {
-		if (sprintf(buffer, "%s %" PRIu64, gpu_mode ? taskpath_gpu : taskpath, task_id) < 0) {
+		if (sprintf(buffer, "./%s %" PRIu64, basename(basec), task_id) < 0) {
 			return -1;
 		}
 	}
 
+	dname = dirname(dirc);
+
+	if (chdir(dname) < 0) {
+		message(ERR "chdir failed\n");
+		return -1;
+	}
+
+	free(basec);
+	free(dirc);
+
 	output = popen(buffer, "r");
 
-	if (!output) {
+	if (output == NULL) {
 		return -1;
 	}
 
@@ -693,6 +713,7 @@ int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uin
 
 	for (tid = 0; tid < threads; ++tid) {
 		if (success[tid] < 0) {
+			free(success);
 			return -1;
 		}
 	}
