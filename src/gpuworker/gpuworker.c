@@ -747,6 +747,33 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	/* user + system time */
+	if (getrusage(RUSAGE_SELF, &usage) < 0) {
+		/* errno is set appropriately. */
+		perror("getrusage");
+	} else {
+		if ((sizeof(uint64_t) >= sizeof(time_t)) &&
+		    (sizeof(uint64_t) >= sizeof(suseconds_t)) &&
+		    (usage.ru_utime.tv_sec * UINT64_C(1) <= UINT64_MAX / UINT64_C(1000000)) &&
+		    (usage.ru_stime.tv_sec * UINT64_C(1) <= UINT64_MAX / UINT64_C(1000000)) &&
+		    ((uint64_t)usage.ru_utime.tv_sec <= UINT64_MAX - usage.ru_stime.tv_sec) &&
+		    (usage.ru_utime.tv_sec * UINT64_C(1000000) <= UINT64_MAX - usage.ru_utime.tv_usec) &&
+		    (usage.ru_stime.tv_sec * UINT64_C(1000000) <= UINT64_MAX - usage.ru_stime.tv_usec) &&
+		    ((usage.ru_utime.tv_sec * UINT64_C(1000000) + usage.ru_utime.tv_usec) <= UINT64_MAX - (usage.ru_stime.tv_sec * UINT64_C(1000000) + usage.ru_stime.tv_usec))) {
+			uint64_t secs = (uint64_t)usage.ru_utime.tv_sec + usage.ru_stime.tv_sec;
+			uint64_t usecs = usage.ru_utime.tv_sec * UINT64_C(1000000) + usage.ru_utime.tv_usec
+			               + usage.ru_stime.tv_sec * UINT64_C(1000000) + usage.ru_stime.tv_usec;
+			if (secs < UINT64_MAX && (uint64_t)usage.ru_utime.tv_usec + usage.ru_stime.tv_usec >= UINT64_C(1000000/2)) {
+				/* round up */
+				secs++;
+			}
+			printf("TIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
+		} else if (sizeof(uint64_t) >= sizeof(time_t)) {
+			uint64_t secs = (uint64_t)usage.ru_utime.tv_sec + usage.ru_stime.tv_sec; /* may overflow */
+			printf("TIME %" PRIu64 "\n", secs);
+		}
+	}
+
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, g_checksum_beta);
