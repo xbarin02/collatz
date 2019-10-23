@@ -1,1 +1,0 @@
-../gpuworker/kernel.cl
