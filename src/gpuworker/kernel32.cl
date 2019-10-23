@@ -65,7 +65,7 @@ __kernel void worker(
 		do {
 			n++;
 
-			/* returns 1, 2, .., 31, or ~0UL */
+			/* returns 1, 2, .., 31, or ~0U */
 			size_t alpha = ctz(n);
 			if (alpha >= LUT_SIZE32) {
 				alpha = LUT_SIZE32 - 1;
