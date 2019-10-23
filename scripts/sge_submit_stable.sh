@@ -27,7 +27,7 @@ cp -r "${SRCDIR}" .
 
 cd collatz/src
 
-make -C worker clean all
+make -C worker clean all USE_LIBGMP=1
 make -C mclient clean all
 
 cd mclient
