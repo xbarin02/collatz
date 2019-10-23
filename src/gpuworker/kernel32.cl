@@ -49,10 +49,10 @@ __kernel void worker(
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 #else
-	uint64_t lut[LUT_SIZE64];
+	uint32_t lut[LUT_SIZE32];
 
 	unsigned long i;
-	for (i = 0; i < LUT_SIZE64; ++i) {
+	for (i = 0; i < LUT_SIZE32; ++i) {
 		lut[i] = pow3(i);
 	}
 #endif
