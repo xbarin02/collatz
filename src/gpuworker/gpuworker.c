@@ -190,8 +190,7 @@ static void check2(uint128_t n0, uint128_t n, int alpha)
 	} while (1);
 }
 
-void cpu_worker(
-	uint64_t *overflow_counter,
+uint64_t cpu_worker(
 	uint64_t *checksum_alpha,
 	unsigned long task_id,
 	unsigned long task_size /* in log2 */,
@@ -235,11 +234,11 @@ void cpu_worker(
 		} while (n >= n0);
 	}
 
-	assert(overflow_counter != NULL);
 	assert(checksum_alpha != NULL);
 
-	overflow_counter[id] = g_private_overflow_counter; /* non-zero value returned here */
 	checksum_alpha[id] = g_private_checksum_alpha;
+
+	return g_private_overflow_counter;
 }
 
 static const char *default_kernel = "kernel.cl";
@@ -308,10 +307,8 @@ int solve(uint64_t task_id, uint64_t task_size)
 	uint128_t n;
 	uint128_t n_sup;
 	/* arrays */
-	uint64_t *overflow_counter;
 	uint64_t *checksum_alpha;
 
-	cl_mem mem_obj_overflow_counter;
 	cl_mem mem_obj_checksum_alpha;
 
 	cl_int ret;
@@ -461,13 +458,6 @@ next_platform:
 
 		assert(sizeof(cl_ulong) == sizeof(uint64_t));
 
-		mem_obj_overflow_counter = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
-
-		if (ret != CL_SUCCESS) {
-			printf("[ERROR] clCreateBuffer failed\n");
-			return -1;
-		}
-
 		mem_obj_checksum_alpha = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
 
 		if (ret != CL_SUCCESS) {
@@ -558,13 +548,7 @@ next_platform:
 		}
 #endif
 
-		ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&mem_obj_overflow_counter);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
-
-		ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&mem_obj_checksum_alpha);
+		ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&mem_obj_checksum_alpha);
 
 		if (ret != CL_SUCCESS) {
 			return -1;
@@ -572,19 +556,19 @@ next_platform:
 
 		assert(sizeof(cl_ulong) == sizeof(uint64_t));
 
-		ret = clSetKernelArg(kernel, 2, sizeof(cl_ulong), (void *)&task_id);
+		ret = clSetKernelArg(kernel, 1, sizeof(cl_ulong), (void *)&task_id);
 
 		if (ret != CL_SUCCESS) {
 			return -1;
 		}
 
-		ret = clSetKernelArg(kernel, 3, sizeof(cl_ulong), (void *)&task_size);
+		ret = clSetKernelArg(kernel, 2, sizeof(cl_ulong), (void *)&task_size);
 
 		if (ret != CL_SUCCESS) {
 			return -1;
 		}
 
-		ret = clSetKernelArg(kernel, 4, sizeof(cl_ulong), (void *)&task_units);
+		ret = clSetKernelArg(kernel, 3, sizeof(cl_ulong), (void *)&task_units);
 
 		if (ret != CL_SUCCESS) {
 			return -1;
@@ -605,21 +589,13 @@ next_platform:
 		printf("[DEBUG] kernel enqueued\n");
 
 		/* allocate arrays */
-		overflow_counter = malloc(sizeof(uint64_t) << task_units);
 		checksum_alpha = malloc(sizeof(uint64_t) << task_units);
 
-		if (overflow_counter == NULL || checksum_alpha == NULL) {
+		if (checksum_alpha == NULL) {
 			return -1;
 		}
 
 		printf("[DEBUG] host buffers allocated\n");
-
-		ret = clEnqueueReadBuffer(command_queue, mem_obj_overflow_counter, CL_TRUE, 0, sizeof(uint64_t) << task_units, overflow_counter, 0, NULL, NULL);
-
-		if (ret != CL_SUCCESS) {
-			printf("[ERROR] clEnqueueReadBuffer failed with %s\n", errcode_to_cstr(ret));
-			return -1;
-		}
 
 		ret = clEnqueueReadBuffer(command_queue, mem_obj_checksum_alpha, CL_TRUE, 0, sizeof(uint64_t) << task_units, checksum_alpha, 0, NULL, NULL);
 
@@ -652,15 +628,17 @@ next_platform:
 		ret = clReleaseContext(context);
 
 		for (i = 0; i < global_work_size; ++i) {
-			if (overflow_counter[i] != 0) {
-				cpu_worker(overflow_counter, checksum_alpha, task_id, task_size, task_units, i);
+			uint64_t overflow_counter = 0;
+			if (checksum_alpha[i] == 0) {
+				overflow_counter = cpu_worker(checksum_alpha, task_id, task_size, task_units, i);
 			}
-			g_overflow_counter += overflow_counter[i];
+			g_overflow_counter += overflow_counter;
 			g_checksum_alpha += checksum_alpha[i];
 		}
 
-		free(overflow_counter);
 		free(checksum_alpha);
+
+		free(program_string);
 
 		goto done;
 	}
