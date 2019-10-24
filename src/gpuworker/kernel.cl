@@ -1,1 +1,1 @@
-kernel64.cl
+kernel32.cl
