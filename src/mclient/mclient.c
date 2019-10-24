@@ -402,6 +402,18 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 			assert(p_user_time != NULL);
 
 			*p_user_time = user_time;
+		} else if (c == 2 && strcmp(ln_part[0], "TIME") == 0) {
+			uint64_t user_time = atou64(ln_part[1]);
+
+			assert(p_user_time != NULL);
+
+			*p_user_time = user_time;
+		} else if (c == 3 && strcmp(ln_part[0], "TIME") == 0) {
+			uint64_t user_time = atou64(ln_part[1]);
+
+			assert(p_user_time != NULL);
+
+			*p_user_time = user_time;
 		} else if (c == 3 && strcmp(ln_part[0], "CHECKSUM") == 0) {
 			uint64_t checksum_alpha = atou64(ln_part[1]);
 			uint64_t checksum_beta = atou64(ln_part[2]);
