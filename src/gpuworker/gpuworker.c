@@ -479,7 +479,7 @@ next_platform:
 			return -1;
 		}
 
-		ret = clBuildProgram(program, 1, &device_id[device_index], NULL, NULL, NULL);
+		ret = clBuildProgram(program, 1, &device_id[device_index], "-cl-std=CL2.0", NULL, NULL);
 
 		if (ret == CL_BUILD_PROGRAM_FAILURE) {
 			size_t log_size;
