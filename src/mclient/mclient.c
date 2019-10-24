@@ -427,6 +427,8 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 			}
 		} else if (c == 3 && strcmp(ln_part[0], "RANGE") == 0) {
 			/* range */
+		} else if (c > 1 && strcmp(ln_part[0], "KERNEL") == 0) {
+			message(INFO "worker implementation: %s", line+7); /* incl. the newline character */
 		} else {
 			/* other cases... */
 			message(WARN "worker printed unknown message: %s", line);
