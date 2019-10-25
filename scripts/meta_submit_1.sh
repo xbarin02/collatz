@@ -22,6 +22,7 @@ if ! ping -c1 -q "${SERVER_NAME}"; then
 fi
 
 module load gmp
+module load clang-9.0
 
 SRCDIR=$HOME/collatz
 TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
