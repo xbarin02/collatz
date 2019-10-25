@@ -341,7 +341,7 @@ int main(int argc, char *argv[])
 	/* user + system time */
 	if (getrusage(RUSAGE_SELF, &usage) < 0) {
 		/* errno is set appropriately. */
-	perror("getrusage");
+		perror("getrusage");
 	} else {
 		if ((sizeof(uint64_t) >= sizeof(time_t)) &&
 		    (sizeof(uint64_t) >= sizeof(suseconds_t)) &&
