@@ -2,7 +2,7 @@ reset
 
 set terminal pdf enhanced dashed linewidth 3 size 10cm,6cm font 'Serif,14' dashlength 2
 
-set output "perftest.pdf"
+set output "usertime.pdf"
 
 # set key bottom
 
