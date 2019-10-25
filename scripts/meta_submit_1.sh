@@ -22,6 +22,7 @@ if ! ping -c1 -q "${SERVER_NAME}"; then
 fi
 
 module load gmp
+module load clang-9.0
 
 SRCDIR=$HOME/collatz
 TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
@@ -34,7 +35,7 @@ cp -r "${SRCDIR}" .
 cd collatz/src
 
 # build mclient & worker
-make -C worker clean all
+make -C worker clean all CC=clang
 make -C mclient clean all
 
 cd mclient
