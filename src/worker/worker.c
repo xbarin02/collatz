@@ -26,11 +26,13 @@
 
 #define TASK_SIZE 40
 
+#define LUT_SIZE64 41
 #define LUT_SIZE128 81
 #ifdef _USE_GMP
 #	define LUT_SIZEMPZ 512
 #endif
 
+uint64_t g_lut64[LUT_SIZE64];
 uint128_t g_lut[LUT_SIZE128];
 #ifdef _USE_GMP
 mpz_t g_mpz_lut[LUT_SIZEMPZ];
@@ -41,6 +43,19 @@ static uint64_t g_checksum_beta = 0;
 static uint64_t g_overflow_counter = 0;
 
 /* 3^n */
+uint64_t pow3(uint64_t n)
+{
+	uint64_t r = 1;
+
+	for (; n > 0; --n) {
+		assert(r <= UINT64_MAX / 3);
+
+		r *= 3;
+	}
+
+	return r;
+}
+
 uint128_t pow3x(uint128_t n)
 {
 	uint128_t r = 1;
@@ -66,6 +81,10 @@ static void mpz_pow3(mpz_t r, unsigned long n)
 void init_lut()
 {
 	int a;
+
+	for (a = 0; a < LUT_SIZE64; ++a) {
+		g_lut64[a] = pow3((uint64_t)a);
+	}
 
 	for (a = 0; a < LUT_SIZE128; ++a) {
 		g_lut[a] = pow3x((uint128_t)a);
@@ -206,26 +225,30 @@ static void check(uint128_t n)
 	do {
 		n++;
 
-		alpha = __builtin_ctzu128(n);
+		alpha = __builtin_ctzu64(n);
+
+		if (alpha >= LUT_SIZE64) {
+			alpha = LUT_SIZE64 - 1;
+		}
 
 		g_checksum_alpha += alpha;
 
 		n >>= alpha;
 
-		if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
+		if (n > UINT128_MAX >> 2*alpha) {
 			check2(n0, n, alpha);
 			return;
 		}
 
-		n *= g_lut[alpha];
+		n *= g_lut64[alpha];
 
 		n--;
 
-		beta = __builtin_ctzu128(n);
+		beta = __builtin_ctzu64(n);
 
 		g_checksum_beta += beta;
 
-		n >>= __builtin_ctzu128(n);
+		n >>= beta;
 
 		if (n < n0) {
 			return;
