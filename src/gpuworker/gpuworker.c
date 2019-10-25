@@ -419,7 +419,7 @@ next_platform:
 
 		printf("[DEBUG] context created @ device_index = %i\n", device_index);
 
-#if 1
+#ifdef DEBUG
 		{
 			size_t size;
 			cl_uint uint;
@@ -507,7 +507,7 @@ next_platform:
 			return -1;
 		}
 
-#if 1
+#ifdef DEBUG
 		{
 			size_t size;
 			cl_ulong ulong;
