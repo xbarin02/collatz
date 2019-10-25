@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #$ -S /bin/bash
-#$ -N collatzo204
+#$ -N coll.o204
 #$ -M ibarina@fit.vutbr.cz
 #$ -m a
 #$ -o /mnt/matylda1/ibarina/sge/collatz/logs/o204.out
