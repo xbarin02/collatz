@@ -4,7 +4,7 @@ make
 
 t=32
 
-PLOTFILE=overflows-$t.txt
+PLOTFILE=overflow-$t.txt
 
 rm -f -- "$PLOTFILE"
 
