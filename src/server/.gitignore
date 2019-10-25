@@ -1,6 +1,5 @@
 server
 chk-tool
-find-overflows
 verify-result
 *~
 *.gcda
