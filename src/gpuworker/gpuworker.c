@@ -301,6 +301,8 @@ const char *errcode_to_cstr(cl_int errcode)
 	}
 }
 
+static int g_ocl_ver1 = 0;
+
 int solve(uint64_t task_id, uint64_t task_size)
 {
 	uint64_t task_units = TASK_UNITS;
@@ -479,7 +481,7 @@ next_platform:
 			return -1;
 		}
 
-		ret = clBuildProgram(program, 1, &device_id[device_index], "-cl-std=CL2.0", NULL, NULL);
+		ret = clBuildProgram(program, 1, &device_id[device_index], g_ocl_ver1 ? NULL : "-cl-std=CL2.0", NULL, NULL);
 
 		if (ret == CL_BUILD_PROGRAM_FAILURE) {
 			size_t log_size;
@@ -664,7 +666,7 @@ int main(int argc, char *argv[])
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
-	while ((opt = getopt(argc, argv, "t:a:k:")) != -1) {
+	while ((opt = getopt(argc, argv, "t:a:k:1")) != -1) {
 		switch (opt) {
 			unsigned long seconds;
 			case 't':
@@ -676,6 +678,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'k':
 				kernel = strdup(optarg);
+				break;
+			case '1':
+				g_ocl_ver1 = 1;
 				break;
 			default:
 				fprintf(stderr, "Usage: %s [-t task_size] task_id\n", argv[0]);
