@@ -5,12 +5,12 @@ Distributed computing project to check convergence of the Collatz problem.
 
 ## Details
 
-This repository contains computer programs implementing a completely new approach to calculating the Collatz function.
-The trick is that, when calculating the function iterates, we switch between two domains in such a way that we can always use the count trailing zeros (ctz) operation and a small lookup table with powers of three.
+This repository contains computer programs implementing a completely new approach to calculating iterates of <a href="https://en.wikipedia.org/wiki/Collatz_conjecture">the Collatz function</a>.
+The trick is that, when calculating the function iterates, the programs switch between two domains in such a way that they can always use the count trailing zeros (ctz) operation and a small lookup table with pre-computed powers of three.
 This approach differs significantly from the commonly used approach utilizing a space-time tradeoff using huge lookup tables.
 Mathematical details on this approach are given in [this MSE question](https://math.stackexchange.com/questions/3311547/alternative-formulation-of-the-collatz-problem).
-The processing time of individual *N*-bit blocks (*2<sup>N</sup>* numbers in total) is independent of their magnitude.
-The programs use 128-bit arithmetic.
+The programs are able to check 128-bit numbers.
+The processing time of individual *N*-bit blocks (*2<sup>N</sup>* numbers) is independent of their magnitude.
 
 ## Contact
 David Barina <ibarina@fit.vutbr.cz>
