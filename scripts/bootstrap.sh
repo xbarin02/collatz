@@ -16,4 +16,4 @@ make -C mclient clean all
 
 cd mclient
 
-screen -d -m ./spawn.sh
+screen -d -m ./spawn.sh $*

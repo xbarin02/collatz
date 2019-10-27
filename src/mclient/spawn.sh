@@ -45,8 +45,8 @@ THREADS=$(grep processor /proc/cpuinfo | wc -l)
 CLIENT=./mclient
 
 if test -x "${CLIENT}"; then
-	echo "executing '${CLIENT}' with ${THREADS} worker threads..."
-	if nice -n 19 "${CLIENT}" "${THREADS}" 2> "${LOGFILE}".err > "${LOGFILE}".out; then
+	echo "executing '${CLIENT}' with args '" $* "' and with ${THREADS} worker threads..."
+	if nice -n 19 "${CLIENT}" "${THREADS}" $* 2> "${LOGFILE}".err > "${LOGFILE}".out; then
 		echo "shutting down ..."
 	else
 		cleanup
