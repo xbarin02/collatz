@@ -1,5 +1,6 @@
 /*
  * https://oeis.org/A006877
+ * https://oeis.org/A060412
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,7 +13,7 @@
 #include "compat.h"
 #include "wideint.h"
 
-#define REACH_ONE 1
+#define REACH_ONE 0
 
 #define LUT_SIZE64 41
 
