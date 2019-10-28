@@ -10,7 +10,7 @@ CFLAGS+=$(EXTRA_CFLAGS)
 LDLIBS+=$(EXTRA_LDLIBS)
 
 LDFLAGS=
-BINS=steps max-steps max-value max-strength
+BINS=steps max-steps max-value max-strength max-completeness
 
 .PHONY: all
 all: $(BINS)
