@@ -1,6 +1,7 @@
 steps
 max-steps
 max-value
+max-strength
 *~
 *.gcda
 *.txt
