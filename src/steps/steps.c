@@ -49,7 +49,7 @@ static void check(uint128_t n)
 
 	assert(n != UINT128_MAX);
 
-	do {
+	 while (n != 1) {
 		n++;
 
 		alpha = min(__builtin_ctzu64(n), LUT_SIZE64 - 1);
@@ -69,7 +69,7 @@ static void check(uint128_t n)
 		g_checksum_beta += beta;
 
 		n >>= beta;
-	} while (n != 1);
+	}
 }
 
 int main(int argc, char *argv[])

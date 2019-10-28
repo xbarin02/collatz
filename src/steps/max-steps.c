@@ -50,7 +50,7 @@ uint64_t check(uint128_t n)
 
 	assert(n != UINT128_MAX);
 
-	do {
+	while (n != 1) {
 		n++;
 
 		alpha = min(__builtin_ctzu64(n), LUT_SIZE64 - 1);
@@ -70,14 +70,14 @@ uint64_t check(uint128_t n)
 		steps += beta;
 
 		n >>= beta;
-	} while (n != 1);
+	}
 
 	return steps;
 }
 
 int main()
 {
-	uint128_t n = 2;
+	uint128_t n = 1;
 	uint64_t steps, max_steps = 0;
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
@@ -87,7 +87,7 @@ int main()
 	for (;; ++n) {
 		steps = check(n);
 
-		if (steps > max_steps) {
+		if (steps > max_steps || n == 1) {
 			printf("%" PRIu64 ", ", (uint64_t)n);
 			max_steps = steps;
 		}
