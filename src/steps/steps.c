@@ -76,11 +76,6 @@ static void check(uint128_t n)
 	} while (1);
 }
 
-unsigned long atoul(const char *nptr)
-{
-	return strtoul(nptr, NULL, 10);
-}
-
 int main(int argc, char *argv[])
 {
 	uint128_t n;
