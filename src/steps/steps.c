@@ -77,8 +77,6 @@ int main(int argc, char *argv[])
 	uint128_t n;
 	uint64_t task_id = 0;
 
-	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
-
 	task_id = (optind < argc) ? atou64(argv[optind]) : 0;
 
 	printf("NUMBER %" PRIu64 "\n", task_id);
