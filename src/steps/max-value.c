@@ -12,7 +12,7 @@
 #include "compat.h"
 #include "wideint.h"
 
-#define REACH_ONE 1
+#define REACH_ONE 0
 
 #define LUT_SIZE64 41
 
