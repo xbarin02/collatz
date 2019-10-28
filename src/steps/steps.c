@@ -49,7 +49,7 @@ static void check(uint128_t n)
 
 	assert(n != UINT128_MAX);
 
-	 while (n != 1) {
+	while (n != 1) {
 		n++;
 
 		alpha = min(__builtin_ctzu64(n), LUT_SIZE64 - 1);
