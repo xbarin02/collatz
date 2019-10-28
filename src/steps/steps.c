@@ -69,11 +69,7 @@ static void check(uint128_t n)
 		g_checksum_beta += beta;
 
 		n >>= beta;
-
-		if (n == 1) {
-			return;
-		}
-	} while (1);
+	} while (n != 1);
 }
 
 int main(int argc, char *argv[])
