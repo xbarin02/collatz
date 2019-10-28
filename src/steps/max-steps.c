@@ -56,10 +56,10 @@ uint64_t check(uint128_t n)
 
 	assert(n != UINT128_MAX);
 
-#if (REACH_ONE != 0)
-	while (n != 1) {
-#else
+#if (REACH_ONE == 0)
 	while (n >= n0 && n != 1) {
+#else
+	while (n != 1) {
 #endif
 		n++;
 
