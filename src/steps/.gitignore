@@ -1,4 +1,5 @@
 steps
+max-steps
 *~
 *.gcda
 *.txt
