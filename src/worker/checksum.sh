@@ -2,7 +2,7 @@
 
 make
 
-t=24
+t=32
 
 PLOTFILE=checksum-$t.txt
 
