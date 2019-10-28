@@ -14,6 +14,8 @@
 #include "wideint.h"
 
 #define REACH_ONE 0
+#define SUM_ODD_STEPS 1
+#define SUM_EVEN_STEPS 1
 
 #define LUT_SIZE64 41
 
@@ -65,7 +67,9 @@ uint64_t check(uint128_t n)
 
 		alpha = min(__builtin_ctzu64(n), LUT_SIZE64 - 1);
 
+#if (SUM_ODD_STEPS == 1)
 		steps += alpha;
+#endif
 
 		n >>= alpha;
 
@@ -77,7 +81,9 @@ uint64_t check(uint128_t n)
 
 		beta = __builtin_ctzu64(n);
 
+#if (SUM_EVEN_STEPS == 1)
 		steps += beta;
+#endif
 
 		n >>= beta;
 	}
