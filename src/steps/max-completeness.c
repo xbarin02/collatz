@@ -99,8 +99,8 @@ int main()
 		C = check(n);
 
 		if (C == C && (C > max_C || n == START_VALUE)) {
-			printf("%" PRIu64 " (%f), ", (uint64_t)n, max_C);
 			max_C = C;
+			printf("%" PRIu64 " (%f), ", (uint64_t)n, max_C);
 		}
 	}
 

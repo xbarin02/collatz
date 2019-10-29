@@ -97,8 +97,8 @@ int main()
 		value = check(n);
 
 		if (value > max_value || n == 1) {
-			printf("%" PRIu64 ", ", (uint64_t)n);
 			max_value = value;
+			printf("%" PRIu64 ", ", (uint64_t)n);
 		}
 	}
 

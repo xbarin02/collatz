@@ -100,8 +100,8 @@ int main()
 		res = check(n) / (double)n;
 
 		if (res == res && (res > max_res || n == START_VALUE)) {
-			printf("%" PRIu64 " (%f), ", (uint64_t)n, max_res);
 			max_res = res;
+			printf("%" PRIu64 " (%f), ", (uint64_t)n, max_res);
 		}
 	}
 

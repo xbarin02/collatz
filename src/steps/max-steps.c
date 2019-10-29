@@ -104,8 +104,8 @@ int main()
 		steps = check(n);
 
 		if (steps > max_steps || n == 1) {
-			printf("%" PRIu64 ", ", (uint64_t)n);
 			max_steps = steps;
+			printf("%" PRIu64 ", ", (uint64_t)n);
 		}
 	}
 

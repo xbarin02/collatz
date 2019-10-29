@@ -97,8 +97,8 @@ int main()
 		strength = check(n);
 
 		if (strength > max_strength || n == 1) {
-			printf("%" PRIu64 ", ", (uint64_t)n);
 			max_strength = strength;
+			printf("%" PRIu64 ", ", (uint64_t)n);
 		}
 	}
 
