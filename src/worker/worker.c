@@ -231,6 +231,10 @@ static void check(uint128_t n)
 			alpha = LUT_SIZE64 - 1;
 		}
 
+#ifdef PREFETCH
+		__builtin_prefetch(&g_lut64[alpha]);
+#endif
+
 		g_checksum_alpha += alpha;
 
 		n >>= alpha;
