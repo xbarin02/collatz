@@ -2,7 +2,15 @@
 
 export SERVER_NAME=pcbarina.fit.vutbr.cz
 
-cd ~/collatz-$(hostname -s)/src
+HOSTNAME=$(hostname -s)
+
+TASK_UNITS=16
+
+if [[ "pco204-00" =~ ^pco204-..$ ]]; then
+	TASK_UNITS=20
+fi
+
+cd ~/collatz-${HOSTNAME,,}/src
 
 CC=gcc
 if type clang > /dev/null 2> /dev/null && clang --version | grep -q "version [89]"; then
@@ -11,7 +19,7 @@ if type clang > /dev/null 2> /dev/null && clang --version | grep -q "version [89
 fi
 
 make -C worker clean all CC=$CC
-make -C gpuworker clean all || echo "unable to build gpuworker"
+make -C gpuworker clean all TASK_UNITS=${TASK_UNITS} USE_LIBGMP=1 || echo "unable to build gpuworker"
 make -C mclient clean all
 
 cd mclient
