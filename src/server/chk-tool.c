@@ -148,7 +148,7 @@ int main()
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
 
-			if ((checksum>>24) == 0xff5c) {
+			if ((checksum>>24) == 0xff5c || (checksum>>24) == 0xff5b) {
 				continue; /* new checksum */
 			}
 
@@ -158,10 +158,22 @@ int main()
 			}
 		}
 
-		printf("min = %" PRIu64 " (0x%" PRIx64 "); min>>24 = %" PRIu64 " (0x%" PRIx64 "); min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-			min, min, min>>24, min>>24, min>>23, min>>23);
-		printf("max = %" PRIu64 " (0x%" PRIx64 "); max>>24 = %" PRIu64 " (0x%" PRIx64 "); max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-			max, max, max>>24, max>>24, max>>23, max>>23);
+		printf(
+			"min = %" PRIu64 " (0x%" PRIx64 "); "
+			"min>>24 = %" PRIu64 " (0x%" PRIx64 "); "
+			"min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			min, min,
+			min>>24, min>>24,
+			min>>23, min>>23
+		);
+		printf(
+			"max = %" PRIu64 " (0x%" PRIx64 "); "
+			"max>>24 = %" PRIu64 " (0x%" PRIx64 "); "
+			"max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			max, max,
+			max>>24, max>>24,
+			max>>23, max>>23
+		);
 
 		printf("\n");
 	}
@@ -174,7 +186,7 @@ int main()
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
 
-			if ((checksum>>24) != 0xff5c) {
+			if ((checksum>>24) != 0xff5c && (checksum>>24) != 0xff5b) {
 				continue; /* old checksum */
 			}
 
@@ -184,10 +196,22 @@ int main()
 			}
 		}
 
-		printf("min = %" PRIu64 " (0x%" PRIx64 "); min>>24 = %" PRIu64 " (0x%" PRIx64 "); min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-			min, min, min>>24, min>>24, min>>23, min>>23);
-		printf("max = %" PRIu64 " (0x%" PRIx64 "); max>>24 = %" PRIu64 " (0x%" PRIx64 "); max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-			max, max, max>>24, max>>24, max>>23, max>>23);
+		printf(
+			"min = %" PRIu64 " (0x%" PRIx64 "); "
+			"min>>24 = %" PRIu64 " (0x%" PRIx64 "); "
+			"min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			min, min,
+			min>>24, min>>24,
+			min>>23, min>>23
+		);
+		printf(
+			"max = %" PRIu64 " (0x%" PRIx64 "); "
+			"max>>24 = %" PRIu64 " (0x%" PRIx64 "); "
+			"max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			max, max,
+			max>>24, max>>24,
+			max>>23, max>>23
+		);
 
 		printf("\n");
 	}
