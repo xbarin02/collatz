@@ -35,7 +35,7 @@ cp -r "${SRCDIR}" .
 cd collatz/src
 
 # build mclient & worker
-make -C worker clean all CC=clang
+make -C worker clean all CC=clang USE_MOD12=1
 make -C mclient clean all
 
 cd mclient
