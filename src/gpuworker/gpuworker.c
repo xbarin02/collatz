@@ -346,10 +346,8 @@ int solve(uint64_t task_id, uint64_t task_size)
 	int platform_index = 0;
 	int device_index = 0;
 
-#if 1
 	uint64_t *lbegin, *hbegin, *lsup, *hsup;
 	cl_mem mem_obj_lbegin, mem_obj_hbegin, mem_obj_lsup, mem_obj_hsup;
-#endif
 
 	assert((uint128_t)task_id <= (UINT128_MAX >> task_size));
 
@@ -572,33 +570,12 @@ next_platform:
 
 		assert(sizeof(cl_ulong) == sizeof(uint64_t));
 
-#if 0
-		ret = clSetKernelArg(kernel, 1, sizeof(cl_ulong), (void *)&task_id);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
-
-		ret = clSetKernelArg(kernel, 2, sizeof(cl_ulong), (void *)&task_size);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
-
-		ret = clSetKernelArg(kernel, 3, sizeof(cl_ulong), (void *)&task_units);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
-#endif
-
 		global_work_size = (size_t)1 << task_units;
 
 		printf("[DEBUG] global_work_size = %lu\n", global_work_size);
 
 		assert(task_units + 2 <= task_size);
 
-#if 1
 		/* allocate hbegin, lbegin, hsup, lsup */
 		lbegin = malloc(sizeof(uint64_t) * global_work_size);
 		hbegin = malloc(sizeof(uint64_t) * global_work_size);
@@ -698,7 +675,6 @@ next_platform:
 		if (ret != CL_SUCCESS) {
 			return -1;
 		}
-#endif
 
 		ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
 
