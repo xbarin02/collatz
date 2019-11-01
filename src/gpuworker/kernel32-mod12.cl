@@ -44,9 +44,9 @@ __kernel void worker(
 	uint128_t l     = ((uint128_t)hbegin[id] << 64) + (uint128_t)lbegin[id];
 	uint128_t n_sup = ((uint128_t)hsup[id] << 64) + (uint128_t)lsup[id];
 
-	for (; l < n_sup; l += 12) {
-		for (int k = 0; k < 2; ++k) {
-			uint128_t n0 = l + 4*k;
+	for (; l < n_sup; l += 4) {
+		{
+			uint128_t n0 = l;
 			uint128_t n = n0;
 
 			do {

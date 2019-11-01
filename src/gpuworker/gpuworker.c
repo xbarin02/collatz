@@ -202,19 +202,17 @@ uint64_t cpu_worker(
 	unsigned long task_units /* in log2 */,
 	size_t id)
 {
-	uint128_t l     = ceil_mod12(((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(id + 0) << (task_size - task_units))) + 3;
-	uint128_t n_sup = ceil_mod12(((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(id + 1) << (task_size - task_units))) + 3;
-
-	int k;
+	uint128_t l     = (((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(id + 0) << (task_size - task_units))) + 3;
+	uint128_t n_sup = (((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(id + 1) << (task_size - task_units))) + 3;
 
 	g_private_overflow_counter = 0;
 	g_private_checksum_alpha = 0;
 
 	printf("[DEBUG] verifying block (thread id %lu / %lu) on CPU...\n", (unsigned long)id, (size_t)1 << task_units);
 
-	for (; l < n_sup; l += 12) {
-		for (k = 0; k < 2; ++k) {
-			uint128_t n0 = l + 4*k;
+	for (; l < n_sup; l += 4) {
+		{
+			uint128_t n0 = l;
 			uint128_t n = n0;
 
 			do {
@@ -590,8 +588,8 @@ next_platform:
 
 		/* fill begin and sup */
 		for (i = 0; i < global_work_size; ++i) {
-			uint128_t begin = ceil_mod12(((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 0) << (task_size - task_units))) + 3;
-			uint128_t sup   = ceil_mod12(((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 1) << (task_size - task_units))) + 3;
+			uint128_t begin = (((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 0) << (task_size - task_units))) + 3;
+			uint128_t sup   = (((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 1) << (task_size - task_units))) + 3;
 
 			lbegin[i] = (uint64_t)begin;
 			hbegin[i] = (uint64_t)(begin >> 64);
