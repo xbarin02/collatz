@@ -10,6 +10,8 @@
 #$ -tc 1000
 #$ -pe smp 2
 
+echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}"
+
 set -u
 set -e
 

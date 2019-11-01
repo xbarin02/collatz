@@ -10,6 +10,8 @@
 #$ -tc 1000
 #$ -l gpu=1
 
+echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}"
+
 set -u
 set -e
 
