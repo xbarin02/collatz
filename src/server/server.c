@@ -579,6 +579,12 @@ int read_message(int fd, int thread_id, const char *ipv4)
 			return -1;
 		}
 
+		if ((checksum>>28) == 0xff5 && user_time < 30*60) {
+			message(ERR "new checksum is not allowed for GPU (%" PRIu64 ", 0x%" PRIx64 "), done in %" PRIu64 " secs, rejecting the result! (assignment %" PRIu64 ")\n",
+				checksum, checksum, user_time, n);
+			return 0;
+		}
+
 		message(INFO "assignment returned: %" PRIu64 " (%" PRIu64 " overflows, time %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ", checksum 0x%016" PRIx64 ")\n",
 			n, overflow_counter, user_time/60/60, user_time/60%60, user_time%60, checksum);
 
