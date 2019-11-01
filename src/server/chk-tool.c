@@ -121,7 +121,6 @@ const uint64_t *g_clientids = 0;
 int main()
 {
 	uint64_t n;
-	uint64_t min = UINT64_MAX, max = 0;
 	uint128_t total_user_time = 0;
 	uint128_t total_user_time_short = 0;
 	uint128_t total_user_time_long = 0;
@@ -141,21 +140,57 @@ int main()
 	g_overflows = open_overflows();
 	g_clientids = open_clientids();
 
-	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
-		uint64_t checksum = g_checksums[n];
+	{
+		uint64_t min = UINT64_MAX, max = 0;
 
-		if (checksum != 0) {
-			min = MIN(min, checksum);
-			max = MAX(max, checksum);
+		printf("old checksums:\n");
+
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			uint64_t checksum = g_checksums[n];
+
+			if ((min>>24) == 0xff5c) {
+				continue; /* new checksum */
+			}
+
+			if (checksum != 0) {
+				min = MIN(min, checksum);
+				max = MAX(max, checksum);
+			}
 		}
+
+		printf("min = %" PRIu64 " (0x%" PRIx64 "); min>>24 = %" PRIu64 " (0x%" PRIx64 "); min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			min, min, min>>24, min>>24, min>>23, min>>23);
+		printf("max = %" PRIu64 " (0x%" PRIx64 "); max>>24 = %" PRIu64 " (0x%" PRIx64 "); max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			max, max, max>>24, max>>24, max>>23, max>>23);
+
+		printf("\n");
 	}
 
-	printf("min = %" PRIu64 " (0x%" PRIx64 "); min>>24 = %" PRIu64 " (0x%" PRIx64 "); min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-		min, min, min>>24, min>>24, min>>23, min>>23);
-	printf("max = %" PRIu64 " (0x%" PRIx64 "); max>>24 = %" PRIu64 " (0x%" PRIx64 "); max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-		max, max, max>>24, max>>24, max>>23, max>>23);
+	{
+		uint64_t min = UINT64_MAX, max = 0;
 
-	printf("\n");
+		printf("new checksums:\n");
+
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			uint64_t checksum = g_checksums[n];
+
+			if ((min>>24) != 0xff5c) {
+				continue; /* old checksum */
+			}
+
+			if (checksum != 0) {
+				min = MIN(min, checksum);
+				max = MAX(max, checksum);
+			}
+		}
+
+		printf("min = %" PRIu64 " (0x%" PRIx64 "); min>>24 = %" PRIu64 " (0x%" PRIx64 "); min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			min, min, min>>24, min>>24, min>>23, min>>23);
+		printf("max = %" PRIu64 " (0x%" PRIx64 "); max>>24 = %" PRIu64 " (0x%" PRIx64 "); max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			max, max, max>>24, max>>24, max>>23, max>>23);
+
+		printf("\n");
+	}
 
 	for (n = 91226112; n < ASSIGNMENTS_NO; ++n) {
 		uint64_t checksum = g_checksums[n];
