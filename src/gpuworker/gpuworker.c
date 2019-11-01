@@ -190,7 +190,7 @@ static void check2(uint128_t n0, uint128_t n, int alpha)
 	} while (1);
 }
 
-static uint128_t ceil_mod12(uint128_t n)
+uint128_t ceil_mod12(uint128_t n)
 {
 	return (n + 11) / 12 * 12;
 }
@@ -352,8 +352,8 @@ int solve(uint64_t task_id, uint64_t task_size)
 	assert((uint128_t)task_id <= (UINT128_MAX >> task_size));
 
 	/* n of the form 12n+3 */
-	n     = ceil_mod12((uint128_t)(task_id + 0) << task_size) + 3;
-	n_sup = ceil_mod12((uint128_t)(task_id + 1) << task_size) + 3;
+	n     = ((uint128_t)(task_id + 0) << task_size) + 3;
+	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
 
 	/* informative */
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
