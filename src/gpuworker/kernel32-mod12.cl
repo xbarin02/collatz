@@ -39,13 +39,13 @@ __kernel void worker(
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	uint128_t n0    = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 0) << (task_size - task_units)) + 3;
+	uint128_t n12   = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 0) << (task_size - task_units)) + 3;
 	uint128_t n_sup = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 1) << (task_size - task_units)) + 3;
 
-	for (; n0 < n_sup; n0 += 12) {
+	for (; n12 < n_sup; n12 += 12) {
 		for (int k = 0; k < 2; ++k) {
-			uint128_t n1 = n0 + 4*k;
-			uint128_t n = n1;
+			uint128_t n0 = n12 + 4*k;
+			uint128_t n = n0;
 
 			do {
 				n++;
@@ -65,7 +65,7 @@ __kernel void worker(
 				n--;
 
 				n >>= ctz((uint)n);
-			} while (n >= n1);
+			} while (n >= n0);
 		}
 	}
 
