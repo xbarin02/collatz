@@ -710,6 +710,7 @@ int main(int argc, char *argv[])
 	int clear_incomplete_assigned = 0;
 	int fix_records = 0;
 	int invalidate_overflows = 0;
+	int invalidate_new = 0;
 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -723,6 +724,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'i':
 				invalidate_overflows = 1;
+				break;
+			case 'z':
+				invalidate_new = 1;
 				break;
 			default:
 				message(ERR "Usage: %s [-c]\n", argv[0]);
@@ -762,6 +766,23 @@ int main(int argc, char *argv[])
 			uint64_t overflow = g_overflows[n];
 
 			if (overflow != 0) {
+				printf("- resetting the assignment %" PRIu64 " due to overflow\n", n);
+
+				SET_UNASSIGNED(n);
+				SET_INCOMPLETE(n);
+			}
+		}
+	}
+
+	if (invalidate_new) {
+		uint64_t n;
+
+		message(WARN "Invalidating new checksums...\n");
+
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			uint64_t checksum = g_checksums[n];
+
+			if ((checksum>>28) == 0xff5) {
 				printf("- resetting the assignment %" PRIu64 " due to overflow\n", n);
 
 				SET_UNASSIGNED(n);
