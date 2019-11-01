@@ -199,18 +199,18 @@ int main()
 		printf(
 			"min = %" PRIu64 " (0x%" PRIx64 "); "
 			"min>>24 = %" PRIu64 " (0x%" PRIx64 "); "
-			"min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			"min>>27 = %" PRIu64 " (0x%" PRIx64 ")\n",
 			min, min,
 			min>>24, min>>24,
-			min>>23, min>>23
+			min>>27, min>>27
 		);
 		printf(
 			"max = %" PRIu64 " (0x%" PRIx64 "); "
 			"max>>24 = %" PRIu64 " (0x%" PRIx64 "); "
-			"max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			"max>>27 = %" PRIu64 " (0x%" PRIx64 ")\n",
 			max, max,
 			max>>24, max>>24,
-			max>>23, max>>23
+			max>>27, max>>27
 		);
 
 		printf("\n");
