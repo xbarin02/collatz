@@ -595,7 +595,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		}
 
 		if (g_checksums[n] != 0 && g_checksums[n] != checksum) {
-			message(ERR "checksums do not match! (the other checksum was %" PRIu64 ", 0x%" PRIx64 ")\n", g_checksums[n], g_checksums[n]);
+			message(ERR "checksums do not match! (the other checksum was %" PRIu64 ", 0x%016" PRIx64 ")\n", g_checksums[n], g_checksums[n]);
 		}
 
 		g_checksums[n] = checksum;
