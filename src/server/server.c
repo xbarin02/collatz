@@ -573,7 +573,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 			return -1;
 		}
 
-		if ((checksum>>23) != 196126 && (checksum>>24) != 0xff5c && (checksum>>24) != 0xff5b && (checksum>>24) != 0xff5f) {
+		if ((checksum>>23) != 196126 && (checksum>>28) != 0xff5) {
 			message(ERR "suspicious checksum (%" PRIu64 ", 0x%" PRIx64 "), done in %" PRIu64 " secs, rejecting the result! (assignment %" PRIu64 ")\n",
 				checksum, checksum, user_time, n);
 			return -1;
