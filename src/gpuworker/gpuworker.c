@@ -190,6 +190,11 @@ static void check2(uint128_t n0, uint128_t n, int alpha)
 	} while (1);
 }
 
+static uint128_t ceil_mod12(uint128_t n)
+{
+	return (n + 11) / 12 * 12;
+}
+
 uint64_t cpu_worker(
 	uint64_t *checksum_alpha,
 	unsigned long task_id,
@@ -197,44 +202,46 @@ uint64_t cpu_worker(
 	unsigned long task_units /* in log2 */,
 	size_t id)
 {
-	uint128_t n0    = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 0) << (task_size - task_units)) + 3;
-	uint128_t n_sup = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 1) << (task_size - task_units)) + 3;
+	uint128_t l     = ceil_mod12(((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(id + 0) << (task_size - task_units))) + 3;
+	uint128_t n_sup = ceil_mod12(((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(id + 1) << (task_size - task_units))) + 3;
+
+	int k;
 
 	g_private_overflow_counter = 0;
 	g_private_checksum_alpha = 0;
 
 	printf("[DEBUG] verifying block (thread id %lu / %lu) on CPU...\n", (unsigned long)id, (size_t)1 << task_units);
 
-	/* TODO: mod 12 */
-	abort();
+	for (; l < n_sup; l += 12) {
+		for (k = 0; k < 2; ++k) {
+			uint128_t n0 = l + 4*k;
+			uint128_t n = n0;
 
-	for (; n0 < n_sup; n0 += 4) {
-		uint128_t n = n0;
+			do {
+				int alpha;
 
-		do {
-			int alpha;
+				if (n == UINT128_MAX) {
+					g_private_checksum_alpha += 128;
+					check2(n0, UINT128_C(1), 128);
+					break; /* next n0 */
+				}
 
-			if (n == UINT128_MAX) {
-				g_private_checksum_alpha += 128;
-				check2(n0, UINT128_C(1), 128);
-				break; /* next n0 */
-			}
+				n++;
+				alpha = __builtin_ctzu128(n);
+				g_private_checksum_alpha += alpha;
+				n >>= alpha;
 
-			n++;
-			alpha = __builtin_ctzu128(n);
-			g_private_checksum_alpha += alpha;
-			n >>= alpha;
+				if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
+					check2(n0, n, alpha);
+					break; /* next n0 */
+				}
 
-			if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
-				check2(n0, n, alpha);
-				break; /* next n0 */
-			}
+				n *= g_lut[alpha];
 
-			n *= g_lut[alpha];
-
-			n--;
-			n >>= __builtin_ctzu128(n);
-		} while (n >= n0);
+				n--;
+				n >>= __builtin_ctzu128(n);
+			} while (n >= n0);
+		}
 	}
 
 	assert(checksum_alpha != NULL);
@@ -305,11 +312,6 @@ const char *errcode_to_cstr(cl_int errcode)
 }
 
 static int g_ocl_ver1 = 0;
-
-static uint128_t ceil_mod12(uint128_t n)
-{
-	return (n + 11) / 12 * 12;
-}
 
 int solve(uint64_t task_id, uint64_t task_size)
 {
@@ -588,8 +590,8 @@ next_platform:
 
 		/* fill begin and sup */
 		for (i = 0; i < global_work_size; ++i) {
-			uint128_t begin = ((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 0) << (task_size - task_units)) + 3;
-			uint128_t sup   = ((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 1) << (task_size - task_units)) + 3;
+			uint128_t begin = ceil_mod12(((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 0) << (task_size - task_units)));
+			uint128_t sup   = ceil_mod12(((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 1) << (task_size - task_units)));
 
 			lbegin[i] = (uint64_t)begin;
 			hbegin[i] = (uint64_t)(begin >> 64);
@@ -725,9 +727,11 @@ next_platform:
 
 		for (i = 0; i < global_work_size; ++i) {
 			uint64_t overflow_counter = 0;
+
 			if (checksum_alpha[i] == 0) {
 				overflow_counter = cpu_worker(checksum_alpha, task_id, task_size, task_units, i);
 			}
+
 			g_overflow_counter += overflow_counter;
 			g_checksum_alpha += checksum_alpha[i];
 		}
