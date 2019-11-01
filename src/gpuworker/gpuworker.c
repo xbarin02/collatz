@@ -590,8 +590,8 @@ next_platform:
 
 		/* fill begin and sup */
 		for (i = 0; i < global_work_size; ++i) {
-			uint128_t begin = ceil_mod12(((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 0) << (task_size - task_units)));
-			uint128_t sup   = ceil_mod12(((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 1) << (task_size - task_units)));
+			uint128_t begin = ceil_mod12(((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 0) << (task_size - task_units))) + 3;
+			uint128_t sup   = ceil_mod12(((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 1) << (task_size - task_units))) + 3;
 
 			lbegin[i] = (uint64_t)begin;
 			hbegin[i] = (uint64_t)(begin >> 64);

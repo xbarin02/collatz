@@ -41,8 +41,8 @@ __kernel void worker(
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	uint128_t l     = ((uint128_t)hbegin[id] << 64) + (uint128_t)lbegin[id] + 3;
-	uint128_t n_sup = ((uint128_t)hsup[id] << 64) + (uint128_t)lsup[id] + 3;
+	uint128_t l     = ((uint128_t)hbegin[id] << 64) + (uint128_t)lbegin[id];
+	uint128_t n_sup = ((uint128_t)hsup[id] << 64) + (uint128_t)lsup[id];
 
 	for (; l < n_sup; l += 12) {
 		for (int k = 0; k < 2; ++k) {
