@@ -148,7 +148,7 @@ int main()
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
 
-			if ((min>>24) == 0xff5c) {
+			if ((checksum>>24) == 0xff5c) {
 				continue; /* new checksum */
 			}
 
@@ -174,7 +174,7 @@ int main()
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
 
-			if ((min>>24) != 0xff5c) {
+			if ((checksum>>24) != 0xff5c) {
 				continue; /* old checksum */
 			}
 
