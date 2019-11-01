@@ -22,9 +22,11 @@ uint pow3(size_t n)
 
 __kernel void worker(
 	__global ulong *checksum_alpha,
-	ulong task_id,
-	ulong task_size /* in log2 */,
-	ulong task_units /* in log2 */)
+	__global ulong *lbegin,
+	__global ulong *hbegin,
+	__global ulong *lsup,
+	__global ulong *hsup
+)
 {
 	ulong private_checksum_alpha = 0;
 	size_t id = get_global_id(0);
@@ -39,12 +41,12 @@ __kernel void worker(
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	uint128_t n12   = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 0) << (task_size - task_units)) + 3;
-	uint128_t n_sup = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 1) << (task_size - task_units)) + 3;
+	uint128_t l     = ((uint128_t)hbegin[id] << 64) + (uint128_t)lbegin[id];
+	uint128_t n_sup = ((uint128_t)hsup[id] <<64) + (uint128_t)lsup[id];
 
-	for (; n12 < n_sup; n12 += 12) {
+	for (; l < n_sup; l += 12) {
 		for (int k = 0; k < 2; ++k) {
-			uint128_t n0 = n12 + 4*k;
+			uint128_t n0 = l + 4*k;
 			uint128_t n = n0;
 
 			do {

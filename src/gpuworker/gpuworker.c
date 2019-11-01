@@ -205,6 +205,9 @@ uint64_t cpu_worker(
 
 	printf("[DEBUG] verifying block (thread id %lu / %lu) on CPU...\n", (unsigned long)id, (size_t)1 << task_units);
 
+	/* TODO: mod 12 */
+	abort();
+
 	for (; n0 < n_sup; n0 += 4) {
 		uint128_t n = n0;
 
@@ -303,6 +306,11 @@ const char *errcode_to_cstr(cl_int errcode)
 
 static int g_ocl_ver1 = 0;
 
+static uint128_t ceil_mod12(uint128_t n)
+{
+	return (n + 11) / 12 * 12;
+}
+
 int solve(uint64_t task_id, uint64_t task_size)
 {
 	uint64_t task_units = TASK_UNITS;
@@ -338,12 +346,18 @@ int solve(uint64_t task_id, uint64_t task_size)
 	int platform_index = 0;
 	int device_index = 0;
 
+#if 1
+	uint64_t *lbegin, *hbegin, *lsup, *hsup;
+	cl_mem mem_obj_lbegin, mem_obj_hbegin, mem_obj_lsup, mem_obj_hsup;
+#endif
+
 	assert((uint128_t)task_id <= (UINT128_MAX >> task_size));
 
-	/* n of the form 4n+3 */
-	n     = ((uint128_t)(task_id) << task_size) + 3;
-	n_sup = ((uint128_t)(task_id) << task_size) + 3 + (UINT128_C(1) << task_size);
+	/* n of the form 12n+3 */
+	n     = ceil_mod12((uint128_t)(task_id + 0) << task_size) + 3;
+	n_sup = ceil_mod12((uint128_t)(task_id + 1) << task_size) + 3;
 
+	/* informative */
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
 		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
 
@@ -558,6 +572,7 @@ next_platform:
 
 		assert(sizeof(cl_ulong) == sizeof(uint64_t));
 
+#if 0
 		ret = clSetKernelArg(kernel, 1, sizeof(cl_ulong), (void *)&task_id);
 
 		if (ret != CL_SUCCESS) {
@@ -575,12 +590,115 @@ next_platform:
 		if (ret != CL_SUCCESS) {
 			return -1;
 		}
+#endif
 
 		global_work_size = (size_t)1 << task_units;
 
 		printf("[DEBUG] global_work_size = %lu\n", global_work_size);
 
 		assert(task_units + 2 <= task_size);
+
+#if 1
+		/* allocate hbegin, lbegin, hsup, lsup */
+		lbegin = malloc(sizeof(uint64_t) * global_work_size);
+		hbegin = malloc(sizeof(uint64_t) * global_work_size);
+		lsup = malloc(sizeof(uint64_t) * global_work_size);
+		hsup = malloc(sizeof(uint64_t) * global_work_size);
+
+		if (hbegin == NULL || lbegin == NULL || hsup == NULL || lsup == NULL) {
+			return -1;
+		}
+
+		/* fill begin and sup */
+		for (i = 0; i < global_work_size; ++i) {
+			uint128_t begin = ((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 0) << (task_size - task_units)) + 3;
+			uint128_t sup   = ((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 1) << (task_size - task_units)) + 3;
+
+			lbegin[i] = (uint64_t)begin;
+			hbegin[i] = (uint64_t)(begin >> 64);
+			lsup[i] = (uint64_t)sup;
+			hsup[i] = (uint64_t)(sup >> 64);
+		}
+
+		/* create mem objects */
+		mem_obj_lbegin = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
+
+		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clCreateBuffer failed\n");
+			return -1;
+		}
+
+		mem_obj_hbegin = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
+
+		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clCreateBuffer failed\n");
+			return -1;
+		}
+
+		mem_obj_lsup = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
+
+		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clCreateBuffer failed\n");
+			return -1;
+		}
+
+		mem_obj_hsup = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
+
+		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clCreateBuffer failed\n");
+			return -1;
+		}
+
+		/* transfer the begin and sup arrays to GPU global memory */
+		ret = clEnqueueWriteBuffer(command_queue, mem_obj_lbegin, CL_TRUE, 0, sizeof(uint64_t) << task_units, lbegin, 0, NULL, NULL);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clEnqueueWriteBuffer(command_queue, mem_obj_hbegin, CL_TRUE, 0, sizeof(uint64_t) << task_units, hbegin, 0, NULL, NULL);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clEnqueueWriteBuffer(command_queue, mem_obj_lsup, CL_TRUE, 0, sizeof(uint64_t) << task_units, lsup, 0, NULL, NULL);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clEnqueueWriteBuffer(command_queue, mem_obj_hsup, CL_TRUE, 0, sizeof(uint64_t) << task_units, hsup, 0, NULL, NULL);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		/* set kernel args */
+		ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&mem_obj_lbegin);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *)&mem_obj_hbegin);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&mem_obj_lsup);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&mem_obj_hsup);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+#endif
 
 		ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
 
@@ -637,6 +755,11 @@ next_platform:
 			g_overflow_counter += overflow_counter;
 			g_checksum_alpha += checksum_alpha[i];
 		}
+
+		free(lbegin);
+		free(hbegin);
+		free(lsup);
+		free(hsup);
 
 		free(checksum_alpha);
 
