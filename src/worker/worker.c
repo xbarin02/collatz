@@ -266,9 +266,9 @@ unsigned long atoul(const char *nptr)
 }
 
 #ifdef USE_MOD12
-static uint128_t floor_log12(uint128_t n)
+static uint128_t ceil_mod12(uint128_t n)
 {
-	return n / 12 * 12;
+	return (n + 11) / 12 * 12;
 }
 #endif
 
@@ -314,12 +314,12 @@ int main(int argc, char *argv[])
 	printf("TASK_SIZE %" PRIu64 "\n", task_size);
 	printf("TASK_ID %" PRIu64 "\n", task_id);
 
-	assert((uint128_t)task_id <= (UINT128_MAX >> task_size));
+	assert((uint128_t)(task_id + 1) <= (UINT128_MAX >> task_size));
 
 #ifdef USE_MOD12
 	/* n of the form 12n+3 */
-	n     = floor_log12((uint128_t)(task_id) << task_size) + 3;
-	n_sup = floor_log12((uint128_t)(task_id) << task_size) + 3 + (UINT128_C(1) << task_size);
+	n     = ceil_mod12((uint128_t)(task_id + 0) << task_size) + 3;
+	n_sup = ceil_mod12((uint128_t)(task_id + 1) << task_size) + 3;
 #else
 	/* n of the form 4n+3 */
 	n     = ((uint128_t)(task_id) << task_size) + 3;
