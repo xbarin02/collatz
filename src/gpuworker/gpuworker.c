@@ -211,7 +211,7 @@ uint64_t cpu_worker(
 	printf("[DEBUG] verifying block (thread id %lu / %lu) on CPU...\n", (unsigned long)id, (size_t)1 << task_units);
 
 	for (; l < n_sup; l += 4) {
-		{
+		if (1) {
 			uint128_t n0 = l;
 			uint128_t n = n0;
 
