@@ -789,7 +789,7 @@ int main(int argc, char *argv[])
 			uint64_t checksum = g_checksums[n];
 
 			if ((checksum>>28) == 0xff5) {
-				printf("- resetting the assignment %" PRIu64 " due to overflow\n", n);
+				printf("- resetting the assignment %" PRIu64 " due to new checksum\n", n);
 
 				SET_UNASSIGNED(n);
 				SET_INCOMPLETE(n);
