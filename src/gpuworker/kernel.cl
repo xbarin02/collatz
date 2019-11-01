@@ -1,1 +1,1 @@
-kernel32-mod12.cl
+kernel32.cl
