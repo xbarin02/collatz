@@ -720,7 +720,7 @@ int main(int argc, char *argv[])
 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 
-	while ((opt = getopt(argc, argv, "cfi")) != -1) {
+	while ((opt = getopt(argc, argv, "cfiz")) != -1) {
 		switch (opt) {
 			case 'c':
 				clear_incomplete_assigned = 1;
