@@ -278,6 +278,9 @@ int main(int argc, char *argv[])
 	FILETIME ftCreation, ftExit, ftUser, ftKernel;
 	HANDLE hProcess = GetCurrentProcess();
 #endif
+#ifdef USE_MOD12
+	int k;
+#endif
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
@@ -315,9 +318,17 @@ int main(int argc, char *argv[])
 
 	init_lut();
 
+#ifdef USE_MOD12
+	for (; n < n_sup; n += 12) {
+		for (k = 0; k < 2; ++k) {
+			check(n + 4*k);
+		}
+	}
+#else
 	for (; n < n_sup; n += 4) {
 		check(n);
 	}
+#endif
 
 #ifndef __WIN32__
 	/* the total amount of time spent executing in user mode, expressed in a timeval structure (seconds plus microseconds) */
