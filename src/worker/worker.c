@@ -265,6 +265,13 @@ unsigned long atoul(const char *nptr)
 	return strtoul(nptr, NULL, 10);
 }
 
+#ifdef USE_MOD12
+static uint128_t floor_log12(uint128_t n)
+{
+	return n / 12 * 12;
+}
+#endif
+
 int main(int argc, char *argv[])
 {
 	uint128_t n;
@@ -309,9 +316,15 @@ int main(int argc, char *argv[])
 
 	assert((uint128_t)task_id <= (UINT128_MAX >> task_size));
 
+#ifdef USE_MOD12
+	/* n of the form 12n+3 */
+	n     = floor_log12((uint128_t)(task_id) << task_size) + 3;
+	n_sup = floor_log12((uint128_t)(task_id) << task_size) + 3 + (UINT128_C(1) << task_size);
+#else
 	/* n of the form 4n+3 */
 	n     = ((uint128_t)(task_id) << task_size) + 3;
 	n_sup = ((uint128_t)(task_id) << task_size) + 3 + (UINT128_C(1) << task_size);
+#endif
 
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
 		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
