@@ -573,13 +573,13 @@ int read_message(int fd, int thread_id, const char *ipv4)
 			return -1;
 		}
 
-		if ((checksum>>23) != 196126 && (checksum>>28) != 0xff5) {
+		if ((checksum>>23) != 196126 && (checksum>>24) != 0xff5f) {
 			message(ERR "suspicious checksum (%" PRIu64 ", 0x%" PRIx64 "), done in %" PRIu64 " secs, rejecting the result! (assignment %" PRIu64 ")\n",
 				checksum, checksum, user_time, n);
 			return -1;
 		}
 
-		if ((checksum>>28) == 0xff5 && user_time < 30*60) {
+		if ((checksum>>24) == 0xff5f && user_time < 30*60) {
 			message(ERR "new checksum is not allowed for GPU (%" PRIu64 ", 0x%" PRIx64 "), done in %" PRIu64 " secs, rejecting the result! (assignment %" PRIu64 ")\n",
 				checksum, checksum, user_time, n);
 			return 0;
