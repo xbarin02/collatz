@@ -123,7 +123,7 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	mpz_t n;
 	mpz_t n0;
 
-	printf("OVERFLOW MPZ @ n0=0x%016" PRIx64 ":%016" PRIx64 "\n", (uint64_t)(n0>>64), (uint64_t)n0);
+	printf("OVERFLOW MPZ @ n0=0x%016" PRIx64 ":%016" PRIx64 "\n", (uint64_t)(n0_>>64), (uint64_t)n0_);
 
 	assert(alpha_ >= 0);
 	alpha = (mp_bitcnt_t)alpha_;
