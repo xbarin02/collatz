@@ -58,6 +58,8 @@ mpz_t g_mpz_lut[LUT_SIZEMPZ];
 #endif
 
 static uint64_t g_checksum_alpha = 0;
+static uint128_t g_max = 0;
+static uint128_t g_max_n0 = 0;
 
 uint128_t pow3x(uint128_t n)
 {
@@ -142,6 +144,9 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 		/* n-- */
 		mpz_sub_ui(n, n, 1UL);
 
+		/* TODO: handle maximum */
+		printf("[ERROR] unhandled maximum\n");
+
 		beta = mpz_ctz(n);
 
 		/* n >>= ctz(n) */
@@ -184,6 +189,11 @@ static void check2(uint128_t n0, uint128_t n, int alpha)
 		n *= g_lut[alpha];
 
 		n--;
+
+		if (n > g_max) {
+			g_max = n;
+			g_max_n0 = n0;
+		}
 
 		n >>= __builtin_ctzx(n);
 
@@ -229,6 +239,11 @@ static void check(uint128_t n)
 		n *= g_lut[alpha];
 
 		n--;
+
+		if (n > g_max) {
+			g_max = n;
+			g_max_n0 = n0;
+		}
 
 		n >>= __builtin_ctzx(n);
 
@@ -279,6 +294,11 @@ int main(int argc, char *argv[])
 			printf("[ERROR] checksum does not match!\n");
 		}
 	}
+
+	printf("MAXIMUM 0x%016" PRIx64 ":%016" PRIx64 " for n0=0x%016" PRIx64 ":%016" PRIx64 "\n",
+		(uint64_t)(g_max>>64), (uint64_t)g_max,
+		(uint64_t)(g_max_n0>>64), (uint64_t)g_max_n0
+	);
 
 	return 0;
 }
