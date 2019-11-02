@@ -6,6 +6,7 @@ BINS = server chk-tool verify-result
 ifeq ($(USE_LIBGMP), 1)
 	CFLAGS+=-D_USE_GMP
 	LDLIBS+=-lgmp
+	BINS+=path
 endif
 
 .PHONY: all
