@@ -314,22 +314,22 @@ int main(int argc, char *argv[])
 	);
 #ifdef _USE_GMP
 	if (1) {
-		mpz_t m, m_n0;
-		mpz_init_set_u128(m, g_max);
-		mpz_init_set_u128(m_n0, g_max_n0);
+		mpz_t max, max_n0;
+		mpz_init_set_u128(max, g_max);
+		mpz_init_set_u128(max_n0, g_max_n0);
 
-		gmp_printf("\tMAXIMUM %Zd n=%Zd\n", m, m_n0);
+		gmp_printf("\tMAXIMUM %Zd n=%Zd\n", max, max_n0);
 
-		mpz_clear(m_n0);
-		mpz_clear(m);
+		mpz_clear(max_n0);
+		mpz_clear(max);
 	}
 	if (g_mpz_max_n0) {
-		mpz_t m_n0;
-		mpz_init_set_u128(m_n0, g_mpz_max_n0);
+		mpz_t max_n0;
+		mpz_init_set_u128(max_n0, g_mpz_max_n0);
 
-		gmp_printf("MAXIMUM %Zd n=%Zd (mpz)\n", g_mpz_max, m_n0);
+		gmp_printf("MAXIMUM %Zd n0=%Zd (mpz)\n", g_mpz_max, max_n0);
 
-		mpz_clear(m_n0);
+		mpz_clear(max_n0);
 	}
 #endif
 
