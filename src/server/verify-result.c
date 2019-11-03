@@ -130,7 +130,7 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	mpz_t n;
 	mpz_t n0;
 
-	printf("OVERFLOW MPZ @ n0=0x%016" PRIx64 ":%016" PRIx64 " (not maximum!)\n", (uint64_t)(n0_>>64), (uint64_t)n0_);
+	printf("OVERFLOW MPZ @ n0=0x%016" PRIx64 ":%016" PRIx64 " (not maximum)\n", (uint64_t)(n0_>>64), (uint64_t)n0_);
 
 	assert(alpha_ >= 0);
 	alpha = (mp_bitcnt_t)alpha_;
@@ -182,7 +182,7 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 
 static void check2(uint128_t n0, uint128_t n, int alpha)
 {
-	printf("OVERFLOW 128 @ n0=0x%016" PRIx64 ":%016" PRIx64 " (not maximum!)\n", (uint64_t)(n0>>64), (uint64_t)n0);
+	printf("OVERFLOW 128 @ n0=0x%016" PRIx64 ":%016" PRIx64 " (not maximum)\n", (uint64_t)(n0>>64), (uint64_t)n0);
 
 	do {
 		if (alpha >= LUT_SIZE128 || n > UINT128_MAX / g_lut[alpha]) {
@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
 			mpz_init_set_u128(max_n0, g_max_n0);
 		}
 
-		gmp_printf("MAXIMUM %Zd n0=%Zd\n", max, max_n0);
+		gmp_printf("MAXIMUM %Zd n0=%Zd (can differ from the original Collatz function)\n", max, max_n0);
 
 		mpz_clear(max_n0);
 		mpz_clear(max);
