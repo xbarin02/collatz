@@ -1,6 +1,7 @@
 server
 chk-tool
 verify-result
+path
 *~
 *.gcda
 *.map
