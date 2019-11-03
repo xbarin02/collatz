@@ -308,28 +308,23 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	printf("MAXIMUM 0x%016" PRIx64 ":%016" PRIx64 " for n0=0x%016" PRIx64 ":%016" PRIx64 "\n",
-		(uint64_t)(g_max>>64), (uint64_t)g_max,
-		(uint64_t)(g_max_n0>>64), (uint64_t)g_max_n0
-	);
 #ifdef _USE_GMP
 	if (1) {
 		mpz_t max, max_n0;
-		mpz_init_set_u128(max, g_max);
-		mpz_init_set_u128(max_n0, g_max_n0);
 
-		gmp_printf("\tMAXIMUM %Zd n=%Zd\n", max, max_n0);
+		mpz_init_set_u128(max, g_max);
+
+		if (g_mpz_max_n0 && mpz_cmp(max, g_mpz_max) < 0) {
+			mpz_set(max, g_mpz_max);
+			mpz_init_set_u128(max_n0, g_mpz_max_n0);
+		} else {
+			mpz_init_set_u128(max_n0, g_max_n0);
+		}
+
+		gmp_printf("MAXIMUM %Zd n0=%Zd\n", g_mpz_max, max_n0);
 
 		mpz_clear(max_n0);
 		mpz_clear(max);
-	}
-	if (g_mpz_max_n0) {
-		mpz_t max_n0;
-		mpz_init_set_u128(max_n0, g_mpz_max_n0);
-
-		gmp_printf("MAXIMUM %Zd n0=%Zd (mpz)\n", g_mpz_max, max_n0);
-
-		mpz_clear(max_n0);
 	}
 #endif
 
