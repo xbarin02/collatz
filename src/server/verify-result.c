@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
 			mpz_init_set_u128(max_n0, g_max_n0);
 		}
 
-		gmp_printf("MAXIMUM %Zd n0=%Zd\n", g_mpz_max, max_n0);
+		gmp_printf("MAXIMUM %Zd n0=%Zd\n", max, max_n0);
 
 		mpz_clear(max_n0);
 		mpz_clear(max);
