@@ -119,6 +119,11 @@ static void mpz_init_set_u128(mpz_t rop, uint128_t op)
 #endif
 
 #ifdef _USE_GMP
+mpz_t g_mpz_max;
+uint128_t g_mpz_max_n0;
+#endif
+
+#ifdef _USE_GMP
 static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 {
 	mp_bitcnt_t alpha, beta;
@@ -144,8 +149,11 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 		/* n-- */
 		mpz_sub_ui(n, n, 1UL);
 
-		/* TODO: handle maximum */
-		printf("[ERROR] unhandled maximum\n");
+		/* handle maximum */
+		if (mpz_cmp(n, g_mpz_max) > 0) {
+			mpz_set(g_mpz_max, n);
+			g_mpz_max_n0 = n0_;
+		}
 
 		beta = mpz_ctz(n);
 
@@ -281,6 +289,11 @@ int main(int argc, char *argv[])
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
 		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
 
+#ifdef _USE_GMP
+	mpz_init_set_ui(g_mpz_max, 0UL);
+	g_mpz_max_n0 = 0;
+#endif
+
 	printf("[DEBUG] computing checksum...\n");
 
 	for (; n < n_sup; n += 4) {
@@ -309,6 +322,14 @@ int main(int argc, char *argv[])
 
 		mpz_clear(m_n0);
 		mpz_clear(m);
+	}
+	if (g_mpz_max_n0) {
+		mpz_t m_n0;
+		mpz_init_set_u128(m_n0, g_mpz_max_n0);
+
+		gmp_printf("MAXIMUM %Zd n=%Zd (mpz)\n", g_mpz_max, m_n0);
+
+		mpz_clear(m_n0);
 	}
 #endif
 
