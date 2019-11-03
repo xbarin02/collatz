@@ -182,7 +182,7 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 
 static void check2(uint128_t n0, uint128_t n, int alpha)
 {
-	printf("OVERFLOW 128 @ n0=0x%016" PRIx64 ":%016" PRIx64 "\n", (uint64_t)(n0>>64), (uint64_t)n0);
+	printf("OVERFLOW 128 @ n0=0x%016" PRIx64 ":%016" PRIx64 " (not maximum!)\n", (uint64_t)(n0>>64), (uint64_t)n0);
 
 	do {
 		if (alpha >= LUT_SIZE128 || n > UINT128_MAX / g_lut[alpha]) {
