@@ -142,6 +142,7 @@ int main()
 
 	{
 		uint64_t min = UINT64_MAX, max = 0;
+		uint64_t count = 0;
 
 		printf("old checksums:\n");
 
@@ -155,8 +156,11 @@ int main()
 			if (checksum != 0) {
 				min = MIN(min, checksum);
 				max = MAX(max, checksum);
+				count++;
 			}
 		}
+
+		printf("count = %" PRIu64 "\n", count);
 
 		printf(
 			"min = %" PRIu64 " (0x%" PRIx64 "); "
@@ -180,6 +184,7 @@ int main()
 
 	{
 		uint64_t min = UINT64_MAX, max = 0;
+		uint64_t count = 0;
 
 		printf("new checksums:\n");
 
@@ -193,8 +198,11 @@ int main()
 			if (checksum != 0) {
 				min = MIN(min, checksum);
 				max = MAX(max, checksum);
+				count++;
 			}
 		}
+
+		printf("count = %" PRIu64 "\n", count);
 
 		printf(
 			"min = %" PRIu64 " (0x%" PRIx64 "); "
