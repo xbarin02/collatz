@@ -8,6 +8,7 @@
 #$ -e /dev/null
 #$ -q all.q@@gpu
 #$ -tc 1000
+#$ -t 1-100000
 #$ -l gpu=1
 
 echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}"
