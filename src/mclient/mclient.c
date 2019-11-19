@@ -14,7 +14,7 @@
 #	include <winsock2.h>
 #	include <windows.h>
 #	define WIFEXITED(r) (1)
-#	define clone(fd) closesocket(fd)
+#	define close(fd) closesocket(fd)
 #endif
 #include <unistd.h>
 #include <strings.h>

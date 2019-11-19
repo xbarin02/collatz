@@ -230,7 +230,7 @@ int main()
 		if (checksum == 0) {
 			printf("- missing checksum on the assignment %" PRIu64 " (below %" PRIu64 " x 2^60)\n", n, (n >> 20) + 1);
 
-			if (++c == 24)
+			if (++c == 8)
 				break;
 		}
 	}
@@ -318,7 +318,7 @@ int main()
 			overflow_count++;
 			overflow_sum += overflow;
 
-			if (++c < 24) {
+			if (++c < 32) {
 				printf("- found %" PRIu64 " overflows on the assignment %" PRIu64 " (below %" PRIu64 " x 2^60)\n", overflow, n, (n >> 20) + 1);
 			}
 		}
