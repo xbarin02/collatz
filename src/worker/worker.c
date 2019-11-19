@@ -54,19 +54,6 @@ uint64_t pow3(uint64_t n)
 	return r;
 }
 
-uint128_t pow3x(uint128_t n)
-{
-	uint128_t r = 1;
-
-	for (; n > 0; --n) {
-		assert(r <= UINT128_MAX / 3);
-
-		r *= 3;
-	}
-
-	return r;
-}
-
 #ifdef _USE_GMP
 /* 3^n */
 static void mpz_pow3(mpz_t r, unsigned long n)
