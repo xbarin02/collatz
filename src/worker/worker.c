@@ -94,12 +94,14 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	mp_bitcnt_t alpha, beta;
 	mpz_t n;
 	mpz_t n0;
+	mpz_t a;
 
 	g_overflow_counter++;
 
 	assert(alpha_ >= 0);
 	alpha = (mp_bitcnt_t)alpha_;
 
+	mpz_init(a);
 	mpz_init_set_u128(n, n_);
 	mpz_init_set_u128(n0, n0_);
 
@@ -109,16 +111,9 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 		}
 
 		/* n *= lut[alpha] */
-		if (1) {
-			mpz_t la;
-			mpz_init(la);
+		mpz_pow3(a, (unsigned long)alpha);
 
-			mpz_pow3(la, (unsigned long)alpha);
-
-			mpz_mul(n, n, la);
-
-			mpz_clear(la);
-		}
+		mpz_mul(n, n, a);
 
 		/* n-- */
 		mpz_sub_ui(n, n, 1UL);
@@ -145,6 +140,7 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 		mpz_fdiv_q_2exp(n, n, alpha);
 	} while (1);
 
+	mpz_clear(a);
 	mpz_clear(n);
 	mpz_clear(n0);
 #else
@@ -161,11 +157,7 @@ static void check(uint128_t n)
 	const uint128_t n0 = n;
 	int alpha, beta;
 
-	if (n == UINT128_MAX) {
-		g_checksum_alpha += 128;
-		mpz_check2(n0, UINT128_C(1), 128);
-		return;
-	}
+	assert(n != UINT128_MAX);
 
 	do {
 		n++;
