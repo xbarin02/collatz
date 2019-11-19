@@ -27,14 +27,8 @@
 #define TASK_SIZE 40
 
 #define LUT_SIZE64 41
-#ifdef _USE_GMP
-#	define LUT_SIZEMPZ 512
-#endif
 
 uint64_t g_lut64[LUT_SIZE64];
-#ifdef _USE_GMP
-mpz_t g_mpz_lut[LUT_SIZEMPZ];
-#endif
 
 static uint64_t g_checksum_alpha = 0;
 static uint64_t g_checksum_beta = 0;
@@ -70,13 +64,6 @@ void init_lut()
 	for (a = 0; a < LUT_SIZE64; ++a) {
 		g_lut64[a] = pow3((uint64_t)a);
 	}
-
-#ifdef _USE_GMP
-	for (a = 0; a < LUT_SIZEMPZ; ++a) {
-		mpz_init(g_mpz_lut[a]);
-		mpz_pow3(g_mpz_lut[a], (unsigned long)a);
-	}
-#endif
 }
 
 #ifdef _USE_GMP
@@ -117,12 +104,21 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	mpz_init_set_u128(n0, n0_);
 
 	do {
-		if (alpha >= LUT_SIZEMPZ) {
-			abort();
+		if (alpha > ULONG_MAX) {
+			alpha = ULONG_MAX;
 		}
 
 		/* n *= lut[alpha] */
-		mpz_mul(n, n, g_mpz_lut[alpha]);
+		if (1) {
+			mpz_t la;
+			mpz_init(la);
+
+			mpz_pow3(la, (unsigned long)alpha);
+
+			mpz_mul(n, n, la);
+
+			mpz_clear(la);
+		}
 
 		/* n-- */
 		mpz_sub_ui(n, n, 1UL);
