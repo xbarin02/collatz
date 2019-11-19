@@ -56,7 +56,7 @@ static void mpz_pow3(mpz_t r, unsigned long n)
 }
 #endif
 
-/* init lookup tables */
+/* init lookup table */
 void init_lut()
 {
 	int a;
@@ -336,7 +336,6 @@ int main(int argc, char *argv[])
 #else
 	if (GetProcessTimes(hProcess, &ftCreation, &ftExit, &ftKernel, &ftUser)) {
 		uint64_t t = ((uint64_t)ftUser.dwHighDateTime << 32) + ftUser.dwLowDateTime;
-		/* Contains a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC). */
 		uint64_t secs = (t + 10000000/2) / 10000000;
 		uint64_t usecs = (t + 10/2) / 10;
 		printf("USERTIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
