@@ -106,8 +106,8 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	mpz_init_set_u128(n0, n0_);
 
 	do {
-		if (alpha > ULONG_MAX) {
-			alpha = ULONG_MAX;
+		if (alpha >= LUT_SIZE64) {
+			alpha = LUT_SIZE64 - 1;
 		}
 
 		/* n *= lut[alpha] */
