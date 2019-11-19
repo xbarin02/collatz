@@ -27,13 +27,11 @@
 #define TASK_SIZE 40
 
 #define LUT_SIZE64 41
-#define LUT_SIZE128 81
 #ifdef _USE_GMP
 #	define LUT_SIZEMPZ 512
 #endif
 
 uint64_t g_lut64[LUT_SIZE64];
-uint128_t g_lut[LUT_SIZE128];
 #ifdef _USE_GMP
 mpz_t g_mpz_lut[LUT_SIZEMPZ];
 #endif
@@ -86,10 +84,6 @@ void init_lut()
 		g_lut64[a] = pow3((uint64_t)a);
 	}
 
-	for (a = 0; a < LUT_SIZE128; ++a) {
-		g_lut[a] = pow3x((uint128_t)a);
-	}
-
 #ifdef _USE_GMP
 	for (a = 0; a < LUT_SIZEMPZ; ++a) {
 		mpz_init(g_mpz_lut[a]);
@@ -120,9 +114,9 @@ static void mpz_init_set_u128(mpz_t rop, uint128_t op)
 }
 #endif
 
-#ifdef _USE_GMP
 static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 {
+#ifdef _USE_GMP
 	mp_bitcnt_t alpha, beta;
 	mpz_t n;
 	mpz_t n0;
@@ -168,47 +162,13 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 
 	mpz_clear(n);
 	mpz_clear(n0);
-}
-#endif
-
-static void check2(uint128_t n0, uint128_t n, int alpha)
-{
-	int beta;
-
-	g_overflow_counter++;
-
-	do {
-		if (alpha >= LUT_SIZE128 || n > UINT128_MAX / g_lut[alpha]) {
-#ifdef _USE_GMP
-			mpz_check2(n0, n, alpha);
 #else
-			abort();
+	(void)n0_;
+	(void)n_;
+	(void)alpha_;
+
+	abort();
 #endif
-			return;
-		}
-
-		n *= g_lut[alpha];
-
-		n--;
-
-		beta = __builtin_ctzu128(n);
-
-		g_checksum_beta += beta;
-
-		n >>= __builtin_ctzu128(n);
-
-		if (n < n0) {
-			return;
-		}
-
-		n++;
-
-		alpha = __builtin_ctzu128(n);
-
-		g_checksum_alpha += alpha;
-
-		n >>= alpha;
-	} while (1);
 }
 
 static void check(uint128_t n)
@@ -218,7 +178,7 @@ static void check(uint128_t n)
 
 	if (n == UINT128_MAX) {
 		g_checksum_alpha += 128;
-		check2(n0, UINT128_C(1), 128);
+		mpz_check2(n0, UINT128_C(1), 128);
 		return;
 	}
 
@@ -231,16 +191,12 @@ static void check(uint128_t n)
 			alpha = LUT_SIZE64 - 1;
 		}
 
-#ifdef PREFETCH
-		__builtin_prefetch(&g_lut64[alpha]);
-#endif
-
 		g_checksum_alpha += alpha;
 
 		n >>= alpha;
 
 		if (n > UINT128_MAX >> 2*alpha) {
-			check2(n0, n, alpha);
+			mpz_check2(n0, n, alpha);
 			return;
 		}
 
