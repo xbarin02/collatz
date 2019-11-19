@@ -108,6 +108,8 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	mpz_t n;
 	mpz_t n0;
 
+	g_overflow_counter++;
+
 	assert(alpha_ >= 0);
 	alpha = (mp_bitcnt_t)alpha_;
 
