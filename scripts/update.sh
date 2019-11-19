@@ -8,8 +8,6 @@ cd
 
 killall mclient
 
-sleep 1
-
 killall worker gpuworker
 
 sleep 1

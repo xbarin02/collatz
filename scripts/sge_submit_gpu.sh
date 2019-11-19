@@ -7,7 +7,7 @@
 #$ -o /dev/null
 #$ -e /dev/null
 #$ -q short.q@@gpu
-#$ -tc 1000
+#$ -tc 20
 #$ -t 1-100000
 #$ -l gpu=1
 
@@ -31,7 +31,6 @@ cp -r "${SRCDIR}" .
 
 cd collatz/src
 
-make -C worker clean all USE_LIBGMP=1
 make -C gpuworker clean all USE_LIBGMP=1
 make -C mclient clean all
 

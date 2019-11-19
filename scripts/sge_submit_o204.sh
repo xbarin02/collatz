@@ -1,13 +1,14 @@
 #!/bin/bash
 #
 #$ -S /bin/bash
-#$ -N coll.o204
+#$ -N collatz204
 #$ -M ibarina@fit.vutbr.cz
 #$ -m a
 #$ -o /mnt/matylda1/ibarina/sge/collatz/logs/o204.out
 #$ -e /mnt/matylda1/ibarina/sge/collatz/logs/o204.err
-#$ -q all.q@@pco204
-#$ -tc 1000
+#$ -q short.q@@pco204
+#$ -tc 20
+#$ -t 1-100000
 #$ -pe smp 2
 
 echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}"
@@ -30,7 +31,6 @@ cp -r "${SRCDIR}" .
 
 cd collatz/src
 
-make -C worker clean all USE_LIBGMP=1
 make -C gpuworker clean all TASK_UNITS=20 USE_LIBGMP=1
 make -C mclient clean all
 
