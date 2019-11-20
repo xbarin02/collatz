@@ -27,16 +27,8 @@
 #define TASK_SIZE 40
 
 #define LUT_SIZE64 41
-#define LUT_SIZE128 81
-#ifdef _USE_GMP
-#	define LUT_SIZEMPZ 512
-#endif
 
 uint64_t g_lut64[LUT_SIZE64];
-uint128_t g_lut[LUT_SIZE128];
-#ifdef _USE_GMP
-mpz_t g_mpz_lut[LUT_SIZEMPZ];
-#endif
 
 static uint64_t g_checksum_alpha = 0;
 static uint64_t g_checksum_beta = 0;
@@ -56,19 +48,6 @@ uint64_t pow3(uint64_t n)
 	return r;
 }
 
-uint128_t pow3x(uint128_t n)
-{
-	uint128_t r = 1;
-
-	for (; n > 0; --n) {
-		assert(r <= UINT128_MAX / 3);
-
-		r *= 3;
-	}
-
-	return r;
-}
-
 #ifdef _USE_GMP
 /* 3^n */
 static void mpz_pow3(mpz_t r, unsigned long n)
@@ -77,7 +56,7 @@ static void mpz_pow3(mpz_t r, unsigned long n)
 }
 #endif
 
-/* init lookup tables */
+/* init lookup table */
 void init_lut()
 {
 	int a;
@@ -85,17 +64,6 @@ void init_lut()
 	for (a = 0; a < LUT_SIZE64; ++a) {
 		g_lut64[a] = pow3((uint64_t)a);
 	}
-
-	for (a = 0; a < LUT_SIZE128; ++a) {
-		g_lut[a] = pow3x((uint128_t)a);
-	}
-
-#ifdef _USE_GMP
-	for (a = 0; a < LUT_SIZEMPZ; ++a) {
-		mpz_init(g_mpz_lut[a]);
-		mpz_pow3(g_mpz_lut[a], (unsigned long)a);
-	}
-#endif
 }
 
 #ifdef _USE_GMP
@@ -120,26 +88,32 @@ static void mpz_init_set_u128(mpz_t rop, uint128_t op)
 }
 #endif
 
-#ifdef _USE_GMP
 static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 {
+#ifdef _USE_GMP
 	mp_bitcnt_t alpha, beta;
 	mpz_t n;
 	mpz_t n0;
+	mpz_t a;
+
+	g_overflow_counter++;
 
 	assert(alpha_ >= 0);
 	alpha = (mp_bitcnt_t)alpha_;
 
+	mpz_init(a);
 	mpz_init_set_u128(n, n_);
 	mpz_init_set_u128(n0, n0_);
 
 	do {
-		if (alpha >= LUT_SIZEMPZ) {
-			abort();
+		if (alpha >= LUT_SIZE64) {
+			alpha = LUT_SIZE64 - 1;
 		}
 
 		/* n *= lut[alpha] */
-		mpz_mul(n, n, g_mpz_lut[alpha]);
+		mpz_pow3(a, (unsigned long)alpha);
+
+		mpz_mul(n, n, a);
 
 		/* n-- */
 		mpz_sub_ui(n, n, 1UL);
@@ -166,49 +140,16 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 		mpz_fdiv_q_2exp(n, n, alpha);
 	} while (1);
 
+	mpz_clear(a);
 	mpz_clear(n);
 	mpz_clear(n0);
-}
-#endif
-
-static void check2(uint128_t n0, uint128_t n, int alpha)
-{
-	int beta;
-
-	g_overflow_counter++;
-
-	do {
-		if (alpha >= LUT_SIZE128 || n > UINT128_MAX / g_lut[alpha]) {
-#ifdef _USE_GMP
-			mpz_check2(n0, n, alpha);
 #else
-			abort();
+	(void)n0_;
+	(void)n_;
+	(void)alpha_;
+
+	abort();
 #endif
-			return;
-		}
-
-		n *= g_lut[alpha];
-
-		n--;
-
-		beta = __builtin_ctzu128(n);
-
-		g_checksum_beta += beta;
-
-		n >>= __builtin_ctzu128(n);
-
-		if (n < n0) {
-			return;
-		}
-
-		n++;
-
-		alpha = __builtin_ctzu128(n);
-
-		g_checksum_alpha += alpha;
-
-		n >>= alpha;
-	} while (1);
 }
 
 static void check(uint128_t n)
@@ -216,11 +157,7 @@ static void check(uint128_t n)
 	const uint128_t n0 = n;
 	int alpha, beta;
 
-	if (n == UINT128_MAX) {
-		g_checksum_alpha += 128;
-		check2(n0, UINT128_C(1), 128);
-		return;
-	}
+	assert(n != UINT128_MAX);
 
 	do {
 		n++;
@@ -231,16 +168,12 @@ static void check(uint128_t n)
 			alpha = LUT_SIZE64 - 1;
 		}
 
-#ifdef PREFETCH
-		__builtin_prefetch(&g_lut64[alpha]);
-#endif
-
 		g_checksum_alpha += alpha;
 
 		n >>= alpha;
 
 		if (n > UINT128_MAX >> 2*alpha) {
-			check2(n0, n, alpha);
+			mpz_check2(n0, n, alpha);
 			return;
 		}
 
@@ -395,7 +328,6 @@ int main(int argc, char *argv[])
 #else
 	if (GetProcessTimes(hProcess, &ftCreation, &ftExit, &ftKernel, &ftUser)) {
 		uint64_t t = ((uint64_t)ftUser.dwHighDateTime << 32) + ftUser.dwLowDateTime;
-		/* Contains a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC). */
 		uint64_t secs = (t + 10000000/2) / 10000000;
 		uint64_t usecs = (t + 10/2) / 10;
 		printf("USERTIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
