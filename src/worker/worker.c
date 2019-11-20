@@ -198,13 +198,6 @@ unsigned long atoul(const char *nptr)
 	return strtoul(nptr, NULL, 10);
 }
 
-#ifdef USE_MOD12
-static uint128_t ceil_mod12(uint128_t n)
-{
-	return (n + 11) / 12 * 12;
-}
-#endif
-
 int main(int argc, char *argv[])
 {
 	uint128_t n;
@@ -217,9 +210,6 @@ int main(int argc, char *argv[])
 #else
 	FILETIME ftCreation, ftExit, ftUser, ftKernel;
 	HANDLE hProcess = GetCurrentProcess();
-#endif
-#ifdef USE_MOD12
-	int k;
 #endif
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
@@ -249,32 +239,18 @@ int main(int argc, char *argv[])
 
 	assert((uint128_t)(task_id + 1) <= (UINT128_MAX >> task_size));
 
-#ifdef USE_MOD12
-	/* n of the form 12n+3 */
-	n     = ceil_mod12((uint128_t)(task_id + 0) << task_size) + 3;
-	n_sup = ceil_mod12((uint128_t)(task_id + 1) << task_size) + 3;
-#else
 	/* n of the form 4n+3 */
 	n     = ((uint128_t)(task_id + 0) << task_size) + 3;
 	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
-#endif
 
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
 		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
 
 	init_lut();
 
-#ifdef USE_MOD12
-	for (; n < n_sup; n += 12) {
-		for (k = 0; k < 2; ++k) {
-			check(n + 4*k);
-		}
-	}
-#else
 	for (; n < n_sup; n += 4) {
 		check(n);
 	}
-#endif
 
 #ifndef __WIN32__
 	/* the total amount of time spent executing in user mode, expressed in a timeval structure (seconds plus microseconds) */
