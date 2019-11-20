@@ -255,8 +255,8 @@ int main(int argc, char *argv[])
 	n_sup = ceil_mod12((uint128_t)(task_id + 1) << task_size) + 3;
 #else
 	/* n of the form 4n+3 */
-	n     = ((uint128_t)(task_id) << task_size) + 3;
-	n_sup = ((uint128_t)(task_id) << task_size) + 3 + (UINT128_C(1) << task_size);
+	n     = ((uint128_t)(task_id + 0) << task_size) + 3;
+	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
 #endif
 
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
