@@ -190,11 +190,6 @@ static void check2(uint128_t n0, uint128_t n, int alpha)
 	} while (1);
 }
 
-uint128_t ceil_mod12(uint128_t n)
-{
-	return (n + 11) / 12 * 12;
-}
-
 uint64_t cpu_worker(
 	uint64_t *checksum_alpha,
 	unsigned long task_id,

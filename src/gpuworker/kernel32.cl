@@ -41,34 +41,31 @@ __kernel void worker(
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	uint128_t l     = ((uint128_t)hbegin[id] << 64) + (uint128_t)lbegin[id];
+	uint128_t n0    = ((uint128_t)hbegin[id] << 64) + (uint128_t)lbegin[id];
 	uint128_t n_sup = ((uint128_t)hsup[id] << 64) + (uint128_t)lsup[id];
 
-	for (; l < n_sup; l += 4) {
-		if (1) {
-			uint128_t n0 = l;
-			uint128_t n = n0;
+	for (; n0 < n_sup; n0 += 4) {
+		uint128_t n = n0;
 
-			do {
-				n++;
+		do {
+			n++;
 
-				size_t alpha = min((size_t)ctz((uint)n), (size_t)LUT_SIZE32 - 1);
+			size_t alpha = min((size_t)ctz((uint)n), (size_t)LUT_SIZE32 - 1);
 
-				private_checksum_alpha += alpha;
-				n >>= alpha;
+			private_checksum_alpha += alpha;
+			n >>= alpha;
 
-				if (n > UINT128_MAX >> 2*alpha) {
-					private_checksum_alpha = 0;
-					goto end;
-				}
+			if (n > UINT128_MAX >> 2*alpha) {
+				private_checksum_alpha = 0;
+				goto end;
+			}
 
-				n *= lut[alpha];
+			n *= lut[alpha];
 
-				n--;
+			n--;
 
-				n >>= ctz((uint)n);
-			} while (n >= n0);
-		}
+			n >>= ctz((uint)n);
+		} while (n >= n0);
 	}
 
 end:
