@@ -18,7 +18,7 @@ if type clang > /dev/null 2> /dev/null && clang --version | grep -q "version [89
 	CC=clang
 fi
 
-make -C worker clean all CC=$CC USE_MOD12=1
+make -C worker clean all CC=$CC USE_MOD12=0
 make -C gpuworker clean all TASK_UNITS=${TASK_UNITS} USE_LIBGMP=1 || echo "unable to build gpuworker"
 make -C mclient clean all
 
