@@ -31,11 +31,11 @@ uint64_t pow3(size_t n)
 
 uint64_t T(uint64_t n)
 {
-	switch (n%2) {
-		case 0: return n/2;
+	switch (n % 2) {
+		case 0: return n / 2;
 		case 1:
 			assert(n <= (UINT64_MAX - 1) / 3);
-			return (3*n+1)/2;
+			return (3 * n + 1) / 2;
 	}
 
 	return 0;
@@ -50,7 +50,7 @@ uint64_t T_k(uint64_t n, size_t k, size_t *o)
 	*o = 0; /* odd steps */
 
 	for (l = 0; l < k; ++l) {
-		switch (n%2) {
+		switch (n % 2) {
 			case 0: /* even step */
 				break;
 			case 1: /* odd step */
@@ -71,17 +71,17 @@ int is_killed_at_k(uint64_t b, size_t k)
 	/* a 2^k + b --> a 3^c + d */
 	uint64_t d = T_k(b, k, &c);
 
-	assert(1UL <= (ULONG_MAX >> k));
+	assert(UINT64_C(1) <= (UINT64_MAX >> k));
 	
-	return pow3(c) < (1UL << k) && d <= b;
+	return pow3(c) < (UINT64_C(1) << k) && d <= b;
 }
 
 int is_killed_below_k(uint64_t b, size_t k)
 {
 	while (--k > 0) {
-		assert(1UL <= (ULONG_MAX >> k));
+		assert(UINT64_C(1) <= (UINT64_MAX >> k));
 
-		if (is_killed_at_k(b % (1UL << k), k)) {
+		if (is_killed_at_k(b % (UINT64_C(1) << k), k)) {
 			return 1;
 		}
 	}
@@ -129,19 +129,14 @@ int main()
 	char path[4096];
 	size_t k = 30;
 	uint64_t b;
-	size_t map_size = (1UL << k) / 8; /* 2^k bits */
+	size_t map_size = ((size_t)1 << k) / 8; /* 2^k bits */
 
 	sprintf(path, "sieve-%lu.map", (unsigned long)k);
 
 	g_map_sieve = open_map(path, map_size);
 
 	/* a 2^k + b */
-	for (b = 0; b < (1UL << k); ++b) {
-		size_t c;
-
-		/* a 2^k + b --> a 3^c + d */
-		uint64_t d = T_k(b, k, &c);
-
+	for (b = 0; b < (UINT64_C(1) << k); ++b) {
 		int killed = is_killed_below_k(b, k) || is_killed_at_k(b, k);
 
 		if (!killed) {
@@ -149,7 +144,14 @@ int main()
 		}
 
 #if 0
-		printf("a 2^%lu + %lu => a 3^%lu + %lu %s\n", (unsigned long)k, (unsigned long)b, (unsigned long)c, (unsigned long)d, killed ? " --> KILLED" : "");
+		if (1) {
+			size_t c;
+
+			/* a 2^k + b --> a 3^c + d */
+			uint64_t d = T_k(b, k, &c);
+
+			printf("a 2^%lu + %lu => a 3^%lu + %lu %s\n", (unsigned long)k, (unsigned long)b, (unsigned long)c, (unsigned long)d, killed ? " --> KILLED" : "");
+		}
 #endif
 	}
 
