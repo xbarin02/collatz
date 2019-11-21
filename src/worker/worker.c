@@ -114,6 +114,9 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	mpz_t n;
 	mpz_t n0;
 	mpz_t a;
+#ifdef USE_SIEVE
+	unsigned long lsbits;
+#endif
 
 	g_overflow_counter++;
 
@@ -137,6 +140,14 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 		/* n-- */
 		mpz_sub_ui(n, n, 1UL);
 
+#ifdef USE_SIEVE
+		lsbits = mpz_get_ui(n);
+
+		if (!IS_LIVE(lsbits & SIEVE_MASK)) {
+			break;
+		}
+#endif
+
 		beta = mpz_ctz(n);
 
 		g_checksum_beta += beta;
@@ -144,9 +155,17 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 		/* n >>= ctz(n) */
 		mpz_fdiv_q_2exp(n, n, beta);
 
+#ifdef USE_SIEVE
+		lsbits = mpz_get_ui(n);
+
+		if (!IS_LIVE(lsbits & SIEVE_MASK)) {
+			break;
+		}
+#else
 		if (mpz_cmp(n, n0) < 0) {
 			break;
 		}
+#endif
 
 		/* n++ */
 		mpz_add_ui(n, n, 1UL);
