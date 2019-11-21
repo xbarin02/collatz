@@ -33,7 +33,7 @@
 #include "wideint.h"
 
 #ifdef USE_SIEVE
-#	define SIEVE_LOGSIZE 16
+#	define SIEVE_LOGSIZE 32
 #	define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
 #	define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8) /* 2^k bits */
 #	define IS_LIVE(n) ( ( g_map_sieve[ (n)>>3 ] >> ((n)&7) ) & 1 )
@@ -114,9 +114,6 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	mpz_t n;
 	mpz_t n0;
 	mpz_t a;
-#ifdef USE_SIEVE
-	unsigned long lsbits;
-#endif
 
 	g_overflow_counter++;
 
@@ -140,14 +137,6 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 		/* n-- */
 		mpz_sub_ui(n, n, 1UL);
 
-#ifdef USE_SIEVE
-		lsbits = mpz_get_ui(n);
-
-		if (!IS_LIVE(lsbits & SIEVE_MASK)) {
-			break;
-		}
-#endif
-
 		beta = mpz_ctz(n);
 
 		g_checksum_beta += beta;
@@ -155,17 +144,9 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 		/* n >>= ctz(n) */
 		mpz_fdiv_q_2exp(n, n, beta);
 
-#ifdef USE_SIEVE
-		lsbits = mpz_get_ui(n);
-
-		if (!IS_LIVE(lsbits & SIEVE_MASK)) {
-			break;
-		}
-#else
 		if (mpz_cmp(n, n0) < 0) {
 			break;
 		}
-#endif
 
 		/* n++ */
 		mpz_add_ui(n, n, 1UL);
@@ -189,6 +170,9 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	abort();
 #endif
 }
+
+uint128_t g_max_n = 0;
+uint128_t g_max_n0;
 
 static void check(uint128_t n)
 {
@@ -219,11 +203,10 @@ static void check(uint128_t n)
 
 		n--;
 
-#ifdef USE_SIEVE
-		if (!IS_LIVE(n & SIEVE_MASK)) {
-			return;
+		if (n > g_max_n) {
+			g_max_n = n;
+			g_max_n0 = n0;
 		}
-#endif
 
 		beta = __builtin_ctzu64(n);
 
@@ -231,15 +214,9 @@ static void check(uint128_t n)
 
 		n >>= beta;
 
-#ifdef USE_SIEVE
-		if (!IS_LIVE(n & SIEVE_MASK)) {
-			return;
-		}
-#else
 		if (n < n0) {
 			return;
 		}
-#endif
 	} while (1);
 }
 
@@ -253,6 +230,10 @@ const void *open_map(const char *path, size_t map_size)
 {
 	int fd = open(path, O_RDONLY, 0600);
 	void *ptr;
+
+	if (map_size == 0) {
+		map_size = 1;
+	}
 
 	if (fd < 0) {
 		perror("open");
@@ -294,7 +275,12 @@ int main(int argc, char *argv[])
 
 	g_map_sieve = open_map(path, map_size);
 #endif
+
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+#ifdef USE_SIEVE
+	printf("SIEVE_LOGSIZE %lu\n", (unsigned long)SIEVE_LOGSIZE);
+#endif
 
 	while ((opt = getopt(argc, argv, "t:a:")) != -1) {
 		switch (opt) {
@@ -401,6 +387,10 @@ int main(int argc, char *argv[])
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, g_checksum_beta);
+
+	if (g_max_n) {
+		printf("MAXIMUM_OFFSET %" PRIu64 "\n", (uint64_t)(g_max_n0 - ((uint128_t)(task_id + 0) << task_size)));
+	}
 
 	printf("HALTED\n");
 
