@@ -128,7 +128,7 @@ unsigned char *g_map_sieve;
 int main()
 {
 	char path[4096];
-	size_t k = 30;
+	size_t k = 32;
 	uint128_t b;
 	size_t map_size = ((size_t)1 << k) / 8; /* 2^k bits */
 
