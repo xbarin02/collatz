@@ -107,6 +107,11 @@ static void mpz_init_set_u128(mpz_t rop, uint128_t op)
 }
 #endif
 
+#ifdef _USE_GMP
+mpz_t g_mpz_max_n;
+uint128_t g_mpz_max_n0;
+#endif
+
 static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 {
 #ifdef _USE_GMP
@@ -136,6 +141,12 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 
 		/* n-- */
 		mpz_sub_ui(n, n, 1UL);
+
+		/* if (n > max_n) */
+		if (mpz_cmp(n, g_mpz_max_n) > 0) {
+			mpz_set(g_mpz_max_n, n);
+			g_mpz_max_n0 = n0_;
+		}
 
 		beta = mpz_ctz(n);
 
@@ -314,6 +325,10 @@ int main(int argc, char *argv[])
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
 		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
 
+#ifdef _USE_GMP
+	mpz_init_set_ui(g_mpz_max_n, 0UL);
+#endif
+
 	init_lut();
 
 	for (; n < n_sup; n += 4) {
@@ -388,9 +403,21 @@ int main(int argc, char *argv[])
 
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, g_checksum_beta);
 
-	if (g_max_n) {
-		printf("MAXIMUM_OFFSET %" PRIu64 "\n", (uint64_t)(g_max_n0 - ((uint128_t)(task_id + 0) << task_size)));
+#ifdef _USE_GMP
+	if (1) {
+		mpz_t t_max_n;
+
+		mpz_init_set_u128(t_max_n, g_max_n);
+
+		if (mpz_cmp(g_mpz_max_n, t_max_n) > 0) {
+			g_max_n0 = g_mpz_max_n0;
+		}
+
+		mpz_clear(t_max_n);
 	}
+#endif
+
+	printf("MAXIMUM_OFFSET %" PRIu64 "\n", (uint64_t)(g_max_n0 - ((uint128_t)(task_id + 0) << task_size)));
 
 	printf("HALTED\n");
 
