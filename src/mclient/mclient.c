@@ -441,6 +441,10 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 			/* range */
 		} else if (c > 1 && strcmp(ln_part[0], "KERNEL") == 0) {
 			message(INFO "worker implementation: %s", line+7); /* incl. the newline character */
+		} else if (c > 1 && strcmp(ln_part[0], "SIEVE_LOGSIZE") == 0) {
+			unsigned long sieve_logsize = atoul(ln_part[1]);
+
+			message(INFO "worker uses %lu-bit sieve\n", sieve_logsize);
 		} else {
 			/* other cases... */
 			message(WARN "worker printed unknown message: %s", line);
