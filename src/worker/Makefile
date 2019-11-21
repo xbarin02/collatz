@@ -6,6 +6,10 @@ ifeq ($(USE_LIBGMP), 1)
 	LDLIBS+=-lgmp
 endif
 
+ifeq ($(USE_SIEVE), 1)
+	CFLAGS+=-DUSE_SIEVE
+endif
+
 CFLAGS+=$(EXTRA_CFLAGS)
 LDLIBS+=$(EXTRA_LDLIBS)
 

@@ -21,12 +21,31 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+#ifdef USE_SIEVE
+#	include <sys/types.h>
+#	include <sys/stat.h>
+#	include <fcntl.h>
+#	include <sys/mman.h>
+#	include <unistd.h>
+#endif
+
 #include "compat.h"
 #include "wideint.h"
+
+#ifdef USE_SIEVE
+#	define SIEVE_LOGSIZE 16
+#	define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
+#	define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8) /* 2^k bits */
+#	define IS_LIVE(n) ( ( g_map_sieve[ (n)>>3 ] >> ((n)&7) ) & 1 )
+#endif
 
 #define TASK_SIZE 40
 
 #define LUT_SIZE64 41
+
+#ifdef USE_SIEVE
+const unsigned char *g_map_sieve;
+#endif
 
 uint64_t g_lut64[LUT_SIZE64];
 
@@ -181,15 +200,27 @@ static void check(uint128_t n)
 
 		n--;
 
+#ifdef USE_SIEVE
+		if (!IS_LIVE(n & SIEVE_MASK)) {
+			return;
+		}
+#endif
+
 		beta = __builtin_ctzu64(n);
 
 		g_checksum_beta += beta;
 
 		n >>= beta;
 
+#ifdef USE_SIEVE
+		if (!IS_LIVE(n & SIEVE_MASK)) {
+			return;
+		}
+#else
 		if (n < n0) {
 			return;
 		}
+#endif
 	} while (1);
 }
 
@@ -197,6 +228,30 @@ unsigned long atoul(const char *nptr)
 {
 	return strtoul(nptr, NULL, 10);
 }
+
+#ifdef USE_SIEVE
+const void *open_map(const char *path, size_t map_size)
+{
+	int fd = open(path, O_RDONLY, 0600);
+	void *ptr;
+
+	if (fd < 0) {
+		perror("open");
+		abort();
+	}
+
+	ptr = mmap(NULL, (size_t)map_size, PROT_READ, MAP_SHARED, fd, 0);
+
+	if (ptr == MAP_FAILED) {
+		perror("mmap");
+		abort();
+	}
+
+	close(fd);
+
+	return ptr;
+}
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -211,7 +266,15 @@ int main(int argc, char *argv[])
 	FILETIME ftCreation, ftExit, ftUser, ftKernel;
 	HANDLE hProcess = GetCurrentProcess();
 #endif
+#ifdef USE_SIEVE
+	char path[4096];
+	size_t k = SIEVE_LOGSIZE;
+	size_t map_size = SIEVE_SIZE;
 
+	sprintf(path, "sieve-%lu.map", (unsigned long)k);
+
+	g_map_sieve = open_map(path, map_size);
+#endif
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
 	while ((opt = getopt(argc, argv, "t:a:")) != -1) {
@@ -249,7 +312,13 @@ int main(int argc, char *argv[])
 	init_lut();
 
 	for (; n < n_sup; n += 4) {
+#ifdef USE_SIEVE
+		if (IS_LIVE(n & SIEVE_MASK)) {
+			check(n);
+		}
+#else
 		check(n);
+#endif
 	}
 
 #ifndef __WIN32__
