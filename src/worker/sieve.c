@@ -10,18 +10,19 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include "wideint.h"
 
-uint64_t pow3(size_t n)
+uint128_t pow3(size_t n)
 {
-	uint64_t r = 1;
-	uint64_t b = 3;
+	uint128_t r = 1;
+	uint128_t b = 3;
 
 	while (n) {
 		if (n & 1) {
-			assert(r <= UINT64_MAX / b);
+			assert(r <= UINT128_MAX / b);
 			r *= b;
 		}
-		assert(b <= UINT64_MAX / b);
+		assert(b <= UINT128_MAX / b);
 		b *= b;
 		n >>= 1;
 	}
@@ -29,19 +30,19 @@ uint64_t pow3(size_t n)
 	return r;
 }
 
-uint64_t T(uint64_t n)
+uint128_t T(uint128_t n)
 {
 	switch (n % 2) {
 		case 0: return n / 2;
 		case 1:
-			assert(n <= (UINT64_MAX - 1) / 3);
+			assert(n <= (UINT128_MAX - 1) / 3);
 			return (3 * n + 1) / 2;
 	}
 
 	return 0;
 }
 
-uint64_t T_k(uint64_t n, size_t k, size_t *o)
+uint128_t T_k(uint128_t n, size_t k, size_t *o)
 {
 	size_t l;
 
@@ -64,24 +65,24 @@ uint64_t T_k(uint64_t n, size_t k, size_t *o)
 	return n;
 }
 
-int is_killed_at_k(uint64_t b, size_t k)
+int is_killed_at_k(uint128_t b, size_t k)
 {
 	size_t c;
 
 	/* a 2^k + b --> a 3^c + d */
-	uint64_t d = T_k(b, k, &c);
+	uint128_t d = T_k(b, k, &c);
 
-	assert(UINT64_C(1) <= (UINT64_MAX >> k));
+	assert(UINT128_C(1) <= (UINT128_MAX >> k));
 	
-	return pow3(c) < (UINT64_C(1) << k) && d <= b;
+	return pow3(c) < (UINT128_C(1) << k) && d <= b;
 }
 
-int is_killed_below_k(uint64_t b, size_t k)
+int is_killed_below_k(uint128_t b, size_t k)
 {
 	while (--k > 0) {
-		assert(UINT64_C(1) <= (UINT64_MAX >> k));
+		assert(UINT128_C(1) <= (UINT128_MAX >> k));
 
-		if (is_killed_at_k(b % (UINT64_C(1) << k), k)) {
+		if (is_killed_at_k(b % (UINT128_C(1) << k), k)) {
 			return 1;
 		}
 	}
@@ -128,7 +129,7 @@ int main()
 {
 	char path[4096];
 	size_t k = 30;
-	uint64_t b;
+	uint128_t b;
 	size_t map_size = ((size_t)1 << k) / 8; /* 2^k bits */
 
 	sprintf(path, "sieve-%lu.map", (unsigned long)k);
@@ -136,7 +137,7 @@ int main()
 	g_map_sieve = open_map(path, map_size);
 
 	/* a 2^k + b */
-	for (b = 0; b < (UINT64_C(1) << k); ++b) {
+	for (b = 0; b < (UINT128_C(1) << k); ++b) {
 		int killed = is_killed_below_k(b, k) || is_killed_at_k(b, k);
 
 		if (!killed) {
@@ -148,7 +149,7 @@ int main()
 			size_t c;
 
 			/* a 2^k + b --> a 3^c + d */
-			uint64_t d = T_k(b, k, &c);
+			uint128_t d = T_k(b, k, &c);
 
 			printf("a 2^%lu + %lu => a 3^%lu + %lu %s\n", (unsigned long)k, (unsigned long)b, (unsigned long)c, (unsigned long)d, killed ? " --> KILLED" : "");
 		}
