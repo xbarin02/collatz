@@ -317,7 +317,7 @@ const char *get_task_path(int gpu_mode)
 	return gpu_mode ? taskpath_gpu : taskpath_cpu;
 }
 
-int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_usertime, uint64_t *p_checksum, unsigned long alarm_seconds, int gpu_mode)
+int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_usertime, uint64_t *p_checksum, uint64_t *p_mxoffset, unsigned long alarm_seconds, int gpu_mode)
 {
 	int r;
 	char buffer[4096];
@@ -447,6 +447,10 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 			message(INFO "worker uses %lu-bit sieve\n", sieve_logsize);
 		} else if (c == 2 && strcmp(ln_part[0], "MAXIMUM_OFFSET") == 0) {
 			uint64_t maximum_offset = atou64(ln_part[1]);
+
+			assert(p_mxoffset != NULL);
+
+			*p_mxoffset = maximum_offset;
 
 			message(INFO "found maximum with offset +%" PRIu64 "\n", maximum_offset);
 		} else {
@@ -620,7 +624,7 @@ int open_socket_and_revoke_multiple_assignments(int threads, uint64_t n[], uint6
 	return 0;
 }
 
-int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow_counter, uint64_t usertime, uint64_t checksum, uint64_t clid)
+int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow_counter, uint64_t usertime, uint64_t checksum, uint64_t mxoffset, uint64_t clid)
 {
 	if (write_(fd, "RET", 4) < 0) {
 		return -1;
@@ -650,10 +654,12 @@ int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow_
 		return -1;
 	}
 
+	(void)mxoffset;
+
 	return 0;
 }
 
-int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t overflow_counter[], uint64_t usertime[], uint64_t checksum[], uint64_t clid[])
+int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t overflow_counter[], uint64_t usertime[], uint64_t checksum[], uint64_t mxoffset[],uint64_t clid[])
 {
 	int fd;
 	int tid;
@@ -671,7 +677,7 @@ int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint6
 	}
 
 	for (tid = 0; tid < threads; ++tid) {
-		if (return_assignment(fd, n[tid], task_size[tid], overflow_counter[tid], usertime[tid], checksum[tid], clid[tid]) < 0) {
+		if (return_assignment(fd, n[tid], task_size[tid], overflow_counter[tid], usertime[tid], checksum[tid], mxoffset[tid], clid[tid]) < 0) {
 			message(ERR "return_assignment failed (%i/%i)\n", tid, threads);
 			close(fd);
 			return -1;
@@ -702,7 +708,7 @@ int open_urandom_and_read_clid(uint64_t *clid)
 	return 0;
 }
 
-int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uint64_t task_size[], uint64_t overflow_counter[], uint64_t usertime[], uint64_t checksum[], unsigned long alarm_seconds, int gpu_mode)
+int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uint64_t task_size[], uint64_t overflow_counter[], uint64_t usertime[], uint64_t checksum[], uint64_t mxoffset[], unsigned long alarm_seconds, int gpu_mode)
 {
 	int *success;
 	int tid;
@@ -725,8 +731,9 @@ int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uin
 		overflow_counter[tid] = 0;
 		usertime[tid] = 0;
 		checksum[tid] = 0;
+		mxoffset[tid] = 0;
 
-		success[tid] = run_assignment(task_id[tid], task_size[tid], overflow_counter+tid, usertime+tid, checksum+tid, alarm_seconds, gpu_mode);
+		success[tid] = run_assignment(task_id[tid], task_size[tid], overflow_counter+tid, usertime+tid, checksum+tid, mxoffset+tid, alarm_seconds, gpu_mode);
 
 		if (success[tid] < 0) {
 			message(ERR "thread %i: run_assignment failed\n", tid);
@@ -758,6 +765,7 @@ int main(int argc, char *argv[])
 	uint64_t *overflow_counter;
 	uint64_t *usertime;
 	uint64_t *checksum;
+	uint64_t *mxoffset;
 	unsigned long alarm_seconds = 0;
 	int gpu_mode = 0;
 
@@ -822,8 +830,9 @@ int main(int argc, char *argv[])
 	usertime = malloc(sizeof(uint64_t) * threads);
 	checksum = malloc(sizeof(uint64_t) * threads);
 	clid = malloc(sizeof(uint64_t) * threads);
+	mxoffset = malloc(sizeof(uint64_t) * threads);
 
-	if (task_id == NULL || task_size == NULL || overflow_counter == NULL || usertime == NULL || checksum == NULL || clid == NULL) {
+	if (task_id == NULL || task_size == NULL || overflow_counter == NULL || usertime == NULL || checksum == NULL || clid == NULL || mxoffset == NULL) {
 		message(ERR "memory allocation failed!\n");
 		return EXIT_FAILURE;
 	}
@@ -855,7 +864,7 @@ int main(int argc, char *argv[])
 			sleep(SLEEP_INTERVAL);
 		}
 
-		if (run_assignments_in_parallel(threads, task_id, task_size, overflow_counter, usertime, checksum, alarm_seconds, gpu_mode) < 0) {
+		if (run_assignments_in_parallel(threads, task_id, task_size, overflow_counter, usertime, checksum, mxoffset, alarm_seconds, gpu_mode) < 0) {
 			while (open_socket_and_revoke_multiple_assignments(threads, task_id, task_size, clid) < 0) {
 				message(ERR "open_socket_and_revoke_multiple_assignments failed\n");
 				sleep(SLEEP_INTERVAL);
@@ -867,7 +876,7 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		while (open_socket_and_return_multiple_assignments(threads, task_id, task_size, overflow_counter, usertime, checksum, clid) < 0) {
+		while (open_socket_and_return_multiple_assignments(threads, task_id, task_size, overflow_counter, usertime, checksum, mxoffset, clid) < 0) {
 			message(ERR "open_socket_and_return_multiple_assignments failed\n");
 			sleep(SLEEP_INTERVAL);
 		}
@@ -887,6 +896,7 @@ int main(int argc, char *argv[])
 	free(usertime);
 	free(checksum);
 	free(clid);
+	free(mxoffset);
 
 	message(INFO "client has been halted\n");
 
