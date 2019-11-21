@@ -94,6 +94,10 @@ void *open_map(const char *path, size_t map_size)
 	int fd = open(path, O_RDWR | O_CREAT, 0600);
 	void *ptr;
 
+	if (map_size == 0) {
+		map_size = 1;
+	}
+
 	if (fd < 0) {
 		perror("open");
 		abort();
