@@ -441,10 +441,14 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 			/* range */
 		} else if (c > 1 && strcmp(ln_part[0], "KERNEL") == 0) {
 			message(INFO "worker implementation: %s", line+7); /* incl. the newline character */
-		} else if (c > 1 && strcmp(ln_part[0], "SIEVE_LOGSIZE") == 0) {
+		} else if (c == 2 && strcmp(ln_part[0], "SIEVE_LOGSIZE") == 0) {
 			unsigned long sieve_logsize = atoul(ln_part[1]);
 
 			message(INFO "worker uses %lu-bit sieve\n", sieve_logsize);
+		} else if (c == 2 && strcmp(ln_part[0], "MAXIMUM_OFFSET") == 0) {
+			uint64_t maximum_offset = atou64(ln_part[1]);
+
+			message(INFO "found maximum with offset +%" PRIu64 "\n", maximum_offset);
 		} else {
 			/* other cases... */
 			message(WARN "worker printed unknown message: %s", line);
