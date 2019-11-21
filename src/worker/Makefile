@@ -10,6 +10,10 @@ ifeq ($(USE_SIEVE), 1)
 	CFLAGS+=-DUSE_SIEVE
 endif
 
+ifeq ($(USE_MOD12), 1)
+	CFLAGS+=-DUSE_MOD12
+endif
+
 CFLAGS+=$(EXTRA_CFLAGS)
 LDLIBS+=$(EXTRA_LDLIBS)
 

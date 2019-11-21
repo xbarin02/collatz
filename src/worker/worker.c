@@ -231,6 +231,19 @@ static void check(uint128_t n)
 	} while (1);
 }
 
+#ifdef USE_SIEVE
+#	define CHECK_IF_LIVE(n) \
+		if (IS_LIVE((n) & SIEVE_MASK)) { \
+			check((n)); \
+		}
+#endif
+
+#ifdef USE_SIEVE
+#	define CHECK(n) CHECK_IF_LIVE(n)
+#else
+#	define CHECK(n) check(n)
+#endif
+
 unsigned long atoul(const char *nptr)
 {
 	return strtoul(nptr, NULL, 10);
@@ -264,10 +277,26 @@ const void *open_map(const char *path, size_t map_size)
 }
 #endif
 
+#ifdef USE_MOD12
+static uint128_t floor_mod12(uint128_t n)
+{
+	return (n + 0) / 12 * 12;
+}
+#endif
+
+#ifdef USE_MOD12
+static uint128_t ceil_mod12(uint128_t n)
+{
+	return (n + 11) / 12 * 12;
+}
+#endif
+
 int main(int argc, char *argv[])
 {
-	uint128_t n;
-	uint128_t n_sup;
+	uint128_t n, n0, n_sup;
+#ifdef USE_MOD12
+	uint128_t n0_mod12, n_sup_mod12;
+#endif
 	uint64_t task_id = 0;
 	uint64_t task_size = TASK_SIZE;
 	int opt;
@@ -319,11 +348,16 @@ int main(int argc, char *argv[])
 	assert((uint128_t)(task_id + 1) <= (UINT128_MAX >> task_size));
 
 	/* n of the form 4n+3 */
-	n     = ((uint128_t)(task_id + 0) << task_size) + 3;
+	n0    = ((uint128_t)(task_id + 0) << task_size) + 3;
 	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
 
+#ifdef USE_MOD12
+	n0_mod12    =  ceil_mod12((uint128_t)(task_id + 0) << task_size) + 3;
+	n_sup_mod12 = floor_mod12((uint128_t)(task_id + 1) << task_size) + 3;
+#endif
+
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
-		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
+		(uint64_t)(n0>>64), (uint64_t)n0, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
 
 #ifdef _USE_GMP
 	mpz_init_set_ui(g_mpz_max_n, 0UL);
@@ -331,15 +365,34 @@ int main(int argc, char *argv[])
 
 	init_lut();
 
-	for (; n < n_sup; n += 4) {
-#ifdef USE_SIEVE
-		if (IS_LIVE(n & SIEVE_MASK)) {
-			check(n);
-		}
-#else
-		check(n);
-#endif
+#ifdef USE_MOD12
+	assert(n0 <= n0_mod12);
+	assert(n0_mod12 < n_sup_mod12);
+	assert(n_sup_mod12 <= n_sup);
+
+	/* prologue */
+	for (n = n0; n < n0_mod12; n += 4) {
+		CHECK(n);
 	}
+
+	/* main loop */
+	for (n = n0_mod12; n < n_sup_mod12; n += 12) {
+		int k;
+		for (k = 0; k < 2; ++k) {
+			uint128_t n_ = n + 4*k;
+			CHECK(n_);
+		}
+	}
+
+	/* epilogue */
+	for (n = n_sup_mod12; n < n_sup; n += 4) {
+		CHECK(n);
+	}
+#else
+	for (n = n0; n < n_sup; n += 4) {
+		CHECK(n);
+	}
+#endif
 
 #ifndef __WIN32__
 	/* the total amount of time spent executing in user mode, expressed in a timeval structure (seconds plus microseconds) */
