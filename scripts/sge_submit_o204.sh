@@ -4,8 +4,8 @@
 #$ -M ibarina@fit.vutbr.cz
 #$ -m a
 #$ -q short.q@@pco204
-#$ -o /mnt/matylda1/ibarina/sge/collatz/logs/o204.out
-#$ -e /mnt/matylda1/ibarina/sge/collatz/logs/o204.err
+#$ -o /dev/null
+#$ -e /dev/null
 #$ -tc 20
 #$ -t 1-100000
 #$ -pe smp 2
