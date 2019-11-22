@@ -193,6 +193,7 @@ int read_assignment_no(int fd, uint64_t *n)
 #define USERTIMES_SIZE (ASSIGNMENTS_NO * 8)
 #define OVERFLOWS_SIZE (ASSIGNMENTS_NO * 8)
 #define CLIENTIDS_SIZE (ASSIGNMENTS_NO * 8)
+#define MXOFFSETS_SIZE (ASSIGNMENTS_NO * 8)
 
 #define IS_ASSIGNED(n) ( ( g_map_assigned[ (n)>>3 ] >> ((n)&7) ) & 1 )
 #define IS_COMPLETE(n) ( ( g_map_complete[ (n)>>3 ] >> ((n)&7) ) & 1 )
@@ -241,6 +242,7 @@ uint64_t *g_checksums;
 uint64_t *g_usertimes;
 uint64_t *g_overflows;
 uint64_t *g_clientids;
+uint64_t *g_mxoffsets;
 
 int set_complete(uint64_t n)
 {
@@ -452,18 +454,52 @@ uint64_t *open_clientids()
 	return (uint64_t *)ptr;
 }
 
+uint64_t *open_mxoffsets()
+{
+	const char *path = "mxoffsets.dat";
+	int fd = open(path, O_RDWR | O_CREAT, 0600);
+	void *ptr;
+
+	if (fd < 0) {
+		perror("open");
+		abort();
+	}
+
+	if (ftruncate(fd, (off_t)MXOFFSETS_SIZE) < 0) {
+		perror("ftruncate");
+		abort();
+	}
+
+	ptr = mmap(NULL, (size_t)MXOFFSETS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+	if (ptr == MAP_FAILED) {
+		perror("mmap");
+		abort();
+	}
+
+	close(fd);
+
+	return (uint64_t *)ptr;
+}
+
 int read_message(int fd, int thread_id, const char *ipv4)
 {
+	char protocol_version;
 	char msg[4];
 
 	if (read_(fd, msg, 4) < 0) {
 		return -1;
 	}
 
+	protocol_version = msg[3];
+
 	/* unsupported protocol */
-	if (msg[3] != 0) {
+	if (protocol_version > 1) {
+		message(ERR "unsupported protocol version\n");
 		return -1;
 	}
+
+	msg[3] = 0;
 
 	if (strcmp(msg, "MUL") == 0) {
 		uint64_t threads;
@@ -518,6 +554,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		uint64_t user_time = 0;
 		uint64_t checksum = 0;
 		uint64_t clid = 0;
+		uint64_t mxoffset = 0;
 
 		if (read_assignment_no(fd, &n) < 0) {
 			return -1;
@@ -551,6 +588,15 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		if (read_clid(fd, &clid) < 0) {
 			message(ERR "client does not send client ID\n");
 			return -1;
+		}
+
+		if (protocol_version > 0) {
+			if (read_clid(fd, &mxoffset) < 0) {
+				message(ERR "client does not send maximum offset\n");
+				return -1;
+			}
+
+			message(WARN "got maximum offset +%" PRIu64 "\n", mxoffset);
 		}
 
 		if (g_clientids[n] != clid) {
@@ -597,6 +643,8 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		g_usertimes[n] = user_time;
 
 		g_overflows[n] = overflow_counter;
+
+		g_mxoffsets[n] = mxoffset;
 
 		g_clientids[n] = 0;
 	} else if (strcmp(msg, "req") == 0) {
@@ -751,6 +799,7 @@ int main(int argc, char *argv[])
 	g_usertimes = open_usertimes();
 	g_overflows = open_overflows();
 	g_clientids = open_clientids();
+	g_mxoffsets = open_mxoffsets();
 
 	if (!IS_COMPLETE(0)) {
 		message(INFO "initializing new search...\n");
@@ -916,6 +965,7 @@ int main(int argc, char *argv[])
 	msync(g_usertimes, USERTIMES_SIZE, MS_SYNC);
 	msync(g_overflows, OVERFLOWS_SIZE, MS_SYNC);
 	msync(g_clientids, CLIENTIDS_SIZE, MS_SYNC);
+	msync(g_mxoffsets, MXOFFSETS_SIZE, MS_SYNC);
 
 	munmap(g_map_assigned, MAP_SIZE);
 	munmap(g_map_complete, MAP_SIZE);
@@ -923,6 +973,7 @@ int main(int argc, char *argv[])
 	munmap(g_usertimes, USERTIMES_SIZE);
 	munmap(g_overflows, OVERFLOWS_SIZE);
 	munmap(g_clientids, CLIENTIDS_SIZE);
+	munmap(g_mxoffsets, MXOFFSETS_SIZE);
 
 	return 0;
 }
