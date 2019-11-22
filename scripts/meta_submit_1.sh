@@ -44,6 +44,7 @@ fi
 
 # don't forget git clone git@github.com:xbarin02/collatz.git into $HOME
 SRCDIR=$HOME/collatz/
+MAPDIR=$HOME/collatz-sieve/
 TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
 
 echo "SRCDIR=$SRCDIR"
@@ -57,8 +58,12 @@ cp -r "${SRCDIR}" .
 cd collatz/src
 
 # build mclient & worker
-make -C worker clean all USE_LIBGMP=1 CC=$CC
+make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 USE_MOD12=1
 make -C mclient clean all
+
+pushd $MAPDIR
+./unpack.sh sieve-32 $TMP/collatz/src/worker
+popd
 
 cd mclient
 
