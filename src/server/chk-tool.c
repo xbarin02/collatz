@@ -17,6 +17,7 @@
 #define USERTIMES_SIZE (ASSIGNMENTS_NO * 8)
 #define OVERFLOWS_SIZE (ASSIGNMENTS_NO * 8)
 #define CLIENTIDS_SIZE (ASSIGNMENTS_NO * 8)
+#define MXOFFSETS_SIZE (ASSIGNMENTS_NO * 8)
 
 const uint64_t *open_checksums()
 {
@@ -110,10 +111,34 @@ const uint64_t *open_clientids()
 	return (const uint64_t *)ptr;
 }
 
+const uint64_t *open_mxoffsets()
+{
+	const char *path = "mxoffsets.dat";
+	int fd = open(path, O_RDONLY, 0600);
+	const void *ptr;
+
+	if (fd < 0) {
+		perror("open");
+		abort();
+	}
+
+	ptr = mmap(NULL, (size_t)MXOFFSETS_SIZE, PROT_READ, MAP_SHARED, fd, 0);
+
+	if (ptr == MAP_FAILED) {
+		perror("mmap");
+		abort();
+	}
+
+	close(fd);
+
+	return (const uint64_t *)ptr;
+}
+
 const uint64_t *g_checksums = 0;
 const uint64_t *g_usertimes = 0;
 const uint64_t *g_overflows = 0;
 const uint64_t *g_clientids = 0;
+const uint64_t *g_mxoffsets = 0;
 
 #define MIN(a, b) ( ((a) < (b)) ? (a): (b) )
 #define MAX(a, b) ( ((a) > (b)) ? (a): (b) )
@@ -134,11 +159,13 @@ int main()
 	uint64_t overflow_sum = 0;
 	uint64_t avg_user_time_long = 0;
 	uint64_t avg_user_time_short = 0;
+	uint64_t mxoffset_count = 0;
 
 	g_checksums = open_checksums();
 	g_usertimes = open_usertimes();
 	g_overflows = open_overflows();
 	g_clientids = open_clientids();
+	g_mxoffsets = open_mxoffsets();
 
 #if 1
 	{
@@ -384,6 +411,17 @@ int main()
 	}
 
 	printf("found %" PRIu64 " active assignments (client IDs)\n", clientids_count);
+	printf("\n");
+
+	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+		uint64_t mxoffset = g_mxoffsets[n];
+
+		if (mxoffset != 0) {
+			mxoffset_count++;
+		}
+	}
+
+	printf("found %" PRIu64 " maximum records (mxoffsets)\n", mxoffset_count);
 
 	return 0;
 }
