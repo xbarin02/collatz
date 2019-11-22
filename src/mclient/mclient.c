@@ -626,7 +626,18 @@ int open_socket_and_revoke_multiple_assignments(int threads, uint64_t n[], uint6
 
 int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow_counter, uint64_t usertime, uint64_t checksum, uint64_t mxoffset, uint64_t clid)
 {
-	if (write_(fd, "RET", 4) < 0) {
+	char protocol_version = 0;
+	char msg[4];
+
+	strcpy(msg, "RET");
+
+	if (mxoffset != 0) {
+		protocol_version = 1;
+	}
+
+	msg[3] = protocol_version;
+
+	if (write_(fd, msg, 4) < 0) {
 		return -1;
 	}
 
@@ -654,7 +665,11 @@ int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow_
 		return -1;
 	}
 
-	(void)mxoffset;
+	if (protocol_version > 0) {
+		if (write_uint64(fd, mxoffset) < 0) {
+			return -1;
+		}
+	}
 
 	return 0;
 }
