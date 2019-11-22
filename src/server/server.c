@@ -596,7 +596,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 				return -1;
 			}
 
-			message(WARN "got maximum offset +%" PRIu64 "\n", mxoffset);
+			message(INFO "got maximum offset +%" PRIu64 "\n", mxoffset);
 		}
 
 		if (g_clientids[n] != clid) {
