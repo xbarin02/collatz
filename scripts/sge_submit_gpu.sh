@@ -1,15 +1,27 @@
 #!/bin/bash
-#
-#$ -S /bin/bash
 #$ -N collatzgpu
+#$ -S /bin/bash
 #$ -M ibarina@fit.vutbr.cz
 #$ -m a
+#$ -q short.q@@gpu
 #$ -o /dev/null
 #$ -e /dev/null
-#$ -q short.q@@gpu
 #$ -tc 20
 #$ -t 1-100000
 #$ -l gpu=1
+
+HOME=/mnt/matylda1/ibarina/sge
+
+export SERVER_NAME=pcbarina.fit.vutbr.cz
+
+echo "hostname=$(hostname)"
+echo "pwd=$(pwd)"
+echo "HOME=$HOME"
+echo "cpu model name=$(cat /proc/cpuinfo | grep "model name" | head -n1)"
+echo "cpus=$(cat /proc/cpuinfo | grep processor | wc -l)"
+echo "TMPDIR=$TMPDIR"
+
+nvidia-smi -L
 
 echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}"
 
@@ -18,19 +30,29 @@ set -e
 
 export LANG=C
 
-export SERVER_NAME=pcbarina.fit.vutbr.cz
+# check the connection
+if ! ping -c1 -q "${SERVER_NAME}"; then
+	echo "No connection!"
+	exit
+fi
 
+umask 077
+
+# don't forget git clone git@github.com:xbarin02/collatz.git into $HOME
+SRCDIR=$HOME/collatz/
 TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
+
+echo "SRCDIR=$SRCDIR"
+echo "TMP=$TMP"
 
 mkdir -p -- "$TMP"
 pushd -- "$TMP"
-
-SRCDIR=/mnt/matylda1/ibarina/sge/collatz/
 
 cp -r "${SRCDIR}" .
 
 cd collatz/src
 
+# build mclient & gpuworker
 make -C gpuworker clean all USE_LIBGMP=1
 make -C mclient clean all
 
