@@ -140,17 +140,18 @@ int main()
 	g_overflows = open_overflows();
 	g_clientids = open_clientids();
 
+#if 1
 	{
 		uint64_t min = UINT64_MAX, max = 0;
 		uint64_t count = 0;
 
-		printf("old checksums:\n");
+		printf("classical mod4 checksums:\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
 
-			if ((checksum>>28) == 0xff5) {
-				continue; /* new checksum */
+			if ((checksum>>23) != 196126) {
+				continue; /* other type */
 			}
 
 			if (checksum != 0) {
@@ -181,18 +182,19 @@ int main()
 
 		printf("\n");
 	}
-
+#endif
+#if 1
 	{
 		uint64_t min = UINT64_MAX, max = 0;
 		uint64_t count = 0;
 
-		printf("new checksums:\n");
+		printf("buggy mod12 checksums:\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
 
 			if ((checksum>>28) != 0xff5) {
-				continue; /* old checksum */
+				continue; /* other type */
 			}
 
 			if (checksum != 0) {
@@ -223,6 +225,50 @@ int main()
 
 		printf("\n");
 	}
+#endif
+#if 1
+	{
+		uint64_t min = UINT64_MAX, max = 0;
+		uint64_t count = 0;
+
+		printf("sieve-32 mod12 checksums:\n");
+
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			uint64_t checksum = g_checksums[n];
+
+			if ((checksum>>24) != 0x3354) {
+				continue; /* other type */
+			}
+
+			if (checksum != 0) {
+				min = MIN(min, checksum);
+				max = MAX(max, checksum);
+				count++;
+			}
+		}
+
+		printf("count = %" PRIu64 "\n", count);
+
+		printf(
+			"min = %" PRIu64 " (0x%" PRIx64 "); "
+			"min>>24 = %" PRIu64 " (0x%" PRIx64 "); "
+			"min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			min, min,
+			min>>24, min>>24,
+			min>>23, min>>23
+		);
+		printf(
+			"max = %" PRIu64 " (0x%" PRIx64 "); "
+			"max>>24 = %" PRIu64 " (0x%" PRIx64 "); "
+			"max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			max, max,
+			max>>24, max>>24,
+			max>>23, max>>23
+		);
+
+		printf("\n");
+	}
+#endif
 
 	for (n = 91226112; n < ASSIGNMENTS_NO; ++n) {
 		uint64_t checksum = g_checksums[n];
@@ -230,7 +276,7 @@ int main()
 		if (checksum == 0) {
 			printf("- missing checksum on the assignment %" PRIu64 " (below %" PRIu64 " x 2^60)\n", n, (n >> 20) + 1);
 
-			if (++c == 8)
+			if (++c == 4)
 				break;
 		}
 	}
