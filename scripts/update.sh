@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ~/collatz-$(hostname -s | tr '[:upper:]' '[:lower:]')/
+cd ~/collatz/
 
 git pull
 
@@ -12,4 +12,4 @@ killall worker gpuworker
 
 sleep 1
 
-~/collatz-$(hostname -s | tr '[:upper:]' '[:lower:]')/scripts/bootstrap.sh
+~/collatz/scripts/bootstrap.sh
