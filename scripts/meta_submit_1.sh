@@ -4,7 +4,7 @@
 #PBS -M ibarina@fit.vutbr.cz
 #PBS -m a
 #
-#PBS -l select=1:ncpus=1,walltime=4:00:00
+#PBS -l select=1:ncpus=1:mem=1gb,walltime=4:00:00
 
 HOME=/storage/brno11-elixir/home/ibarina
 
