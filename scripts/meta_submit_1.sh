@@ -8,6 +8,8 @@
 
 HOME=/storage/brno11-elixir/home/ibarina
 
+export LANG=C
+
 export SERVER_NAME=pcbarina.fit.vutbr.cz
 
 echo "hostname=$(hostname)"
@@ -25,8 +27,6 @@ module load gmp
 
 set -u
 set -e
-
-export LANG=C
 
 # check the connection
 if ! ping -c1 -q "${SERVER_NAME}"; then

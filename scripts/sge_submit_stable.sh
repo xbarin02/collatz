@@ -12,6 +12,8 @@
 
 HOME=/mnt/matylda1/ibarina/sge
 
+export LANG=C
+
 export SERVER_NAME=pcbarina.fit.vutbr.cz
 
 echo "hostname=$(hostname)"
@@ -23,8 +25,6 @@ echo "TMPDIR=$TMPDIR"
 
 set -u
 set -e
-
-export LANG=C
 
 # check the connection
 if ! ping -c1 -q "${SERVER_NAME}"; then

@@ -12,6 +12,8 @@
 
 HOME=/mnt/matylda1/ibarina/sge
 
+export LANG=C
+
 export SERVER_NAME=pcbarina.fit.vutbr.cz
 
 echo "hostname=$(hostname)"
@@ -27,8 +29,6 @@ echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}"
 
 set -u
 set -e
-
-export LANG=C
 
 # check the connection
 if ! ping -c1 -q "${SERVER_NAME}"; then

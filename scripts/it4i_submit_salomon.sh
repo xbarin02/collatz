@@ -9,6 +9,8 @@
 
 HOME=$HOME
 
+export LANG=C
+
 # tunel from login1 to pcbarina must already exist
 ssh -TN -f -L 5006:localhost:5006 login1
 
@@ -29,8 +31,6 @@ ml GMP
 
 set -u
 set -e
-
-export LANG=C
 
 # check the connection
 if ! ping -c1 -q "${SERVER_NAME}"; then
