@@ -314,7 +314,7 @@ const char *get_task_path(int gpu_mode)
 	return gpu_mode ? taskpath_gpu : taskpath_cpu;
 }
 
-int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, uint64_t *p_usertime, uint64_t *p_checksum, uint64_t *p_mxoffset, unsigned long alarm_seconds, int gpu_mode)
+int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, uint64_t *p_usertime, uint64_t *p_checksum, uint64_t *p_mxoffset, uint64_t *p_cycleoff, unsigned long alarm_seconds, int gpu_mode)
 {
 	int r;
 	char buffer[4096];
@@ -456,6 +456,10 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, u
 			message(INFO "found maximum at offset +%" PRIu64 "\n", maximum_offset);
 		} else if (c == 2 && strcmp(ln_part[0], "MAXIMUM_CYCLE_OFFSET") == 0) {
 			uint64_t maximum_cycle_offset = atou64(ln_part[1]);
+
+			assert(p_cycleoff != NULL);
+
+			*p_cycleoff = maximum_cycle_offset;
 
 			message(INFO "found maximum cycle at offset +%" PRIu64 "\n", maximum_cycle_offset);
 		} else if (c == 2 && strcmp(ln_part[0], "MAXIMUM_CYCLE") == 0) {
@@ -635,7 +639,7 @@ int open_socket_and_revoke_multiple_assignments(int threads, uint64_t n[], uint6
 	return 0;
 }
 
-int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow, uint64_t usertime, uint64_t checksum, uint64_t mxoffset, uint64_t clientid)
+int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow, uint64_t usertime, uint64_t checksum, uint64_t mxoffset, uint64_t cycleoff, uint64_t clientid)
 {
 	char protocol_version = 0;
 	char msg[4];
@@ -682,10 +686,13 @@ int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow,
 		}
 	}
 
+	/* TODO: return cycleoff */
+	(void)cycleoff;
+
 	return 0;
 }
 
-int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t overflow[], uint64_t usertime[], uint64_t checksum[], uint64_t mxoffset[],uint64_t clientid[])
+int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t overflow[], uint64_t usertime[], uint64_t checksum[], uint64_t mxoffset[], uint64_t cycleoff[], uint64_t clientid[])
 {
 	int fd;
 	int tid;
@@ -703,7 +710,7 @@ int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint6
 	}
 
 	for (tid = 0; tid < threads; ++tid) {
-		if (return_assignment(fd, n[tid], task_size[tid], overflow[tid], usertime[tid], checksum[tid], mxoffset[tid], clientid[tid]) < 0) {
+		if (return_assignment(fd, n[tid], task_size[tid], overflow[tid], usertime[tid], checksum[tid], mxoffset[tid], cycleoff[tid], clientid[tid]) < 0) {
 			message(ERR "return_assignment failed (%i/%i)\n", tid, threads);
 			close(fd);
 			return -1;
@@ -734,7 +741,7 @@ int open_urandom_and_read_clientid(uint64_t *clientid)
 	return 0;
 }
 
-int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uint64_t task_size[], uint64_t overflow[], uint64_t usertime[], uint64_t checksum[], uint64_t mxoffset[], unsigned long alarm_seconds, int gpu_mode)
+int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uint64_t task_size[], uint64_t overflow[], uint64_t usertime[], uint64_t checksum[], uint64_t mxoffset[], uint64_t cycleoff[], unsigned long alarm_seconds, int gpu_mode)
 {
 	int *success;
 	int tid;
@@ -758,8 +765,9 @@ int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uin
 		usertime[tid] = 0;
 		checksum[tid] = 0;
 		mxoffset[tid] = 0;
+		cycleoff[tid] = 0;
 
-		success[tid] = run_assignment(task_id[tid], task_size[tid], overflow+tid, usertime+tid, checksum+tid, mxoffset+tid, alarm_seconds, gpu_mode);
+		success[tid] = run_assignment(task_id[tid], task_size[tid], overflow+tid, usertime+tid, checksum+tid, mxoffset+tid, cycleoff+tid, alarm_seconds, gpu_mode);
 
 		if (success[tid] < 0) {
 			message(ERR "thread %i: run_assignment failed\n", tid);
@@ -791,7 +799,8 @@ int main(int argc, char *argv[])
 	uint64_t *overflow;
 	uint64_t *usertime;
 	uint64_t *checksum;
-	uint64_t *mxoffset;
+	uint64_t *mxoffset; /* offset of the starting value n0 leading to the maximum value */
+	uint64_t *cycleoff; /* offset of the starting value n0 leading to the highest number of spins */
 	unsigned long alarm_seconds = 0;
 	int gpu_mode = 0;
 
@@ -857,8 +866,9 @@ int main(int argc, char *argv[])
 	usertime = malloc(sizeof(uint64_t) * threads);
 	checksum = malloc(sizeof(uint64_t) * threads);
 	mxoffset = malloc(sizeof(uint64_t) * threads);
+	cycleoff = malloc(sizeof(uint64_t) * threads);
 
-	if (clientid == NULL || task_id == NULL || task_size == NULL || overflow == NULL || usertime == NULL || checksum == NULL || mxoffset == NULL) {
+	if (clientid == NULL || task_id == NULL || task_size == NULL || overflow == NULL || usertime == NULL || checksum == NULL || mxoffset == NULL || cycleoff == NULL) {
 		message(ERR "memory allocation failed!\n");
 		return EXIT_FAILURE;
 	}
@@ -890,7 +900,7 @@ int main(int argc, char *argv[])
 			sleep(SLEEP_INTERVAL);
 		}
 
-		if (run_assignments_in_parallel(threads, task_id, task_size, overflow, usertime, checksum, mxoffset, alarm_seconds, gpu_mode) < 0) {
+		if (run_assignments_in_parallel(threads, task_id, task_size, overflow, usertime, checksum, mxoffset, cycleoff, alarm_seconds, gpu_mode) < 0) {
 			while (open_socket_and_revoke_multiple_assignments(threads, task_id, task_size, clientid) < 0) {
 				message(ERR "open_socket_and_revoke_multiple_assignments failed\n");
 				sleep(SLEEP_INTERVAL);
@@ -902,7 +912,7 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		while (open_socket_and_return_multiple_assignments(threads, task_id, task_size, overflow, usertime, checksum, mxoffset, clientid) < 0) {
+		while (open_socket_and_return_multiple_assignments(threads, task_id, task_size, overflow, usertime, checksum, mxoffset, cycleoff, clientid) < 0) {
 			message(ERR "open_socket_and_return_multiple_assignments failed\n");
 			sleep(SLEEP_INTERVAL);
 		}
@@ -923,6 +933,7 @@ int main(int argc, char *argv[])
 	free(usertime);
 	free(checksum);
 	free(mxoffset);
+	free(cycleoff);
 
 	message(INFO "client has been halted\n");
 
