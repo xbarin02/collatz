@@ -14,6 +14,7 @@
 #	include <winsock2.h>
 #	include <windows.h>
 #	define WIFEXITED(r) (1)
+#	define bzero(s, n) ZeroMemory((s), (n))
 #	define close(fd) closesocket(fd)
 #endif
 #include <unistd.h>
@@ -93,11 +94,7 @@ int init_sockaddr(struct sockaddr_in *name, const char *hostname, uint16_t port)
 
 	assert(name);
 
-#ifndef __WIN32__
 	bzero(name, sizeof(struct sockaddr_in));
-#else
-	ZeroMemory(name, sizeof(struct sockaddr_in));
-#endif
 
 	name->sin_family = AF_INET;
 	name->sin_port = htons(port);
