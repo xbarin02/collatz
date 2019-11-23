@@ -445,6 +445,10 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 			unsigned long sieve_logsize = atoul(ln_part[1]);
 
 			message(INFO "worker uses %lu-bit sieve\n", sieve_logsize);
+		} else if (c == 2 && strcmp(ln_part[0], "SIEVE_SIZE") == 0) {
+			unsigned long sieve_logsize = atoul(ln_part[1]);
+
+			message(INFO "worker uses %lu-bit sieve\n", sieve_logsize);
 		} else if (c == 2 && strcmp(ln_part[0], "MAXIMUM_OFFSET") == 0) {
 			uint64_t maximum_offset = atou64(ln_part[1]);
 
@@ -452,7 +456,17 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 
 			*p_mxoffset = maximum_offset;
 
-			message(INFO "found maximum with offset +%" PRIu64 "\n", maximum_offset);
+			message(INFO "found maximum at offset +%" PRIu64 "\n", maximum_offset);
+		} else if (c == 2 && strcmp(ln_part[0], "MAXIMUM_CYCLE_OFFSET") == 0) {
+			uint64_t maximum_cycle_offset = atou64(ln_part[1]);
+
+			message(INFO "found maximum cycle at offset +%" PRIu64 "\n", maximum_cycle_offset);
+		} else if (c == 2 && strcmp(ln_part[0], "MAXIMUM_CYCLE") == 0) {
+			uint64_t maximum_cycle = atou64(ln_part[1]);
+
+			message(INFO "maximum cycle of the length %" PRIu64 "\n", maximum_cycle);
+		} else if (c > 1 && strcmp(ln_part[0], "MAXIMUM") == 0) {
+			message(INFO "maximum value found: %s", line+8); /* incl. the newline character */
 		} else {
 			/* other cases... */
 			message(WARN "worker printed unknown message: %s", line);
