@@ -367,6 +367,13 @@ int main(int argc, char *argv[])
 
 	assert((uint128_t)(task_id + 1) <= (UINT128_MAX >> task_size));
 
+	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
+		(uint64_t)(((uint128_t)(task_id + 0) << task_size)>>64),
+		(uint64_t)((uint128_t)(task_id + 0) << task_size),
+		(uint64_t)(((uint128_t)(task_id + 1) << task_size)>>64),
+		(uint64_t)((uint128_t)(task_id + 1) << task_size)
+	);
+
 	/* n of the form 4n+3 */
 	n0    = ((uint128_t)(task_id + 0) << task_size) + 3;
 	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
@@ -375,9 +382,6 @@ int main(int argc, char *argv[])
 	n0_mod12    =  ceil_mod12((uint128_t)(task_id + 0) << task_size) + 3;
 	n_sup_mod12 = floor_mod12((uint128_t)(task_id + 1) << task_size) + 3;
 #endif
-
-	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
-		(uint64_t)(n0>>64), (uint64_t)n0, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
 
 #ifdef _USE_GMP
 	mpz_init_set_ui(g_mpz_max_n, 0UL);
