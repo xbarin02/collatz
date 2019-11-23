@@ -252,9 +252,9 @@ int write_task_size(int fd, uint64_t task_size)
 	return write_uint64(fd, task_size);
 }
 
-int write_overflow_counter(int fd, uint64_t overflow_counter)
+int write_overflow(int fd, uint64_t overflow)
 {
-	return write_uint64(fd, overflow_counter);
+	return write_uint64(fd, overflow);
 }
 
 int write_usertime(int fd, uint64_t usertime)
@@ -314,7 +314,7 @@ const char *get_task_path(int gpu_mode)
 	return gpu_mode ? taskpath_gpu : taskpath_cpu;
 }
 
-int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_counter, uint64_t *p_usertime, uint64_t *p_checksum, uint64_t *p_mxoffset, unsigned long alarm_seconds, int gpu_mode)
+int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, uint64_t *p_usertime, uint64_t *p_checksum, uint64_t *p_mxoffset, unsigned long alarm_seconds, int gpu_mode)
 {
 	int r;
 	char buffer[4096];
@@ -381,11 +381,11 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow_co
 			}
 		} else if (c == 3 && strcmp(ln_part[0], "OVERFLOW") == 0) {
 			uint64_t size = atou64(ln_part[1]);
-			uint64_t overflow_counter = atou64(ln_part[2]);
+			uint64_t overflow = atou64(ln_part[2]);
 
 			if (size == 128) {
-				assert(p_overflow_counter != NULL);
-				*p_overflow_counter = overflow_counter;
+				assert(p_overflow != NULL);
+				*p_overflow = overflow;
 			}
 		} else if (c == 2 && strcmp(ln_part[0], "USERTIME") == 0) {
 			uint64_t usertime = atou64(ln_part[1]);
@@ -635,7 +635,7 @@ int open_socket_and_revoke_multiple_assignments(int threads, uint64_t n[], uint6
 	return 0;
 }
 
-int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow_counter, uint64_t usertime, uint64_t checksum, uint64_t mxoffset, uint64_t clid)
+int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow, uint64_t usertime, uint64_t checksum, uint64_t mxoffset, uint64_t clid)
 {
 	char protocol_version = 0;
 	char msg[4];
@@ -660,7 +660,7 @@ int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow_
 		return -1;
 	}
 
-	if (write_overflow_counter(fd, overflow_counter) < 0) {
+	if (write_overflow(fd, overflow) < 0) {
 		return -1;
 	}
 
@@ -685,7 +685,7 @@ int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow_
 	return 0;
 }
 
-int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t overflow_counter[], uint64_t usertime[], uint64_t checksum[], uint64_t mxoffset[],uint64_t clid[])
+int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t overflow[], uint64_t usertime[], uint64_t checksum[], uint64_t mxoffset[],uint64_t clid[])
 {
 	int fd;
 	int tid;
@@ -703,7 +703,7 @@ int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint6
 	}
 
 	for (tid = 0; tid < threads; ++tid) {
-		if (return_assignment(fd, n[tid], task_size[tid], overflow_counter[tid], usertime[tid], checksum[tid], mxoffset[tid], clid[tid]) < 0) {
+		if (return_assignment(fd, n[tid], task_size[tid], overflow[tid], usertime[tid], checksum[tid], mxoffset[tid], clid[tid]) < 0) {
 			message(ERR "return_assignment failed (%i/%i)\n", tid, threads);
 			close(fd);
 			return -1;
@@ -734,7 +734,7 @@ int open_urandom_and_read_clid(uint64_t *clid)
 	return 0;
 }
 
-int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uint64_t task_size[], uint64_t overflow_counter[], uint64_t usertime[], uint64_t checksum[], uint64_t mxoffset[], unsigned long alarm_seconds, int gpu_mode)
+int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uint64_t task_size[], uint64_t overflow[], uint64_t usertime[], uint64_t checksum[], uint64_t mxoffset[], unsigned long alarm_seconds, int gpu_mode)
 {
 	int *success;
 	int tid;
@@ -754,12 +754,12 @@ int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uin
 		message(INFO "thread %i: got assignment %" PRIu64 "\n", tid, task_id[tid]);
 
 		/* initialization, since the worker is not mandated to fill these */
-		overflow_counter[tid] = 0;
+		overflow[tid] = 0;
 		usertime[tid] = 0;
 		checksum[tid] = 0;
 		mxoffset[tid] = 0;
 
-		success[tid] = run_assignment(task_id[tid], task_size[tid], overflow_counter+tid, usertime+tid, checksum+tid, mxoffset+tid, alarm_seconds, gpu_mode);
+		success[tid] = run_assignment(task_id[tid], task_size[tid], overflow+tid, usertime+tid, checksum+tid, mxoffset+tid, alarm_seconds, gpu_mode);
 
 		if (success[tid] < 0) {
 			message(ERR "thread %i: run_assignment failed\n", tid);
@@ -788,7 +788,7 @@ int main(int argc, char *argv[])
 	uint64_t *clid;
 	uint64_t *task_id;
 	uint64_t *task_size;
-	uint64_t *overflow_counter;
+	uint64_t *overflow;
 	uint64_t *usertime;
 	uint64_t *checksum;
 	uint64_t *mxoffset;
@@ -852,13 +852,13 @@ int main(int argc, char *argv[])
 
 	task_id = malloc(sizeof(uint64_t) * threads);
 	task_size = malloc(sizeof(uint64_t) * threads);
-	overflow_counter = malloc(sizeof(uint64_t) * threads);
+	overflow = malloc(sizeof(uint64_t) * threads);
 	usertime = malloc(sizeof(uint64_t) * threads);
 	checksum = malloc(sizeof(uint64_t) * threads);
 	clid = malloc(sizeof(uint64_t) * threads);
 	mxoffset = malloc(sizeof(uint64_t) * threads);
 
-	if (task_id == NULL || task_size == NULL || overflow_counter == NULL || usertime == NULL || checksum == NULL || clid == NULL || mxoffset == NULL) {
+	if (task_id == NULL || task_size == NULL || overflow == NULL || usertime == NULL || checksum == NULL || clid == NULL || mxoffset == NULL) {
 		message(ERR "memory allocation failed!\n");
 		return EXIT_FAILURE;
 	}
@@ -890,7 +890,7 @@ int main(int argc, char *argv[])
 			sleep(SLEEP_INTERVAL);
 		}
 
-		if (run_assignments_in_parallel(threads, task_id, task_size, overflow_counter, usertime, checksum, mxoffset, alarm_seconds, gpu_mode) < 0) {
+		if (run_assignments_in_parallel(threads, task_id, task_size, overflow, usertime, checksum, mxoffset, alarm_seconds, gpu_mode) < 0) {
 			while (open_socket_and_revoke_multiple_assignments(threads, task_id, task_size, clid) < 0) {
 				message(ERR "open_socket_and_revoke_multiple_assignments failed\n");
 				sleep(SLEEP_INTERVAL);
@@ -902,7 +902,7 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		while (open_socket_and_return_multiple_assignments(threads, task_id, task_size, overflow_counter, usertime, checksum, mxoffset, clid) < 0) {
+		while (open_socket_and_return_multiple_assignments(threads, task_id, task_size, overflow, usertime, checksum, mxoffset, clid) < 0) {
 			message(ERR "open_socket_and_return_multiple_assignments failed\n");
 			sleep(SLEEP_INTERVAL);
 		}
@@ -918,7 +918,7 @@ int main(int argc, char *argv[])
 
 	free(task_id);
 	free(task_size);
-	free(overflow_counter);
+	free(overflow);
 	free(usertime);
 	free(checksum);
 	free(clid);
