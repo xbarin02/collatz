@@ -112,13 +112,14 @@ mpz_t g_mpz_max_n;
 uint128_t g_mpz_max_n0;
 #endif
 
-static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
+static uint64_t mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 {
 #ifdef _USE_GMP
 	mp_bitcnt_t alpha, beta;
 	mpz_t n;
 	mpz_t n0;
 	mpz_t a;
+	uint64_t cycles = 0;
 
 	g_overflow_counter++;
 
@@ -130,8 +131,8 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	mpz_init_set_u128(n0, n0_);
 
 	do {
-		if (alpha >= LUT_SIZE64) {
-			alpha = LUT_SIZE64 - 1;
+		if (alpha > ULONG_MAX) {
+			alpha = ULONG_MAX;
 		}
 
 		/* n *= lut[alpha] */
@@ -159,6 +160,8 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 			break;
 		}
 
+		cycles++;
+
 		/* n++ */
 		mpz_add_ui(n, n, 1UL);
 
@@ -173,6 +176,8 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	mpz_clear(a);
 	mpz_clear(n);
 	mpz_clear(n0);
+
+	return cycles;
 #else
 	(void)n0_;
 	(void)n_;
@@ -184,33 +189,39 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 
 uint128_t g_max_n = 0;
 uint128_t g_max_n0;
+uint64_t g_maxcycles = 0;
+uint128_t g_maxcycles_n0;
 
-static void check(uint128_t n)
+uint64_t check(uint128_t n)
 {
 	const uint128_t n0 = n;
 	int alpha, beta;
+	uint64_t cycles = 0;
 
 	assert(n != UINT128_MAX);
 
 	do {
 		n++;
 
-		alpha = __builtin_ctzu64(n);
+		cycles++;
 
-		if (alpha >= LUT_SIZE64) {
-			alpha = LUT_SIZE64 - 1;
-		}
+		do {
+			alpha = __builtin_ctzu64(n);
 
-		g_checksum_alpha += alpha;
+			if (alpha >= LUT_SIZE64) {
+				alpha = LUT_SIZE64 - 1;
+			}
 
-		n >>= alpha;
+			g_checksum_alpha += alpha;
 
-		if (n > UINT128_MAX >> 2*alpha) {
-			mpz_check2(n0, n, alpha);
-			return;
-		}
+			n >>= alpha;
 
-		n *= g_lut64[alpha];
+			if (n > UINT128_MAX >> 2*alpha) {
+				return cycles + mpz_check2(n0, n, alpha);
+			}
+
+			n *= g_lut64[alpha];
+		} while (!(n & 1));
 
 		n--;
 
@@ -226,22 +237,31 @@ static void check(uint128_t n)
 		n >>= beta;
 
 		if (n < n0) {
-			return;
+			return cycles;
 		}
 	} while (1);
 }
 
+#define CHECK_WITH_CYCLES(n) \
+	do { \
+		uint64_t cycles = check(n); \
+		if (cycles > g_maxcycles) { \
+			g_maxcycles = cycles; \
+			g_maxcycles_n0 = (n); \
+		} \
+	} while (0)
+
 #ifdef USE_SIEVE
 #	define CHECK_IF_LIVE(n) \
 		if (IS_LIVE((n) & SIEVE_MASK)) { \
-			check((n)); \
+			CHECK_WITH_CYCLES(n); \
 		}
 #endif
 
 #ifdef USE_SIEVE
 #	define CHECK(n) CHECK_IF_LIVE(n)
 #else
-#	define CHECK(n) check(n)
+#	define CHECK(n) CHECK_WITH_CYCLES(n)
 #endif
 
 unsigned long atoul(const char *nptr)
@@ -471,6 +491,9 @@ int main(int argc, char *argv[])
 #endif
 
 	printf("MAXIMUM_OFFSET %" PRIu64 "\n", (uint64_t)(g_max_n0 - ((uint128_t)(task_id + 0) << task_size)));
+
+	printf("MAXIMUM_CYCLE %" PRIu64 "\n", g_maxcycles);
+	printf("MAXIMUM_CYCLE_OFFSET %" PRIu64 "\n", (uint64_t)(g_maxcycles_n0 - ((uint128_t)(task_id + 0) << task_size)));
 
 	printf("HALTED\n");
 
