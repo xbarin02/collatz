@@ -58,8 +58,6 @@ else
 	popd
 fi
 
-# cd $HOME/collatz-$HOSTNAME/src
-
 mkdir -p -- "$TMP"
 pushd -- "$TMP"
 
@@ -88,4 +86,3 @@ cd mclient
 CLEANUP_DIR=$TMP screen -d -m ./spawn.sh $*
 
 popd
-# rm -rf -- "$TMP"
