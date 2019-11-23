@@ -27,6 +27,10 @@ function remove_logs() {
 function cleanup() {
 	release_lock
 	remove_logs
+
+	if ! test -z "${CLEANUP_DIR:-}"; then
+		rm -rf -- "${CLEANUP_DIR}"
+	fi
 }
 
 function bye() {
