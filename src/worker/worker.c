@@ -112,7 +112,7 @@ mpz_t g_mpz_max_n;
 uint128_t g_mpz_max_n0;
 #endif
 
-static uint64_t mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
+uint64_t mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 {
 #ifdef _USE_GMP
 	mp_bitcnt_t alpha, beta;
@@ -478,14 +478,20 @@ int main(int argc, char *argv[])
 
 #ifdef _USE_GMP
 	if (1) {
-		mpz_t t_max_n;
+		mpz_t t_max_n, mpz_maximum;
 
+		/* max_n0 = g_max_n0 */
 		mpz_init_set_u128(t_max_n, g_max_n);
+		mpz_init_set(mpz_maximum, t_max_n); /* maximum = g_max_n */
 
 		if (mpz_cmp(g_mpz_max_n, t_max_n) > 0) {
-			g_max_n0 = g_mpz_max_n0;
+			g_max_n0 = g_mpz_max_n0; /* max_n0 = g_mpz_max_n0 */
+			mpz_set(mpz_maximum, g_mpz_max_n); /* maximum = g_mpz_max_n */
 		}
 
+		gmp_printf("MAXIMUM %Zi\n", mpz_maximum);
+
+		mpz_clear(mpz_maximum);
 		mpz_clear(t_max_n);
 	}
 #endif
