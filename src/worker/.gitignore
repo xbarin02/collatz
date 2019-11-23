@@ -1,6 +1,9 @@
 worker
 worker.exe
 sieve
+
+*.map
+
 *~
 *.gcda
 *.txt
