@@ -85,7 +85,7 @@ popd
 
 cd mclient
 
-screen -d -m ./spawn.sh $*
+CLEANUP_DIR=$TMP screen -d -m ./spawn.sh $*
 
 popd
 # rm -rf -- "$TMP"
