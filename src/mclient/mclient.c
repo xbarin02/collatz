@@ -227,9 +227,9 @@ int write_uint64(int fd, uint64_t n)
 	return 0;
 }
 
-int write_clid(int fd, uint64_t clid)
+int write_clientid(int fd, uint64_t clientid)
 {
-	return write_uint64(fd, clid);
+	return write_uint64(fd, clientid);
 }
 
 int read_assignment_no(int fd, uint64_t *n)
@@ -518,7 +518,7 @@ int multiple_requests(int fd, int threads)
 	return 0;
 }
 
-int request_assignment(int fd, int request_lowest_incomplete, uint64_t *task_id, uint64_t *task_size, uint64_t clid)
+int request_assignment(int fd, int request_lowest_incomplete, uint64_t *task_id, uint64_t *task_size, uint64_t clientid)
 {
 	if (request_lowest_incomplete) {
 		if (write_(fd, "req", 4) < 0) {
@@ -532,8 +532,8 @@ int request_assignment(int fd, int request_lowest_incomplete, uint64_t *task_id,
 		}
 	}
 
-	if (write_clid(fd, clid) < 0) {
-		message(ERR "write_clid() failed\n");
+	if (write_clientid(fd, clientid) < 0) {
+		message(ERR "write_clientid() failed\n");
 		return -1;
 	}
 
@@ -553,7 +553,7 @@ int request_assignment(int fd, int request_lowest_incomplete, uint64_t *task_id,
 	return 0;
 }
 
-int open_socket_and_request_multiple_assignments(int threads, int request_lowest_incomplete, uint64_t task_id[], uint64_t task_size[], const uint64_t clid[])
+int open_socket_and_request_multiple_assignments(int threads, int request_lowest_incomplete, uint64_t task_id[], uint64_t task_size[], const uint64_t clientid[])
 {
 	int fd;
 	int tid;
@@ -572,7 +572,7 @@ int open_socket_and_request_multiple_assignments(int threads, int request_lowest
 	}
 
 	for (tid = 0; tid < threads; ++tid) {
-		if (request_assignment(fd, request_lowest_incomplete, task_id+tid, task_size+tid, clid[tid]) < 0) {
+		if (request_assignment(fd, request_lowest_incomplete, task_id+tid, task_size+tid, clientid[tid]) < 0) {
 			message(ERR "request_assignment failed (%i/%i)\n", tid, threads);
 			close(fd);
 			return -1;
@@ -584,7 +584,7 @@ int open_socket_and_request_multiple_assignments(int threads, int request_lowest
 	return 0;
 }
 
-int revoke_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t clid)
+int revoke_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t clientid)
 {
 	if (write_(fd, "INT", 4) < 0) {
 		return -1;
@@ -598,14 +598,14 @@ int revoke_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t clid)
 		return -1;
 	}
 
-	if (write_clid(fd, clid) < 0) {
+	if (write_clientid(fd, clientid) < 0) {
 		return -1;
 	}
 
 	return 0;
 }
 
-int open_socket_and_revoke_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t clid[])
+int open_socket_and_revoke_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t clientid[])
 {
 	int fd;
 	int tid;
@@ -623,7 +623,7 @@ int open_socket_and_revoke_multiple_assignments(int threads, uint64_t n[], uint6
 	}
 
 	for (tid = 0; tid < threads; ++tid) {
-		if (revoke_assignment(fd, n[tid], task_size[tid], clid[tid]) < 0) {
+		if (revoke_assignment(fd, n[tid], task_size[tid], clientid[tid]) < 0) {
 			message(ERR "revoke_assignment failed (%i/%i)\n", tid, threads);
 			close(fd);
 			return -1;
@@ -635,7 +635,7 @@ int open_socket_and_revoke_multiple_assignments(int threads, uint64_t n[], uint6
 	return 0;
 }
 
-int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow, uint64_t usertime, uint64_t checksum, uint64_t mxoffset, uint64_t clid)
+int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow, uint64_t usertime, uint64_t checksum, uint64_t mxoffset, uint64_t clientid)
 {
 	char protocol_version = 0;
 	char msg[4];
@@ -672,7 +672,7 @@ int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow,
 		return -1;
 	}
 
-	if (write_clid(fd, clid) < 0) {
+	if (write_clientid(fd, clientid) < 0) {
 		return -1;
 	}
 
@@ -685,7 +685,7 @@ int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow,
 	return 0;
 }
 
-int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t overflow[], uint64_t usertime[], uint64_t checksum[], uint64_t mxoffset[],uint64_t clid[])
+int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint64_t task_size[], uint64_t overflow[], uint64_t usertime[], uint64_t checksum[], uint64_t mxoffset[],uint64_t clientid[])
 {
 	int fd;
 	int tid;
@@ -703,7 +703,7 @@ int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint6
 	}
 
 	for (tid = 0; tid < threads; ++tid) {
-		if (return_assignment(fd, n[tid], task_size[tid], overflow[tid], usertime[tid], checksum[tid], mxoffset[tid], clid[tid]) < 0) {
+		if (return_assignment(fd, n[tid], task_size[tid], overflow[tid], usertime[tid], checksum[tid], mxoffset[tid], clientid[tid]) < 0) {
 			message(ERR "return_assignment failed (%i/%i)\n", tid, threads);
 			close(fd);
 			return -1;
@@ -715,7 +715,7 @@ int open_socket_and_return_multiple_assignments(int threads, uint64_t n[], uint6
 	return 0;
 }
 
-int open_urandom_and_read_clid(uint64_t *clid)
+int open_urandom_and_read_clientid(uint64_t *clientid)
 {
 	int fd = open("/dev/urandom", O_RDONLY);
 
@@ -723,9 +723,9 @@ int open_urandom_and_read_clid(uint64_t *clid)
 		return -1;
 	}
 
-	assert(clid != NULL);
+	assert(clientid != NULL);
 
-	if (read_(fd, (char *)clid, sizeof(uint64_t)) < 0) {
+	if (read_(fd, (char *)clientid, sizeof(uint64_t)) < 0) {
 		return -1;
 	}
 
@@ -785,9 +785,9 @@ int main(int argc, char *argv[])
 	int one_shot = 0;
 	int request_lowest_incomplete = 0;
 	int tid;
-	uint64_t *clid;
 	uint64_t *task_id;
 	uint64_t *task_size;
+	uint64_t *clientid;
 	uint64_t *overflow;
 	uint64_t *usertime;
 	uint64_t *checksum;
@@ -850,27 +850,27 @@ int main(int argc, char *argv[])
 		message(INFO "a signal to be delivered to workers in %lu seconds!\n", alarm_seconds);
 	}
 
-	clid = malloc(sizeof(uint64_t) * threads);
 	task_id = malloc(sizeof(uint64_t) * threads);
 	task_size = malloc(sizeof(uint64_t) * threads);
+	clientid = malloc(sizeof(uint64_t) * threads);
 	overflow = malloc(sizeof(uint64_t) * threads);
 	usertime = malloc(sizeof(uint64_t) * threads);
 	checksum = malloc(sizeof(uint64_t) * threads);
 	mxoffset = malloc(sizeof(uint64_t) * threads);
 
-	if (clid == NULL || task_id == NULL || task_size == NULL || overflow == NULL || usertime == NULL || checksum == NULL || mxoffset == NULL) {
+	if (clientid == NULL || task_id == NULL || task_size == NULL || overflow == NULL || usertime == NULL || checksum == NULL || mxoffset == NULL) {
 		message(ERR "memory allocation failed!\n");
 		return EXIT_FAILURE;
 	}
 
 	for (tid = 0; tid < threads; ++tid) {
-		clid[tid] = 0;
+		clientid[tid] = 0;
 #ifndef __WIN32__
-		if (open_urandom_and_read_clid(clid+tid) < 0) {
+		if (open_urandom_and_read_clientid(clientid+tid) < 0) {
 			message(WARN "unable to generate random client ID");
 		}
 #else
-		clid[tid] = 42; /* chosen randomly */
+		clientid[tid] = 42; /* chosen randomly */
 #endif
 	}
 
@@ -883,7 +883,7 @@ int main(int argc, char *argv[])
 #endif
 
 	while (!quit) {
-		while (open_socket_and_request_multiple_assignments(threads, request_lowest_incomplete, task_id, task_size, clid) < 0) {
+		while (open_socket_and_request_multiple_assignments(threads, request_lowest_incomplete, task_id, task_size, clientid) < 0) {
 			message(ERR "open_socket_and_request_multiple_assignments failed\n");
 			if (quit)
 				goto end;
@@ -891,7 +891,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (run_assignments_in_parallel(threads, task_id, task_size, overflow, usertime, checksum, mxoffset, alarm_seconds, gpu_mode) < 0) {
-			while (open_socket_and_revoke_multiple_assignments(threads, task_id, task_size, clid) < 0) {
+			while (open_socket_and_revoke_multiple_assignments(threads, task_id, task_size, clientid) < 0) {
 				message(ERR "open_socket_and_revoke_multiple_assignments failed\n");
 				sleep(SLEEP_INTERVAL);
 			}
@@ -902,7 +902,7 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		while (open_socket_and_return_multiple_assignments(threads, task_id, task_size, overflow, usertime, checksum, mxoffset, clid) < 0) {
+		while (open_socket_and_return_multiple_assignments(threads, task_id, task_size, overflow, usertime, checksum, mxoffset, clientid) < 0) {
 			message(ERR "open_socket_and_return_multiple_assignments failed\n");
 			sleep(SLEEP_INTERVAL);
 		}
@@ -916,9 +916,9 @@ int main(int argc, char *argv[])
 			;
 	}
 
-	free(clid);
 	free(task_id);
 	free(task_size);
+	free(clientid);
 	free(overflow);
 	free(usertime);
 	free(checksum);
