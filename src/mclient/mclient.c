@@ -850,15 +850,15 @@ int main(int argc, char *argv[])
 		message(INFO "a signal to be delivered to workers in %lu seconds!\n", alarm_seconds);
 	}
 
+	clid = malloc(sizeof(uint64_t) * threads);
 	task_id = malloc(sizeof(uint64_t) * threads);
 	task_size = malloc(sizeof(uint64_t) * threads);
 	overflow = malloc(sizeof(uint64_t) * threads);
 	usertime = malloc(sizeof(uint64_t) * threads);
 	checksum = malloc(sizeof(uint64_t) * threads);
-	clid = malloc(sizeof(uint64_t) * threads);
 	mxoffset = malloc(sizeof(uint64_t) * threads);
 
-	if (task_id == NULL || task_size == NULL || overflow == NULL || usertime == NULL || checksum == NULL || clid == NULL || mxoffset == NULL) {
+	if (clid == NULL || task_id == NULL || task_size == NULL || overflow == NULL || usertime == NULL || checksum == NULL || mxoffset == NULL) {
 		message(ERR "memory allocation failed!\n");
 		return EXIT_FAILURE;
 	}
@@ -916,12 +916,12 @@ int main(int argc, char *argv[])
 			;
 	}
 
+	free(clid);
 	free(task_id);
 	free(task_size);
 	free(overflow);
 	free(usertime);
 	free(checksum);
-	free(clid);
 	free(mxoffset);
 
 	message(INFO "client has been halted\n");
