@@ -650,6 +650,10 @@ int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow,
 		protocol_version = 1;
 	}
 
+	if (cycleoff != 0) {
+		protocol_version = 2;
+	}
+
 	msg[3] = protocol_version;
 
 	if (write_(fd, msg, 4) < 0) {
@@ -686,8 +690,11 @@ int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow,
 		}
 	}
 
-	/* TODO: return cycleoff */
-	(void)cycleoff;
+	if (protocol_version > 1) {
+		if (write_uint64(fd, cycleoff) < 0) {
+			return -1;
+		}
+	}
 
 	return 0;
 }
