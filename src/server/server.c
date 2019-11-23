@@ -494,7 +494,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 	protocol_version = msg[3];
 
 	/* unsupported protocol */
-	if (protocol_version > 1) {
+	if (protocol_version > 2) {
 		message(ERR "unsupported protocol version\n");
 		return -1;
 	}
@@ -591,12 +591,23 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		}
 
 		if (protocol_version > 0) {
-			if (read_clid(fd, &mxoffset) < 0) {
-				message(ERR "client does not send maximum offset\n");
+			if (read_uint64(fd, &mxoffset) < 0) {
+				message(ERR "client does not send maximum value offset\n");
 				return -1;
 			}
 
-			message(INFO "got maximum offset +%" PRIu64 "\n", mxoffset);
+			message(INFO "got maximum value offset +%" PRIu64 "\n", mxoffset);
+		}
+
+		if (protocol_version > 1) {
+			uint64_t cycleoff;
+
+			if (read_uint64(fd, &cycleoff) < 0) {
+				message(ERR "client does not send maximum cycle offset\n");
+				return -1;
+			}
+
+			message(INFO "got maximum cycle offset +%" PRIu64 "\n", cycleoff);
 		}
 
 		if (g_clientids[n] != clid) {
