@@ -339,149 +339,8 @@ void *open_map(const char *path)
 	return ptr;
 }
 
-uint64_t *open_checksums()
+uint64_t *open_records(const char *path)
 {
-	const char *path = "checksums.dat";
-	int fd = open(path, O_RDWR | O_CREAT, 0600);
-	void *ptr;
-
-	if (fd < 0) {
-		perror("open");
-		abort();
-	}
-
-	if (ftruncate(fd, (off_t)RECORDS_SIZE) < 0) {
-		perror("ftruncate");
-		abort();
-	}
-
-	ptr = mmap(NULL, (size_t)RECORDS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-	if (ptr == MAP_FAILED) {
-		perror("mmap");
-		abort();
-	}
-
-	close(fd);
-
-	return (uint64_t *)ptr;
-}
-
-uint64_t *open_usertimes()
-{
-	const char *path = "usertimes.dat";
-	int fd = open(path, O_RDWR | O_CREAT, 0600);
-	void *ptr;
-
-	if (fd < 0) {
-		perror("open");
-		abort();
-	}
-
-	if (ftruncate(fd, (off_t)RECORDS_SIZE) < 0) {
-		perror("ftruncate");
-		abort();
-	}
-
-	ptr = mmap(NULL, (size_t)RECORDS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-	if (ptr == MAP_FAILED) {
-		perror("mmap");
-		abort();
-	}
-
-	close(fd);
-
-	return (uint64_t *)ptr;
-}
-
-uint64_t *open_overflows()
-{
-	const char *path = "overflows.dat";
-	int fd = open(path, O_RDWR | O_CREAT, 0600);
-	void *ptr;
-
-	if (fd < 0) {
-		perror("open");
-		abort();
-	}
-
-	if (ftruncate(fd, (off_t)RECORDS_SIZE) < 0) {
-		perror("ftruncate");
-		abort();
-	}
-
-	ptr = mmap(NULL, (size_t)RECORDS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-	if (ptr == MAP_FAILED) {
-		perror("mmap");
-		abort();
-	}
-
-	close(fd);
-
-	return (uint64_t *)ptr;
-}
-
-uint64_t *open_clientids()
-{
-	const char *path = "clientids.dat";
-	int fd = open(path, O_RDWR | O_CREAT, 0600);
-	void *ptr;
-
-	if (fd < 0) {
-		perror("open");
-		abort();
-	}
-
-	if (ftruncate(fd, (off_t)RECORDS_SIZE) < 0) {
-		perror("ftruncate");
-		abort();
-	}
-
-	ptr = mmap(NULL, (size_t)RECORDS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-	if (ptr == MAP_FAILED) {
-		perror("mmap");
-		abort();
-	}
-
-	close(fd);
-
-	return (uint64_t *)ptr;
-}
-
-uint64_t *open_mxoffsets()
-{
-	const char *path = "mxoffsets.dat";
-	int fd = open(path, O_RDWR | O_CREAT, 0600);
-	void *ptr;
-
-	if (fd < 0) {
-		perror("open");
-		abort();
-	}
-
-	if (ftruncate(fd, (off_t)RECORDS_SIZE) < 0) {
-		perror("ftruncate");
-		abort();
-	}
-
-	ptr = mmap(NULL, (size_t)RECORDS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-	if (ptr == MAP_FAILED) {
-		perror("mmap");
-		abort();
-	}
-
-	close(fd);
-
-	return (uint64_t *)ptr;
-}
-
-uint64_t *open_cycleoffs()
-{
-	const char *path = "cycleoffs.dat";
 	int fd = open(path, O_RDWR | O_CREAT, 0600);
 	void *ptr;
 
@@ -832,12 +691,12 @@ int main(int argc, char *argv[])
 
 	g_map_assigned = open_map("assigned.map");
 	g_map_complete = open_map("complete.map");
-	g_checksums = open_checksums();
-	g_usertimes = open_usertimes();
-	g_overflows = open_overflows();
-	g_clientids = open_clientids();
-	g_mxoffsets = open_mxoffsets();
-	g_cycleoffs = open_cycleoffs();
+	g_checksums = open_records("checksums.dat");
+	g_usertimes = open_records("usertimes.dat");
+	g_overflows = open_records("overflows.dat");
+	g_clientids = open_records("clientids.dat");
+	g_mxoffsets = open_records("mxoffsets.dat");
+	g_cycleoffs = open_records("cycleoffs.dat");
 
 	if (!IS_COMPLETE(0)) {
 		message(INFO "initializing new search...\n");
