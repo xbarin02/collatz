@@ -194,6 +194,7 @@ int read_assignment_no(int fd, uint64_t *n)
 #define OVERFLOWS_SIZE (ASSIGNMENTS_NO * 8)
 #define CLIENTIDS_SIZE (ASSIGNMENTS_NO * 8)
 #define MXOFFSETS_SIZE (ASSIGNMENTS_NO * 8)
+#define CYCLEOFFS_SIZE (ASSIGNMENTS_NO * 8)
 
 #define IS_ASSIGNED(n) ( ( g_map_assigned[ (n)>>3 ] >> ((n)&7) ) & 1 )
 #define IS_COMPLETE(n) ( ( g_map_complete[ (n)>>3 ] >> ((n)&7) ) & 1 )
@@ -243,6 +244,7 @@ uint64_t *g_usertimes;
 uint64_t *g_overflows;
 uint64_t *g_clientids;
 uint64_t *g_mxoffsets;
+uint64_t *g_cycleoffs;
 
 int set_complete(uint64_t n)
 {
@@ -482,6 +484,34 @@ uint64_t *open_mxoffsets()
 	return (uint64_t *)ptr;
 }
 
+uint64_t *open_cycleoffs()
+{
+	const char *path = "cycleoffs.dat";
+	int fd = open(path, O_RDWR | O_CREAT, 0600);
+	void *ptr;
+
+	if (fd < 0) {
+		perror("open");
+		abort();
+	}
+
+	if (ftruncate(fd, (off_t)CYCLEOFFS_SIZE) < 0) {
+		perror("ftruncate");
+		abort();
+	}
+
+	ptr = mmap(NULL, (size_t)CYCLEOFFS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+	if (ptr == MAP_FAILED) {
+		perror("mmap");
+		abort();
+	}
+
+	close(fd);
+
+	return (uint64_t *)ptr;
+}
+
 int read_message(int fd, int thread_id, const char *ipv4)
 {
 	char protocol_version;
@@ -555,6 +585,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		uint64_t checksum = 0;
 		uint64_t clid = 0;
 		uint64_t mxoffset = 0;
+		uint64_t cycleoff = 0;
 
 		if (read_assignment_no(fd, &n) < 0) {
 			return -1;
@@ -600,8 +631,6 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		}
 
 		if (protocol_version > 1) {
-			uint64_t cycleoff;
-
 			if (read_uint64(fd, &cycleoff) < 0) {
 				message(ERR "client does not send maximum cycle offset\n");
 				return -1;
@@ -656,6 +685,8 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		g_overflows[n] = overflow_counter;
 
 		g_mxoffsets[n] = mxoffset;
+
+		g_cycleoffs[n] = cycleoff;
 
 		g_clientids[n] = 0;
 	} else if (strcmp(msg, "req") == 0) {
@@ -811,6 +842,7 @@ int main(int argc, char *argv[])
 	g_overflows = open_overflows();
 	g_clientids = open_clientids();
 	g_mxoffsets = open_mxoffsets();
+	g_cycleoffs = open_cycleoffs();
 
 	if (!IS_COMPLETE(0)) {
 		message(INFO "initializing new search...\n");
@@ -977,6 +1009,7 @@ int main(int argc, char *argv[])
 	msync(g_overflows, OVERFLOWS_SIZE, MS_SYNC);
 	msync(g_clientids, CLIENTIDS_SIZE, MS_SYNC);
 	msync(g_mxoffsets, MXOFFSETS_SIZE, MS_SYNC);
+	msync(g_cycleoffs, CYCLEOFFS_SIZE, MS_SYNC);
 
 	munmap(g_map_assigned, MAP_SIZE);
 	munmap(g_map_complete, MAP_SIZE);
@@ -985,6 +1018,7 @@ int main(int argc, char *argv[])
 	munmap(g_overflows, OVERFLOWS_SIZE);
 	munmap(g_clientids, CLIENTIDS_SIZE);
 	munmap(g_mxoffsets, MXOFFSETS_SIZE);
+	munmap(g_cycleoffs, CYCLEOFFS_SIZE);
 
 	return 0;
 }
