@@ -189,12 +189,7 @@ int read_assignment_no(int fd, uint64_t *n)
 #define ASSIGNMENTS_NO (UINT64_C(1) << 32)
 
 #define MAP_SIZE (ASSIGNMENTS_NO >> 3)
-#define CHECKSUMS_SIZE (ASSIGNMENTS_NO * 8)
-#define USERTIMES_SIZE (ASSIGNMENTS_NO * 8)
-#define OVERFLOWS_SIZE (ASSIGNMENTS_NO * 8)
-#define CLIENTIDS_SIZE (ASSIGNMENTS_NO * 8)
-#define MXOFFSETS_SIZE (ASSIGNMENTS_NO * 8)
-#define CYCLEOFFS_SIZE (ASSIGNMENTS_NO * 8)
+#define RECORDS_SIZE (ASSIGNMENTS_NO * 8)
 
 #define IS_ASSIGNED(n) ( ( g_map_assigned[ (n)>>3 ] >> ((n)&7) ) & 1 )
 #define IS_COMPLETE(n) ( ( g_map_complete[ (n)>>3 ] >> ((n)&7) ) & 1 )
@@ -355,12 +350,12 @@ uint64_t *open_checksums()
 		abort();
 	}
 
-	if (ftruncate(fd, (off_t)CHECKSUMS_SIZE) < 0) {
+	if (ftruncate(fd, (off_t)RECORDS_SIZE) < 0) {
 		perror("ftruncate");
 		abort();
 	}
 
-	ptr = mmap(NULL, (size_t)CHECKSUMS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	ptr = mmap(NULL, (size_t)RECORDS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	if (ptr == MAP_FAILED) {
 		perror("mmap");
@@ -383,12 +378,12 @@ uint64_t *open_usertimes()
 		abort();
 	}
 
-	if (ftruncate(fd, (off_t)USERTIMES_SIZE) < 0) {
+	if (ftruncate(fd, (off_t)RECORDS_SIZE) < 0) {
 		perror("ftruncate");
 		abort();
 	}
 
-	ptr = mmap(NULL, (size_t)USERTIMES_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	ptr = mmap(NULL, (size_t)RECORDS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	if (ptr == MAP_FAILED) {
 		perror("mmap");
@@ -411,12 +406,12 @@ uint64_t *open_overflows()
 		abort();
 	}
 
-	if (ftruncate(fd, (off_t)OVERFLOWS_SIZE) < 0) {
+	if (ftruncate(fd, (off_t)RECORDS_SIZE) < 0) {
 		perror("ftruncate");
 		abort();
 	}
 
-	ptr = mmap(NULL, (size_t)OVERFLOWS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	ptr = mmap(NULL, (size_t)RECORDS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	if (ptr == MAP_FAILED) {
 		perror("mmap");
@@ -439,12 +434,12 @@ uint64_t *open_clientids()
 		abort();
 	}
 
-	if (ftruncate(fd, (off_t)CLIENTIDS_SIZE) < 0) {
+	if (ftruncate(fd, (off_t)RECORDS_SIZE) < 0) {
 		perror("ftruncate");
 		abort();
 	}
 
-	ptr = mmap(NULL, (size_t)CLIENTIDS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	ptr = mmap(NULL, (size_t)RECORDS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	if (ptr == MAP_FAILED) {
 		perror("mmap");
@@ -467,12 +462,12 @@ uint64_t *open_mxoffsets()
 		abort();
 	}
 
-	if (ftruncate(fd, (off_t)MXOFFSETS_SIZE) < 0) {
+	if (ftruncate(fd, (off_t)RECORDS_SIZE) < 0) {
 		perror("ftruncate");
 		abort();
 	}
 
-	ptr = mmap(NULL, (size_t)MXOFFSETS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	ptr = mmap(NULL, (size_t)RECORDS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	if (ptr == MAP_FAILED) {
 		perror("mmap");
@@ -495,12 +490,12 @@ uint64_t *open_cycleoffs()
 		abort();
 	}
 
-	if (ftruncate(fd, (off_t)CYCLEOFFS_SIZE) < 0) {
+	if (ftruncate(fd, (off_t)RECORDS_SIZE) < 0) {
 		perror("ftruncate");
 		abort();
 	}
 
-	ptr = mmap(NULL, (size_t)CYCLEOFFS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	ptr = mmap(NULL, (size_t)RECORDS_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	if (ptr == MAP_FAILED) {
 		perror("mmap");
@@ -1004,21 +999,21 @@ int main(int argc, char *argv[])
 
 	msync(g_map_assigned, MAP_SIZE, MS_SYNC);
 	msync(g_map_complete, MAP_SIZE, MS_SYNC);
-	msync(g_checksums, CHECKSUMS_SIZE, MS_SYNC);
-	msync(g_usertimes, USERTIMES_SIZE, MS_SYNC);
-	msync(g_overflows, OVERFLOWS_SIZE, MS_SYNC);
-	msync(g_clientids, CLIENTIDS_SIZE, MS_SYNC);
-	msync(g_mxoffsets, MXOFFSETS_SIZE, MS_SYNC);
-	msync(g_cycleoffs, CYCLEOFFS_SIZE, MS_SYNC);
+	msync(g_checksums, RECORDS_SIZE, MS_SYNC);
+	msync(g_usertimes, RECORDS_SIZE, MS_SYNC);
+	msync(g_overflows, RECORDS_SIZE, MS_SYNC);
+	msync(g_clientids, RECORDS_SIZE, MS_SYNC);
+	msync(g_mxoffsets, RECORDS_SIZE, MS_SYNC);
+	msync(g_cycleoffs, RECORDS_SIZE, MS_SYNC);
 
 	munmap(g_map_assigned, MAP_SIZE);
 	munmap(g_map_complete, MAP_SIZE);
-	munmap(g_checksums, CHECKSUMS_SIZE);
-	munmap(g_usertimes, USERTIMES_SIZE);
-	munmap(g_overflows, OVERFLOWS_SIZE);
-	munmap(g_clientids, CLIENTIDS_SIZE);
-	munmap(g_mxoffsets, MXOFFSETS_SIZE);
-	munmap(g_cycleoffs, CYCLEOFFS_SIZE);
+	munmap(g_checksums, RECORDS_SIZE);
+	munmap(g_usertimes, RECORDS_SIZE);
+	munmap(g_overflows, RECORDS_SIZE);
+	munmap(g_clientids, RECORDS_SIZE);
+	munmap(g_mxoffsets, RECORDS_SIZE);
+	munmap(g_cycleoffs, RECORDS_SIZE);
 
 	return 0;
 }
