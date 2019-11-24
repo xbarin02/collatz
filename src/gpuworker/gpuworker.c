@@ -309,8 +309,6 @@ static int g_ocl_ver1 = 0;
 int solve(uint64_t task_id, uint64_t task_size)
 {
 	uint64_t task_units = TASK_UNITS;
-	uint128_t n;
-	uint128_t n_sup;
 	/* arrays */
 	uint64_t *checksum_alpha;
 
@@ -346,13 +344,13 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 	assert((uint128_t)task_id <= (UINT128_MAX >> task_size));
 
-	/* n of the form 12n+3 */
-	n     = ((uint128_t)(task_id + 0) << task_size) + 3;
-	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
-
 	/* informative */
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
-		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
+		(uint64_t)(((uint128_t)(task_id + 0) << task_size)>>64),
+		(uint64_t)((uint128_t)(task_id + 0) << task_size),
+		(uint64_t)(((uint128_t)(task_id + 1) << task_size)>>64),
+		(uint64_t)((uint128_t)(task_id + 1) << task_size)
+	);
 
 	ret = clGetPlatformIDs(0, NULL, &num_platforms);
 
