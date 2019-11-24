@@ -27,8 +27,8 @@ together to give raise the checksum (proof of work). These checksums are
 recorded on the server.
 
 The number of iteration of the above algorithm is called the number of
-cycles. The maximum number of cycles for given interval is detected and send
-to server.
+cycles. The maximum number of cycles for given interval is detected and
+recorded on the server.
 
 Finally, the maximum value of `n` occured during the convergence test for
-given interval is also detected and recorded.
+given interval is detected and recorded as well.
