@@ -20,12 +20,18 @@ uint pow3(size_t n)
 
 #define LUT_SIZE32 21
 
+#define SIEVE_LOGSIZE 16
+#define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8)
+#define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
+#define IS_LIVE(n) ( ( local_sieve[ (n)>>3 ] >> ((n)&7) ) & 1 )
+
 __kernel void worker(
 	__global ulong *checksum_alpha,
 	__global ulong *lbegin,
 	__global ulong *hbegin,
 	__global ulong *lsup,
-	__global ulong *hsup
+	__global ulong *hsup,
+	__global uchar *sieve
 )
 {
 	ulong private_checksum_alpha = 0;
@@ -33,9 +39,15 @@ __kernel void worker(
 
 	__local uint lut[LUT_SIZE32];
 
+	__local uchar local_sieve[SIEVE_SIZE];
+
 	if (get_local_id(0) == 0) {
 		for (size_t i = 0; i < LUT_SIZE32; ++i) {
 			lut[i] = pow3(i);
+		}
+
+		for (size_t i = 0; i < SIEVE_SIZE; ++i) {
+			local_sieve[i] = sieve[i];
 		}
 	}
 
@@ -46,6 +58,10 @@ __kernel void worker(
 
 	for (; n0 < n_sup; n0 += 4) {
 		uint128_t n = n0;
+
+		if (!IS_LIVE(n0 & SIEVE_MASK)) {
+			continue;
+		}
 
 		do {
 			n++;

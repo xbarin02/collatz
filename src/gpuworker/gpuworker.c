@@ -13,6 +13,13 @@
 #	include <gmp.h>
 #endif
 
+/* used by mmap */
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
 #include "compat.h"
 #include "wideint.h"
 
@@ -24,12 +31,45 @@
 #define TASK_UNITS 16
 #endif
 
+#define SIEVE_LOGSIZE 16 /* in log2 */
+#define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
+#define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8) /* in bytes */
+#define IS_LIVE(n) ( ( g_map_sieve[ (n)>>3 ] >> ((n)&7) ) & 1 )
+
+const unsigned char *g_map_sieve;
+
 static uint64_t g_checksum_alpha = 0;
 static uint64_t g_checksum_beta = 0;
 static uint64_t g_overflow_counter = 0;
 
 static uint64_t g_private_overflow_counter;
 static uint64_t g_private_checksum_alpha;
+
+const void *open_map(const char *path, size_t map_size)
+{
+	int fd = open(path, O_RDONLY, 0600);
+	void *ptr;
+
+	if (map_size == 0) {
+		map_size = 1;
+	}
+
+	if (fd < 0) {
+		perror("open");
+		abort();
+	}
+
+	ptr = mmap(NULL, (size_t)map_size, PROT_READ, MAP_SHARED, fd, 0);
+
+	if (ptr == MAP_FAILED) {
+		perror("mmap");
+		abort();
+	}
+
+	close(fd);
+
+	return ptr;
+}
 
 unsigned long atoul(const char *nptr)
 {
@@ -197,7 +237,7 @@ uint64_t cpu_worker(
 	unsigned long task_units /* in log2 */,
 	size_t id)
 {
-	uint128_t l     = (((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(id + 0) << (task_size - task_units))) + 3;
+	uint128_t n0    = (((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(id + 0) << (task_size - task_units))) + 3;
 	uint128_t n_sup = (((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(id + 1) << (task_size - task_units))) + 3;
 
 	g_private_overflow_counter = 0;
@@ -205,36 +245,37 @@ uint64_t cpu_worker(
 
 	printf("[DEBUG] verifying block (thread id %lu / %lu) on CPU...\n", (unsigned long)id, (size_t)1 << task_units);
 
-	for (; l < n_sup; l += 4) {
-		if (1) {
-			uint128_t n0 = l;
-			uint128_t n = n0;
+	for (; n0 < n_sup; n0 += 4) {
+		uint128_t n = n0;
 
-			do {
-				int alpha;
-
-				if (n == UINT128_MAX) {
-					g_private_checksum_alpha += 128;
-					check2(n0, UINT128_C(1), 128);
-					break; /* next n0 */
-				}
-
-				n++;
-				alpha = __builtin_ctzu128(n);
-				g_private_checksum_alpha += alpha;
-				n >>= alpha;
-
-				if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
-					check2(n0, n, alpha);
-					break; /* next n0 */
-				}
-
-				n *= g_lut[alpha];
-
-				n--;
-				n >>= __builtin_ctzu128(n);
-			} while (n >= n0);
+		if (!IS_LIVE(n0 & SIEVE_MASK)) {
+			continue;
 		}
+
+		do {
+			int alpha;
+
+			if (n == UINT128_MAX) {
+				g_private_checksum_alpha += 128;
+				check2(n0, UINT128_C(1), 128);
+				break; /* next n0 */
+			}
+
+			n++;
+			alpha = __builtin_ctzu128(n);
+			g_private_checksum_alpha += alpha;
+			n >>= alpha;
+
+			if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
+				check2(n0, n, alpha);
+				break; /* next n0 */
+			}
+
+			n *= g_lut[alpha];
+
+			n--;
+			n >>= __builtin_ctzu128(n);
+		} while (n >= n0);
 	}
 
 	assert(checksum_alpha != NULL);
@@ -341,6 +382,12 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 	uint64_t *lbegin, *hbegin, *lsup, *hsup;
 	cl_mem mem_obj_lbegin, mem_obj_hbegin, mem_obj_lsup, mem_obj_hsup;
+
+	/* used by sieve */
+	char path[4096];
+	size_t k = SIEVE_LOGSIZE;
+	size_t map_size = SIEVE_SIZE;
+	cl_mem mem_obj_sieve;
 
 	assert((uint128_t)task_id <= (UINT128_MAX >> task_size));
 
@@ -664,6 +711,35 @@ next_platform:
 		}
 
 		ret = clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&mem_obj_hsup);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		sprintf(path, "sieve-%lu.map", (unsigned long)k);
+
+		/* allocate memory for sieve & load sieve */
+		g_map_sieve = open_map(path, map_size);
+
+		printf("SIEVE_LOGSIZE %lu\n", (unsigned long)SIEVE_LOGSIZE);
+
+		/* create memobj */
+		mem_obj_sieve = clCreateBuffer(context, CL_MEM_READ_ONLY, SIEVE_SIZE, NULL, &ret);
+
+		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clCreateBuffer failed\n");
+			return -1;
+		}
+
+		/* transfer sieve to gpu */
+		ret = clEnqueueWriteBuffer(command_queue, mem_obj_sieve, CL_TRUE, 0, SIEVE_SIZE, g_map_sieve, 0, NULL, NULL);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		/* set kernel arg */
+		ret = clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&mem_obj_sieve);
 
 		if (ret != CL_SUCCESS) {
 			return -1;
