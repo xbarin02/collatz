@@ -171,18 +171,18 @@ const uint64_t *g_cycleoffs = 0;
 int main()
 {
 	uint64_t n;
-	uint128_t total_user_time = 0;
-	uint128_t total_user_time_short = 0;
-	uint128_t total_user_time_long = 0;
-	uint64_t user_time_count = 0;
-	uint64_t user_time_count_short = 0;
-	uint64_t user_time_count_long = 0;
+	uint128_t total_usertime = 0;
+	uint128_t total_usertime_short = 0;
+	uint128_t total_usertime_long = 0;
+	uint64_t usertime_count = 0;
+	uint64_t usertime_count_short = 0;
+	uint64_t usertime_count_long = 0;
 	int c = 0;
 	int overflow_found = 0;
 	uint64_t overflow_sum = 0;
-	uint64_t avg_user_time_long = 0;
-	uint64_t avg_user_time_short = 0;
-	uint64_t clientids_count = 0;
+	uint64_t avg_usertime_long = 0;
+	uint64_t avg_usertime_short = 0;
+	uint64_t clientid_count = 0;
 	uint64_t overflow_count = 0;
 	uint64_t mxoffset_count = 0;
 	uint64_t cycleoff_count = 0;
@@ -199,7 +199,7 @@ int main()
 		uint64_t min = UINT64_MAX, max = 0;
 		uint64_t count = 0;
 
-		printf("classical mod4 checksums:\n");
+		printf("sieve-4 (classical) checksums:\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
@@ -215,10 +215,10 @@ int main()
 			}
 		}
 
-		printf("count = %" PRIu64 "\n", count);
+		printf("- count = %" PRIu64 "\n", count);
 
 		printf(
-			"min = %" PRIu64 " (0x%" PRIx64 "); "
+			"- min = %" PRIu64 " (0x%" PRIx64 "); "
 			"min>>24 = %" PRIu64 " (0x%" PRIx64 "); "
 			"min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
 			min, min,
@@ -226,7 +226,7 @@ int main()
 			min>>23, min>>23
 		);
 		printf(
-			"max = %" PRIu64 " (0x%" PRIx64 "); "
+			"- max = %" PRIu64 " (0x%" PRIx64 "); "
 			"max>>24 = %" PRIu64 " (0x%" PRIx64 "); "
 			"max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
 			max, max,
@@ -242,50 +242,7 @@ int main()
 		uint64_t min = UINT64_MAX, max = 0;
 		uint64_t count = 0;
 
-		printf("buggy mod12 checksums:\n");
-
-		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
-			uint64_t checksum = g_checksums[n];
-
-			if ((checksum>>28) != 0xff5) {
-				continue; /* other type */
-			}
-
-			if (checksum != 0) {
-				min = MIN(min, checksum);
-				max = MAX(max, checksum);
-				count++;
-			}
-		}
-
-		printf("count = %" PRIu64 "\n", count);
-
-		printf(
-			"min = %" PRIu64 " (0x%" PRIx64 "); "
-			"min>>24 = %" PRIu64 " (0x%" PRIx64 "); "
-			"min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-			min, min,
-			min>>24, min>>24,
-			min>>23, min>>23
-		);
-		printf(
-			"max = %" PRIu64 " (0x%" PRIx64 "); "
-			"max>>24 = %" PRIu64 " (0x%" PRIx64 "); "
-			"max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-			max, max,
-			max>>24, max>>24,
-			max>>23, max>>23
-		);
-
-		printf("\n");
-	}
-#endif
-#if 1
-	{
-		uint64_t min = UINT64_MAX, max = 0;
-		uint64_t count = 0;
-
-		printf("sieve-32 mod12 checksums:\n");
+		printf("sieve-3 sieve-4 sieve-32 checksums:\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
@@ -301,10 +258,10 @@ int main()
 			}
 		}
 
-		printf("count = %" PRIu64 "\n", count);
+		printf("- count = %" PRIu64 "\n", count);
 
 		printf(
-			"min = %" PRIu64 " (0x%" PRIx64 "); "
+			"- min = %" PRIu64 " (0x%" PRIx64 "); "
 			"min>>24 = %" PRIu64 " (0x%" PRIx64 "); "
 			"min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
 			min, min,
@@ -312,7 +269,7 @@ int main()
 			min>>23, min>>23
 		);
 		printf(
-			"max = %" PRIu64 " (0x%" PRIx64 "); "
+			"- max = %" PRIu64 " (0x%" PRIx64 "); "
 			"max>>24 = %" PRIu64 " (0x%" PRIx64 "); "
 			"max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
 			max, max,
@@ -324,6 +281,7 @@ int main()
 	}
 #endif
 
+	printf("missing checksums:\n");
 	for (n = 91226112; n < ASSIGNMENTS_NO; ++n) {
 		uint64_t checksum = g_checksums[n];
 
@@ -334,78 +292,73 @@ int main()
 				break;
 		}
 	}
-
 	printf("\n");
 
 	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
-		uint64_t user_time = g_usertimes[n];
+		uint64_t usertime = g_usertimes[n];
 
-		if (user_time != 0) {
-			total_user_time += user_time;
-			user_time_count++;
+		if (usertime != 0) {
+			total_usertime += usertime;
+			usertime_count++;
 
-			if (user_time < 30*60) {
-				total_user_time_short += user_time;
-				user_time_count_short++;
+			if (usertime < 30*60) {
+				total_usertime_short += usertime;
+				usertime_count_short++;
 			} else {
-				total_user_time_long += user_time;
-				user_time_count_long++;
+				total_usertime_long += usertime;
+				usertime_count_long++;
 			}
 		}
 	}
 
-	if (user_time_count > 0) {
-		uint64_t avg_user_time = (uint64_t) ((total_user_time+(user_time_count/2)) / user_time_count);
+	if (usertime_count > 0) {
+		uint64_t avg_usertime = (uint64_t) ((total_usertime+(usertime_count/2)) / usertime_count);
 
-		printf("user time records: %" PRIu64 "\n", user_time_count);
-		printf("total user time: %" PRIu64 " hours = %" PRIu64 " days = %" PRIu64 " years\n",
-			(uint64_t)((total_user_time+1800)/3600) /* hours (60*60) */,
-			(uint64_t)((total_user_time+43200)/86400), /* days (60*60*24) */
-			(uint64_t)((total_user_time+15768000)/31536000) /* years (60*60*24*365) */
+		printf("user time records: %" PRIu64 "\n", usertime_count);
+		printf("- total user time: %" PRIu64 " hours = %" PRIu64 " days = %" PRIu64 " years\n",
+			(uint64_t)((total_usertime+1800)/3600) /* hours (60*60) */,
+			(uint64_t)((total_usertime+43200)/86400), /* days (60*60*24) */
+			(uint64_t)((total_usertime+15768000)/31536000) /* years (60*60*24*365) */
 		);
-		printf("average user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_user_time/60/60), (uint64_t)(avg_user_time/60%60), (uint64_t)(avg_user_time%60));
+		printf("- average user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_usertime/60/60), (uint64_t)(avg_usertime/60%60), (uint64_t)(avg_usertime%60));
 	}
-
 	printf("\n");
 
-	if (user_time_count_short > 0) {
-		uint64_t avg_user_time = (uint64_t) ((total_user_time_short+(user_time_count_short/2)) / user_time_count_short);
+	if (usertime_count_short > 0) {
+		uint64_t avg_usertime = (uint64_t) ((total_usertime_short+(usertime_count_short/2)) / usertime_count_short);
 
-		avg_user_time_short = avg_user_time;
+		avg_usertime_short = avg_usertime;
 
-		printf("short user time records: %" PRIu64 "\n", user_time_count_short);
-		printf("total user time (short): %" PRIu64 " hours = %" PRIu64 " days = %" PRIu64 " years\n",
-			(uint64_t)((total_user_time_short+1800)/3600) /* hours (60*60) */,
-			(uint64_t)((total_user_time_short+43200)/86400), /* days (60*60*24) */
-			(uint64_t)((total_user_time_short+15768000)/31536000) /* years (60*60*24*365) */
+		printf("short user time records: %" PRIu64 "\n", usertime_count_short);
+		printf("- total user time (short): %" PRIu64 " hours = %" PRIu64 " days = %" PRIu64 " years\n",
+			(uint64_t)((total_usertime_short+1800)/3600) /* hours (60*60) */,
+			(uint64_t)((total_usertime_short+43200)/86400), /* days (60*60*24) */
+			(uint64_t)((total_usertime_short+15768000)/31536000) /* years (60*60*24*365) */
 		);
-		printf("average user time (short): %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_user_time/60/60), (uint64_t)(avg_user_time/60%60), (uint64_t)(avg_user_time%60));
+		printf("- average user time (short): %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_usertime/60/60), (uint64_t)(avg_usertime/60%60), (uint64_t)(avg_usertime%60));
 	}
-
 	printf("\n");
 
-	if (user_time_count_long > 0) {
-		uint64_t avg_user_time = (uint64_t) ((total_user_time_long+(user_time_count_long/2)) / user_time_count_long);
+	if (usertime_count_long > 0) {
+		uint64_t avg_usertime = (uint64_t) ((total_usertime_long+(usertime_count_long/2)) / usertime_count_long);
 
-		avg_user_time_long = avg_user_time;
+		avg_usertime_long = avg_usertime;
 
-		printf("long user time records: %" PRIu64 "\n", user_time_count_long);
-		printf("total user time (long): %" PRIu64 " hours = %" PRIu64 " days = %" PRIu64 " years\n",
-			(uint64_t)((total_user_time_long+1800)/3600) /* hours (60*60) */,
-			(uint64_t)((total_user_time_long+43200)/86400), /* days (60*60*24) */
-			(uint64_t)((total_user_time_long+15768000)/31536000) /* years (60*60*24*365) */
+		printf("long user time records: %" PRIu64 "\n", usertime_count_long);
+		printf("- total user time (long): %" PRIu64 " hours = %" PRIu64 " days = %" PRIu64 " years\n",
+			(uint64_t)((total_usertime_long+1800)/3600) /* hours (60*60) */,
+			(uint64_t)((total_usertime_long+43200)/86400), /* days (60*60*24) */
+			(uint64_t)((total_usertime_long+15768000)/31536000) /* years (60*60*24*365) */
 		);
-		printf("average user time (long): %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_user_time/60/60), (uint64_t)(avg_user_time/60%60), (uint64_t)(avg_user_time%60));
+		printf("- average user time (long): %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_usertime/60/60), (uint64_t)(avg_usertime/60%60), (uint64_t)(avg_usertime%60));
 	}
-
 	printf("\n");
 
-	if (avg_user_time_short > 0) {
-		uint64_t speedup = (avg_user_time_long + avg_user_time_short/2) / avg_user_time_short;
+	if (avg_usertime_short > 0) {
+		uint64_t speedup = (avg_usertime_long + avg_usertime_short/2) / avg_usertime_short;
 
 		printf("speedup (long/short) = %" PRIu64 "\n", speedup);
 	}
-
 	printf("\n");
 
 	c = 0;
@@ -433,11 +386,11 @@ int main()
 		uint64_t clid = g_clientids[n];
 
 		if (clid != 0) {
-			clientids_count++;
+			clientid_count++;
 		}
 	}
 
-	printf("found %" PRIu64 " active assignments (client IDs)\n", clientids_count);
+	printf("found %" PRIu64 " active assignments (client IDs)\n", clientid_count);
 	printf("\n");
 
 	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
