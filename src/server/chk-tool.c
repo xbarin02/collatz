@@ -106,12 +106,55 @@ int main()
 		uint64_t min = UINT64_MAX, max = 0;
 		uint64_t count = 0;
 
-		printf("sieve-3 sieve-4 sieve-32 checksums:\n");
+		printf("sieve-3 sieve-32 checksums:\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
 
 			if ((checksum>>24) != 0x3354) {
+				continue; /* other type */
+			}
+
+			if (checksum != 0) {
+				min = MIN(min, checksum);
+				max = MAX(max, checksum);
+				count++;
+			}
+		}
+
+		printf("- count = %" PRIu64 "\n", count);
+
+		printf(
+			"- min = %" PRIu64 " (0x%" PRIx64 "); "
+			"min>>24 = %" PRIu64 " (0x%" PRIx64 "); "
+			"min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			min, min,
+			min>>24, min>>24,
+			min>>23, min>>23
+		);
+		printf(
+			"- max = %" PRIu64 " (0x%" PRIx64 "); "
+			"max>>24 = %" PRIu64 " (0x%" PRIx64 "); "
+			"max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+			max, max,
+			max>>24, max>>24,
+			max>>23, max>>23
+		);
+
+		printf("\n");
+	}
+#endif
+#if 1
+	{
+		uint64_t min = UINT64_MAX, max = 0;
+		uint64_t count = 0;
+
+		printf("sieve-16 checksums:\n");
+
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			uint64_t checksum = g_checksums[n];
+
+			if ((checksum>>24) != 0xa0ed) {
 				continue; /* other type */
 			}
 
