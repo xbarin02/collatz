@@ -3,7 +3,7 @@
 #$ -S /bin/bash
 #$ -M ibarina@fit.vutbr.cz
 #$ -m a
-#$ -q all.q@@stable
+#$ -q short.q@@stable
 #$ -o /dev/null
 #$ -e /dev/null
 #$ -tc 600
@@ -65,8 +65,8 @@ popd
 
 cd mclient
 
-# no limit for mclient; 4 hours minus 100 secs for the worker
-stdbuf -o0 -e0 ./mclient -a 14300 -1 1
+# no limit for mclient; 29 minutes for the worker
+stdbuf -o0 -e0 ./mclient -a 1740 -1 1
 
 popd
 rm -rf -- "$TMP"
