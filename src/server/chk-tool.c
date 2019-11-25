@@ -49,29 +49,33 @@ const uint64_t *g_cycleoffs = 0;
 
 static uint64_t round_div_ul(uint64_t n, uint64_t d)
 {
-	return (n + d/2) / d;
+	if (d == 0) {
+		return 0;
+	}
+
+	return (n + d / 2) / d;
 }
 
 static uint128_t round_div_ull(uint128_t n, uint128_t d)
 {
-	return (n + d/2) / d;
+	if (d == 0) {
+		return 0;
+	}
+
+	return (n + d / 2) / d;
 }
 
 uint64_t avg_and_print_usertime(uint128_t total, uint64_t count)
 {
-	uint64_t average = 0;
+	uint64_t average = (uint64_t)round_div_ull(total, count);
 
-	if (count > 0) {
-		average = (uint64_t)round_div_ull(total, count);
-
-		printf("- time records: %" PRIu64 " (%" PRIu64 "M)\n", count, round_div_ul(count, 1000000));
-		printf("- total time: %" PRIu64 " hours = %" PRIu64 " days = %" PRIu64 " years\n",
-			(uint64_t)round_div_ull(total, 3600) /* hours (60*60) */,
-			(uint64_t)round_div_ull(total, 86400), /* days (60*60*24) */
-			(uint64_t)round_div_ull(total, 31536000) /* years (60*60*24*365) */
-		);
-		printf("- average time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(average/60/60), (uint64_t)(average/60%60), (uint64_t)(average%60));
-	}
+	printf("- time records: %" PRIu64 " (%" PRIu64 "M)\n", count, round_div_ul(count, 1000000));
+	printf("- total time: %" PRIu64 " hours = %" PRIu64 " days = %" PRIu64 " years\n",
+		(uint64_t)round_div_ull(total, 3600) /* hours (60*60) */,
+		(uint64_t)round_div_ull(total, 86400), /* days (60*60*24) */
+		(uint64_t)round_div_ull(total, 31536000) /* years (60*60*24*365) */
+	);
+	printf("- average time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(average/60/60), (uint64_t)(average/60%60), (uint64_t)(average%60));
 
 	printf("\n");
 
@@ -180,43 +184,49 @@ int main()
 		printf("\n");
 	}
 
-#	define ADD_TIME(total, counter, time) do { (total) += (time); (counter)++; } while (0)
+#	define ADD_TIME(tr, time) do { (tr).total += (time); (tr).count++; } while (0)
 	/* usertime records */
 	{
 		struct timerec tr_all = timerec_create();
 		struct timerec tr_short = timerec_create();
 		struct timerec tr_long = timerec_create();
+		struct timerec tr_new_cpu = timerec_create();
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t usertime = g_usertimes[n];
 			uint64_t checksum = g_checksums[n];
 
-			/* classical sieve-4 results for both CPU & GPU */
-			if (usertime != 0 && (checksum>>24) == 0x17f0f) {
-				ADD_TIME(tr_all.total, tr_all.count, usertime);
+			if (usertime != 0) {
+				ADD_TIME(tr_all, usertime);
+			}
 
-				if (usertime < 30*60) {
-					ADD_TIME(tr_short.total, tr_short.count, usertime);
-				} else {
-					ADD_TIME(tr_long.total, tr_long.count, usertime);
-				}
+			/* classical sieve-4 results for both CPU & GPU */
+			if (usertime != 0 && (checksum>>24) == 0x17f0f && usertime < 30*60) {
+				ADD_TIME(tr_short, usertime);
+			}
+
+			if (usertime != 0 && (checksum>>24) == 0x17f0f && usertime >= 30*60) {
+				ADD_TIME(tr_long, usertime);
+			}
+
+			if (usertime != 0 && (checksum>>24) == 0x3354) {
+				ADD_TIME(tr_new_cpu, usertime);
 			}
 		}
 
 		printf("all user time records:\n");
 		avg_and_print_usertime(tr_all.total, tr_all.count);
 
-		printf("short user time records:\n");
+		printf("classical short user time records:\n");
 		tr_short.avg = avg_and_print_usertime(tr_short.total, tr_short.count);
 
-		printf("long user time records:\n");
+		printf("classical long user time records:\n");
 		tr_long.avg = avg_and_print_usertime(tr_long.total, tr_long.count);
 
-		if (tr_short.avg > 0) {
-			uint64_t speedup = round_div_ul(tr_long.avg, tr_short.avg);
+		printf("new cpu user time records:\n");
+		avg_and_print_usertime(tr_new_cpu.total, tr_new_cpu.count);
 
-			printf("speedup (long/short) = %" PRIu64 "\n", speedup);
-		}
+		printf("speedup (classical long/short) = %" PRIu64 "\n", round_div_ul(tr_long.avg, tr_short.avg));
 		printf("\n");
 	}
 
