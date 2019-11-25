@@ -132,135 +132,17 @@ int main()
 	g_mxoffsets = open_records("mxoffsets.dat");
 	g_cycleoffs = open_records("cycleoffs.dat");
 
-	printf("sieve-4 (classical) checksums:\n");
-	print_checksum_stats(0x17f0f);
-#if 0
+	/* checksums */
 	{
-		uint64_t min = UINT64_MAX, max = 0;
-		uint64_t count = 0;
+		printf("sieve-4 (classical) checksums:\n");
+		print_checksum_stats(0x17f0f);
 
-		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
-			uint64_t checksum = g_checksums[n];
+		printf("sieve-3 sieve-32 checksums:\n");
+		print_checksum_stats(0x3354);
 
-			if ((checksum>>23) != 196126) {
-				continue; /* other type */
-			}
-
-			if (checksum != 0) {
-				min = MIN(min, checksum);
-				max = MAX(max, checksum);
-				count++;
-			}
-		}
-
-		printf("- count = %" PRIu64 "\n", count);
-
-		printf(
-			"- min = %" PRIu64 " (0x%" PRIx64 "); "
-			"min>>24 = %" PRIu64 " (0x%" PRIx64 "); "
-			"min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-			min, min,
-			min>>24, min>>24,
-			min>>23, min>>23
-		);
-		printf(
-			"- max = %" PRIu64 " (0x%" PRIx64 "); "
-			"max>>24 = %" PRIu64 " (0x%" PRIx64 "); "
-			"max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-			max, max,
-			max>>24, max>>24,
-			max>>23, max>>23
-		);
-
-		printf("\n");
+		printf("sieve-16 checksums:\n");
+		print_checksum_stats(0xa0ed);
 	}
-#endif
-	printf("sieve-3 sieve-32 checksums:\n");
-	print_checksum_stats(0x3354);
-#if 0
-	{
-		uint64_t min = UINT64_MAX, max = 0;
-		uint64_t count = 0;
-
-		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
-			uint64_t checksum = g_checksums[n];
-
-			if ((checksum>>24) != 0x3354) {
-				continue; /* other type */
-			}
-
-			if (checksum != 0) {
-				min = MIN(min, checksum);
-				max = MAX(max, checksum);
-				count++;
-			}
-		}
-
-		printf("- count = %" PRIu64 "\n", count);
-
-		printf(
-			"- min = %" PRIu64 " (0x%" PRIx64 "); "
-			"min>>24 = %" PRIu64 " (0x%" PRIx64 "); "
-			"min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-			min, min,
-			min>>24, min>>24,
-			min>>23, min>>23
-		);
-		printf(
-			"- max = %" PRIu64 " (0x%" PRIx64 "); "
-			"max>>24 = %" PRIu64 " (0x%" PRIx64 "); "
-			"max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-			max, max,
-			max>>24, max>>24,
-			max>>23, max>>23
-		);
-
-		printf("\n");
-	}
-#endif
-	printf("sieve-16 checksums:\n");
-	print_checksum_stats(0xa0ed);
-#if 0
-	{
-		uint64_t min = UINT64_MAX, max = 0;
-		uint64_t count = 0;
-
-		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
-			uint64_t checksum = g_checksums[n];
-
-			if ((checksum>>24) != 0xa0ed) {
-				continue; /* other type */
-			}
-
-			if (checksum != 0) {
-				min = MIN(min, checksum);
-				max = MAX(max, checksum);
-				count++;
-			}
-		}
-
-		printf("- count = %" PRIu64 "\n", count);
-
-		printf(
-			"- min = %" PRIu64 " (0x%" PRIx64 "); "
-			"min>>24 = %" PRIu64 " (0x%" PRIx64 "); "
-			"min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-			min, min,
-			min>>24, min>>24,
-			min>>23, min>>23
-		);
-		printf(
-			"- max = %" PRIu64 " (0x%" PRIx64 "); "
-			"max>>24 = %" PRIu64 " (0x%" PRIx64 "); "
-			"max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
-			max, max,
-			max>>24, max>>24,
-			max>>23, max>>23
-		);
-
-		printf("\n");
-	}
-#endif
 
 	/* missing checksums */
 	{
