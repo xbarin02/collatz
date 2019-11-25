@@ -98,7 +98,7 @@ void print_checksum_stats(uint64_t mask)
 		}
 	}
 
-	printf("- count = %" PRIu64 "\n", count);
+	printf("- count = %" PRIu64 " (%" PRIu64 "M)\n", count, round_div_ul(count, 1000000));
 
 	printf(
 		"- min = %" PRIu64 " (0x%" PRIx64 "); "
@@ -108,6 +108,7 @@ void print_checksum_stats(uint64_t mask)
 		min>>24, min>>24,
 		min>>23, min>>23
 	);
+
 	printf(
 		"- max = %" PRIu64 " (0x%" PRIx64 "); "
 		"max>>24 = %" PRIu64 " (0x%" PRIx64 "); "
@@ -174,8 +175,9 @@ int main()
 		printf("\n");
 	}
 #endif
-#if 1
 	printf("sieve-3 sieve-32 checksums:\n");
+	print_checksum_stats(0x3354);
+#if 0
 	{
 		uint64_t min = UINT64_MAX, max = 0;
 		uint64_t count = 0;
@@ -216,8 +218,9 @@ int main()
 		printf("\n");
 	}
 #endif
-#if 1
 	printf("sieve-16 checksums:\n");
+	print_checksum_stats(0xa0ed);
+#if 0
 	{
 		uint64_t min = UINT64_MAX, max = 0;
 		uint64_t count = 0;
