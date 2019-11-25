@@ -232,11 +232,13 @@ uint64_t check(uint128_t n)
 			g_max_n0 = n0;
 		}
 
-		beta = __builtin_ctzu64(n);
+		do {
+			beta = __builtin_ctzu64(n);
 
-		g_checksum_beta += beta;
+			g_checksum_beta += beta;
 
-		n >>= beta;
+			n >>= beta;
+		} while (!(n & 1));
 
 		if (n < n0) {
 			return cycles;
