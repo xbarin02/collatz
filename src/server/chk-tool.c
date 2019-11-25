@@ -78,6 +78,48 @@ uint64_t avg_and_print_usertime(uint128_t total, uint64_t count)
 	return average;
 }
 
+void print_checksum_stats(uint64_t mask)
+{
+	uint64_t n;
+	uint64_t min = UINT64_MAX, max = 0;
+	uint64_t count = 0;
+
+	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+		uint64_t checksum = g_checksums[n];
+
+		if ((checksum>>24) != mask) {
+			continue; /* other type */
+		}
+
+		if (checksum != 0) {
+			min = MIN(min, checksum);
+			max = MAX(max, checksum);
+			count++;
+		}
+	}
+
+	printf("- count = %" PRIu64 "\n", count);
+
+	printf(
+		"- min = %" PRIu64 " (0x%" PRIx64 "); "
+		"min>>24 = %" PRIu64 " (0x%" PRIx64 "); "
+		"min>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+		min, min,
+		min>>24, min>>24,
+		min>>23, min>>23
+	);
+	printf(
+		"- max = %" PRIu64 " (0x%" PRIx64 "); "
+		"max>>24 = %" PRIu64 " (0x%" PRIx64 "); "
+		"max>>23 = %" PRIu64 " (0x%" PRIx64 ")\n",
+		max, max,
+		max>>24, max>>24,
+		max>>23, max>>23
+	);
+
+	printf("\n");
+}
+
 int main()
 {
 	uint64_t n;
@@ -89,12 +131,12 @@ int main()
 	g_mxoffsets = open_records("mxoffsets.dat");
 	g_cycleoffs = open_records("cycleoffs.dat");
 
-#if 1
+	printf("sieve-4 (classical) checksums:\n");
+	print_checksum_stats(0x17f0f);
+#if 0
 	{
 		uint64_t min = UINT64_MAX, max = 0;
 		uint64_t count = 0;
-
-		printf("sieve-4 (classical) checksums:\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
@@ -133,11 +175,10 @@ int main()
 	}
 #endif
 #if 1
+	printf("sieve-3 sieve-32 checksums:\n");
 	{
 		uint64_t min = UINT64_MAX, max = 0;
 		uint64_t count = 0;
-
-		printf("sieve-3 sieve-32 checksums:\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
@@ -176,11 +217,10 @@ int main()
 	}
 #endif
 #if 1
+	printf("sieve-16 checksums:\n");
 	{
 		uint64_t min = UINT64_MAX, max = 0;
 		uint64_t count = 0;
-
-		printf("sieve-16 checksums:\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
@@ -258,11 +298,9 @@ int main()
 				ADD_TIME(total_usertime, usertime_count, usertime);
 
 				if (usertime < 30*60) {
-					total_usertime_short += usertime;
-					usertime_count_short++;
+					ADD_TIME(total_usertime_short, usertime_count_short, usertime);
 				} else {
-					total_usertime_long += usertime;
-					usertime_count_long++;
+					ADD_TIME(total_usertime_long, usertime_count_long, usertime);
 				}
 			}
 		}
