@@ -20,10 +20,17 @@ uint pow3(size_t n)
 
 #define LUT_SIZE32 21
 
+#define USE_LOCAL_SIEVE 1
+
 #define SIEVE_LOGSIZE 16
 #define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8)
 #define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
-#define IS_LIVE(n) ( ( local_sieve[ (n)>>3 ] >> ((n)&7) ) & 1 )
+
+#if (USE_LOCAL_SIEVE == 1)
+#	define IS_LIVE(n) ( ( local_sieve[ (n)>>3 ] >> ((n)&7) ) & 1 )
+#else
+#	define IS_LIVE(n) ( ( sieve[ (n)>>3 ] >> ((n)&7) ) & 1 )
+#endif
 
 __kernel void worker(
 	__global ulong *checksum_alpha,
@@ -40,16 +47,20 @@ __kernel void worker(
 
 	__local uint lut[LUT_SIZE32];
 
+#if (USE_LOCAL_SIEVE == 1)
 	__local uchar local_sieve[SIEVE_SIZE];
+#endif
 
 	if (get_local_id(0) == 0) {
 		for (size_t i = 0; i < LUT_SIZE32; ++i) {
 			lut[i] = pow3(i);
 		}
 
+#if (USE_LOCAL_SIEVE == 1)
 		for (size_t i = 0; i < SIEVE_SIZE; ++i) {
 			local_sieve[i] = sieve[i];
 		}
+#endif
 	}
 
 	barrier(CLK_LOCAL_MEM_FENCE);
