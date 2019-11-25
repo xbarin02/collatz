@@ -121,16 +121,34 @@ void print_checksum_stats(uint64_t mask)
 	printf("\n");
 }
 
-int main()
+void init()
 {
-	uint64_t n;
-
 	g_checksums = open_records("checksums.dat");
 	g_usertimes = open_records("usertimes.dat");
 	g_overflows = open_records("overflows.dat");
 	g_clientids = open_records("clientids.dat");
 	g_mxoffsets = open_records("mxoffsets.dat");
 	g_cycleoffs = open_records("cycleoffs.dat");
+}
+
+struct timerec {
+	uint128_t total;
+	uint64_t count;
+	uint64_t avg;
+};
+
+struct timerec timerec_create()
+{
+	struct timerec timerec = { 0, 0, 0 };
+
+	return timerec;
+}
+
+int main()
+{
+	uint64_t n;
+
+	init();
 
 	/* checksums */
 	{
@@ -165,14 +183,9 @@ int main()
 #	define ADD_TIME(total, counter, time) do { (total) += (time); (counter)++; } while (0)
 	/* usertime records */
 	{
-		uint128_t total_usertime = 0;
-		uint128_t total_usertime_short = 0;
-		uint128_t total_usertime_long = 0;
-		uint64_t usertime_count = 0;
-		uint64_t usertime_count_short = 0;
-		uint64_t usertime_count_long = 0;
-		uint64_t avg_usertime_long = 0;
-		uint64_t avg_usertime_short = 0;
+		struct timerec tr_all = timerec_create();
+		struct timerec tr_short = timerec_create();
+		struct timerec tr_long = timerec_create();
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t usertime = g_usertimes[n];
@@ -180,27 +193,27 @@ int main()
 
 			/* classical sieve-4 results for both CPU & GPU */
 			if (usertime != 0 && (checksum>>24) == 0x17f0f) {
-				ADD_TIME(total_usertime, usertime_count, usertime);
+				ADD_TIME(tr_all.total, tr_all.count, usertime);
 
 				if (usertime < 30*60) {
-					ADD_TIME(total_usertime_short, usertime_count_short, usertime);
+					ADD_TIME(tr_short.total, tr_short.count, usertime);
 				} else {
-					ADD_TIME(total_usertime_long, usertime_count_long, usertime);
+					ADD_TIME(tr_long.total, tr_long.count, usertime);
 				}
 			}
 		}
 
 		printf("all user time records:\n");
-		avg_and_print_usertime(total_usertime, usertime_count);
+		avg_and_print_usertime(tr_all.total, tr_all.count);
 
 		printf("short user time records:\n");
-		avg_usertime_short = avg_and_print_usertime(total_usertime_short, usertime_count_short);
+		tr_short.avg = avg_and_print_usertime(tr_short.total, tr_short.count);
 
 		printf("long user time records:\n");
-		avg_usertime_long = avg_and_print_usertime(total_usertime_long, usertime_count_long);
+		tr_long.avg = avg_and_print_usertime(tr_long.total, tr_long.count);
 
-		if (avg_usertime_short > 0) {
-			uint64_t speedup = round_div_ul(avg_usertime_long, avg_usertime_short);
+		if (tr_short.avg > 0) {
+			uint64_t speedup = round_div_ul(tr_long.avg, tr_short.avg);
 
 			printf("speedup (long/short) = %" PRIu64 "\n", speedup);
 		}
