@@ -31,7 +31,8 @@ __kernel void worker(
 	ulong task_size,
 	ulong task_units,
 	__global uchar *sieve,
-	__global ulong *mxoffset
+	__global ulong *mxoffset,
+	__global ulong *cycleoff
 )
 {
 	ulong private_checksum_alpha = 0;
@@ -59,8 +60,12 @@ __kernel void worker(
 	uint128_t max_n = 0;
 	uint128_t max_n0;
 
+	ulong max_cycles = 0;
+	uint128_t max_cycles_n0;
+
 	for (uint128_t n0 = n_minimum; n0 < n_supremum; n0 += 4) {
 		uint128_t n = n0;
+		ulong cycles = 0;
 
 		if (!IS_LIVE(n0 & SIEVE_MASK)) {
 			continue;
@@ -69,17 +74,21 @@ __kernel void worker(
 		do {
 			n++;
 
-			size_t alpha = min((size_t)ctz((uint)n), (size_t)LUT_SIZE32 - 1);
+			cycles++;
 
-			private_checksum_alpha += alpha;
-			n >>= alpha;
+			do {
+				size_t alpha = min((size_t)ctz((uint)n), (size_t)LUT_SIZE32 - 1);
 
-			if (n > UINT128_MAX >> 2*alpha) {
-				private_checksum_alpha = 0;
-				goto end;
-			}
+				private_checksum_alpha += alpha;
+				n >>= alpha;
 
-			n *= lut[alpha];
+				if (n > UINT128_MAX >> 2*alpha) {
+					private_checksum_alpha = 0;
+					goto end;
+				}
+
+				n *= lut[alpha];
+			} while (!(n & 1));
 
 			n--;
 
@@ -88,11 +97,19 @@ __kernel void worker(
 				max_n0 = n0;
 			}
 
-			n >>= ctz((uint)n);
+			do {
+				n >>= ctz((uint)n);
+			} while (!(n & 1));
 		} while (n >= n0);
+
+		if (cycles > max_cycles) {
+			max_cycles = cycles;
+			max_cycles_n0 = n0;
+		}
 	}
 
 end:
 	checksum_alpha[id] = private_checksum_alpha;
 	mxoffset[id] = (ulong)(max_n0 - ((uint128_t)(task_id + 0) << task_size));
+	cycleoff[id] = (ulong)(max_cycles_n0 - ((uint128_t)(task_id + 0) << task_size));
 }
