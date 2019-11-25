@@ -389,6 +389,9 @@ int solve(uint64_t task_id, uint64_t task_size)
 	size_t map_size = SIEVE_SIZE;
 	cl_mem mem_obj_sieve;
 
+	uint64_t *mxoffset;
+	cl_mem mem_obj_mxoffset;
+
 	assert((uint128_t)task_id <= (UINT128_MAX >> task_size));
 
 	/* informative */
@@ -745,6 +748,19 @@ next_platform:
 			return -1;
 		}
 
+		mem_obj_mxoffset = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
+
+		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clCreateBuffer failed\n");
+			return -1;
+		}
+
+		ret = clSetKernelArg(kernel, 6, sizeof(cl_mem), (void *)&mem_obj_mxoffset);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
 		ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
 
 		if (ret != CL_SUCCESS) {
@@ -763,6 +779,19 @@ next_platform:
 		printf("[DEBUG] host buffers allocated\n");
 
 		ret = clEnqueueReadBuffer(command_queue, mem_obj_checksum_alpha, CL_TRUE, 0, sizeof(uint64_t) << task_units, checksum_alpha, 0, NULL, NULL);
+
+		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clEnqueueReadBuffer failed with %s\n", errcode_to_cstr(ret));
+			return -1;
+		}
+
+		mxoffset = malloc(sizeof(uint64_t) * global_work_size);
+
+		if (mxoffset == NULL) {
+			return -1;
+		}
+
+		ret = clEnqueueReadBuffer(command_queue, mem_obj_mxoffset, CL_TRUE, 0, sizeof(uint64_t) << task_units, mxoffset, 0, NULL, NULL);
 
 		if (ret != CL_SUCCESS) {
 			printf("[ERROR] clEnqueueReadBuffer failed with %s\n", errcode_to_cstr(ret));
@@ -809,6 +838,7 @@ next_platform:
 		free(hsup);
 
 		free(checksum_alpha);
+		free(mxoffset);
 
 		free(program_string);
 
