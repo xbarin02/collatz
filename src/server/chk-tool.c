@@ -247,7 +247,7 @@ int main()
 			uint64_t checksum = g_checksums[n];
 
 			/* classical sieve-4 results for both CPU & GPU */
-			if (usertime != 0 && (checksum>>23) == 196126) {
+			if (usertime != 0 && (checksum>>24) == 0x17f0f) {
 				total_usertime += usertime;
 				usertime_count++;
 
