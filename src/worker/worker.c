@@ -183,6 +183,8 @@ uint64_t mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	(void)n_;
 	(void)alpha_;
 
+	printf("ABORTED_DUE_TO_OVERFLOW\n");
+
 	abort();
 #endif
 }
