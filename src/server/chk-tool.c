@@ -205,6 +205,7 @@ int main()
 		printf("\n");
 	}
 
+	/* usertime records */
 	{
 		uint128_t total_usertime = 0;
 		uint128_t total_usertime_short = 0;
@@ -217,8 +218,10 @@ int main()
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t usertime = g_usertimes[n];
+			uint64_t checksum = g_checksums[n];
 
-			if (usertime != 0) {
+			/* classical sieve-4 results for both CPU & GPU */
+			if (usertime != 0 && (checksum>>23) == 196126) {
 				total_usertime += usertime;
 				usertime_count++;
 
