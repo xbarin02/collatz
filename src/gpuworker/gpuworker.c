@@ -37,6 +37,8 @@ const unsigned char *g_map_sieve;
 
 static uint64_t g_checksum_alpha = 0;
 static uint64_t g_checksum_beta = 0;
+static uint128_t g_max_n = 0;
+static uint128_t g_max_n0;
 
 const void *open_map(const char *path, size_t map_size)
 {
@@ -69,12 +71,12 @@ unsigned long atoul(const char *nptr)
 	return strtoul(nptr, NULL, 10);
 }
 
-uint128_t pow3x(uint128_t n)
+uint64_t pow3(uint64_t n)
 {
-	uint128_t r = 1;
+	uint64_t r = 1;
 
 	for (; n > 0; --n) {
-		assert(r <= UINT128_MAX / 3);
+		assert(r <= UINT64_MAX / 3);
 
 		r *= 3;
 	}
@@ -82,17 +84,53 @@ uint128_t pow3x(uint128_t n)
 	return r;
 }
 
-#define LUT_SIZE128 81
+#define LUT_SIZE64 41
 
-uint128_t g_lut[LUT_SIZE128];
+uint64_t g_lut64[LUT_SIZE64];
 
 void init_lut()
 {
 	int a;
 
-	for (a = 0; a < LUT_SIZE128; ++a) {
-		g_lut[a] = pow3x((uint128_t)a);
+	for (a = 0; a < LUT_SIZE64; ++a) {
+		g_lut64[a] = pow3((uint64_t)a);
 	}
+}
+
+uint128_t get_max(uint128_t n0)
+{
+	int alpha, beta;
+	uint128_t max_n = 0;
+	uint128_t n = n0;
+
+	assert(n0 != UINT128_MAX);
+
+	do {
+		n++;
+
+		do {
+			alpha = __builtin_ctzu64(n);
+			if (alpha >= LUT_SIZE64) {
+				alpha = LUT_SIZE64 - 1;
+			}
+			n >>= alpha;
+			assert(n <= UINT128_MAX >> 2*alpha);
+			n *= g_lut64[alpha];
+		} while (!(n & 1));
+
+		n--;
+
+		if (n > max_n) {
+			max_n = n;
+		}
+
+		beta = __builtin_ctzu64(n);
+		n >>= beta;
+
+		if (n < n0) {
+			return max_n;
+		}
+	} while (1);
 }
 
 static const char *default_kernel = "kernel.cl";
@@ -551,12 +589,20 @@ next_platform:
 		ret = clReleaseContext(context);
 
 		for (i = 0; i < global_work_size; ++i) {
+			uint128_t max_n0 = mxoffset[i] + ((uint128_t)(task_id + 0) << task_size);
+			uint128_t max_n = get_max(max_n0);
+
 			if (checksum_alpha[i] == 0) {
 				printf("ABORTED_DUE_TO_OVERFLOW\n");
 				abort();
 			}
 
 			g_checksum_alpha += checksum_alpha[i];
+
+			if (max_n > g_max_n) {
+				g_max_n = max_n;
+				g_max_n0 = max_n0;
+			}
 		}
 
 		free(checksum_alpha);
@@ -678,6 +724,8 @@ int main(int argc, char *argv[])
 	printf("OVERFLOW 128 %" PRIu64 "\n", UINT64_C(0));
 
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, g_checksum_beta);
+
+	printf("MAXIMUM_OFFSET %" PRIu64 "\n", (uint64_t)(g_max_n0 - ((uint128_t)(task_id + 0) << task_size)));
 
 	printf("HALTED\n");
 
