@@ -651,10 +651,11 @@ int main(int argc, char *argv[])
 	int fix_records = 0;
 	int invalidate_overflows = 0;
 	int invalidate_new = 0;
+	int reset_cycles = 0;
 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 
-	while ((opt = getopt(argc, argv, "cfiz")) != -1) {
+	while ((opt = getopt(argc, argv, "cfizC")) != -1) {
 		switch (opt) {
 			case 'c':
 				clear_incomplete_assigned = 1;
@@ -667,6 +668,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'z':
 				invalidate_new = 1;
+				break;
+			case 'C':
+				reset_cycles = 1;
 				break;
 			default:
 				message(ERR "Usage: %s [-c]\n", argv[0]);
@@ -761,6 +765,24 @@ int main(int argc, char *argv[])
 		}
 
 		message(WARN "These corrections have been made: %" PRIu64 " %" PRIu64 " %" PRIu64 "\n", c0, c1, c2);
+	}
+
+	if (reset_cycles) {
+		uint64_t n;
+		uint64_t c = 0;
+
+		message(WARN "Zeroing all maximum cycle offsets...\n");
+
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			uint64_t cycleoff = g_cycleoffs[n];
+
+			if (cycleoff != 0) {
+				g_cycleoffs[n] = 0;
+				c++;
+			}
+		}
+
+		message(WARN "All %" PRIu64 " maximum cycle offsets have been zeroed!\n", c);
 	}
 
 	for (g_lowest_unassigned = 0; IS_ASSIGNED(g_lowest_unassigned); ++g_lowest_unassigned)
