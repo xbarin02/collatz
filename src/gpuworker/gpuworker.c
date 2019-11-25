@@ -9,9 +9,6 @@
 #include <inttypes.h>
 #include <string.h>
 #include <CL/cl.h>
-#ifdef _USE_GMP
-#	include <gmp.h>
-#endif
 
 /* used by mmap */
 #include <sys/types.h>
@@ -40,10 +37,6 @@ const unsigned char *g_map_sieve;
 
 static uint64_t g_checksum_alpha = 0;
 static uint64_t g_checksum_beta = 0;
-static uint64_t g_overflow_counter = 0;
-
-static uint64_t g_private_overflow_counter;
-static uint64_t g_private_checksum_alpha;
 
 const void *open_map(const char *path, size_t map_size)
 {
@@ -89,22 +82,9 @@ uint128_t pow3x(uint128_t n)
 	return r;
 }
 
-#ifdef _USE_GMP
-static void mpz_pow3(mpz_t r, unsigned long n)
-{
-	mpz_ui_pow_ui(r, 3UL, n);
-}
-#endif
-
 #define LUT_SIZE128 81
-#ifdef _USE_GMP
-#	define LUT_SIZEMPZ 512
-#endif
 
 uint128_t g_lut[LUT_SIZE128];
-#ifdef _USE_GMP
-mpz_t g_mpz_lut[LUT_SIZEMPZ];
-#endif
 
 void init_lut()
 {
@@ -113,176 +93,6 @@ void init_lut()
 	for (a = 0; a < LUT_SIZE128; ++a) {
 		g_lut[a] = pow3x((uint128_t)a);
 	}
-
-#ifdef _USE_GMP
-	for (a = 0; a < LUT_SIZEMPZ; ++a) {
-		mpz_init(g_mpz_lut[a]);
-		mpz_pow3(g_mpz_lut[a], (unsigned long)a);
-	}
-#endif
-}
-
-#ifdef _USE_GMP
-static mp_bitcnt_t mpz_ctz(const mpz_t n)
-{
-	return mpz_scan1(n, 0);
-}
-#endif
-
-#ifdef _USE_GMP
-static void mpz_init_set_u128(mpz_t rop, uint128_t op)
-{
-	uint64_t nh = (uint64_t)(op>>64);
-	uint64_t nl = (uint64_t)(op);
-
-	assert(sizeof(unsigned long) == sizeof(uint64_t));
-
-	mpz_init_set_ui(rop, (unsigned long)nh);
-	mpz_mul_2exp(rop, rop, (mp_bitcnt_t)64);
-	mpz_add_ui(rop, rop, (unsigned long)nl);
-}
-#endif
-
-#ifdef _USE_GMP
-static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
-{
-	mp_bitcnt_t alpha, beta;
-	mpz_t n;
-	mpz_t n0;
-
-	assert(alpha_ >= 0);
-	alpha = (mp_bitcnt_t)alpha_;
-
-	mpz_init_set_u128(n, n_);
-	mpz_init_set_u128(n0, n0_);
-
-	do {
-		if (alpha >= LUT_SIZEMPZ) {
-			abort();
-		}
-
-		/* n *= lut[alpha] */
-		mpz_mul(n, n, g_mpz_lut[alpha]);
-
-		/* n-- */
-		mpz_sub_ui(n, n, 1UL);
-
-		beta = mpz_ctz(n);
-
-		/* n >>= ctz(n) */
-		mpz_fdiv_q_2exp(n, n, beta);
-
-		if (mpz_cmp(n, n0) < 0) {
-			break;
-		}
-
-		/* n++ */
-		mpz_add_ui(n, n, 1UL);
-
-		alpha = mpz_ctz(n);
-
-		g_private_checksum_alpha += alpha;
-
-		/* n >>= alpha */
-		mpz_fdiv_q_2exp(n, n, alpha);
-	} while (1);
-
-	mpz_clear(n);
-	mpz_clear(n0);
-}
-#endif
-
-static void check2(uint128_t n0, uint128_t n, int alpha)
-{
-	int beta;
-
-	g_private_overflow_counter++;
-
-	do {
-		if (alpha >= LUT_SIZE128 || n > UINT128_MAX / g_lut[alpha]) {
-#ifdef _USE_GMP
-			mpz_check2(n0, n, alpha);
-#else
-			abort();
-#endif
-			return;
-		}
-
-		n *= g_lut[alpha];
-
-		n--;
-
-		beta = __builtin_ctzu128(n);
-
-		n >>= beta;
-
-		if (n < n0) {
-			return;
-		}
-
-		n++;
-
-		alpha = __builtin_ctzu128(n);
-
-		g_private_checksum_alpha += alpha;
-
-		n >>= alpha;
-	} while (1);
-}
-
-uint64_t cpu_worker(
-	uint64_t *checksum_alpha,
-	unsigned long task_id,
-	unsigned long task_size /* in log2 */,
-	unsigned long task_units /* in log2 */,
-	size_t id)
-{
-	uint128_t n0    = (((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(id + 0) << (task_size - task_units))) + 3;
-	uint128_t n_sup = (((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(id + 1) << (task_size - task_units))) + 3;
-
-	g_private_overflow_counter = 0;
-	g_private_checksum_alpha = 0;
-
-	printf("[DEBUG] verifying block (thread id %lu / %lu) on CPU...\n", (unsigned long)id, (size_t)1 << task_units);
-
-	for (; n0 < n_sup; n0 += 4) {
-		uint128_t n = n0;
-
-		if (!IS_LIVE(n0 & SIEVE_MASK)) {
-			continue;
-		}
-
-		do {
-			int alpha;
-
-			if (n == UINT128_MAX) {
-				g_private_checksum_alpha += 128;
-				check2(n0, UINT128_C(1), 128);
-				break; /* next n0 */
-			}
-
-			n++;
-			alpha = __builtin_ctzu128(n);
-			g_private_checksum_alpha += alpha;
-			n >>= alpha;
-
-			if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
-				check2(n0, n, alpha);
-				break; /* next n0 */
-			}
-
-			n *= g_lut[alpha];
-
-			n--;
-			n >>= __builtin_ctzu128(n);
-		} while (n >= n0);
-	}
-
-	assert(checksum_alpha != NULL);
-
-	checksum_alpha[id] = g_private_checksum_alpha;
-
-	return g_private_overflow_counter;
 }
 
 static const char *default_kernel = "kernel.cl";
@@ -380,9 +190,6 @@ int solve(uint64_t task_id, uint64_t task_size)
 	int platform_index = 0;
 	int device_index = 0;
 
-	uint64_t *lbegin, *hbegin, *lsup, *hsup;
-	cl_mem mem_obj_lbegin, mem_obj_hbegin, mem_obj_lsup, mem_obj_hsup;
-
 	/* used by sieve */
 	char path[4096];
 	size_t k = SIEVE_LOGSIZE;
@@ -397,9 +204,9 @@ int solve(uint64_t task_id, uint64_t task_size)
 	/* informative */
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
 		(uint64_t)(((uint128_t)(task_id + 0) << task_size)>>64),
-		(uint64_t)((uint128_t)(task_id + 0) << task_size),
+		(uint64_t)(((uint128_t)(task_id + 0) << task_size)    ),
 		(uint64_t)(((uint128_t)(task_id + 1) << task_size)>>64),
-		(uint64_t)((uint128_t)(task_id + 1) << task_size)
+		(uint64_t)(((uint128_t)(task_id + 1) << task_size)    )
 	);
 
 	ret = clGetPlatformIDs(0, NULL, &num_platforms);
@@ -613,111 +420,29 @@ next_platform:
 
 		assert(sizeof(cl_ulong) == sizeof(uint64_t));
 
+		ret = clSetKernelArg(kernel, 1, sizeof(cl_ulong), (void *)&task_id);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clSetKernelArg(kernel, 2, sizeof(cl_ulong), (void *)&task_size);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
+		ret = clSetKernelArg(kernel, 3, sizeof(cl_ulong), (void *)&task_units);
+
+		if (ret != CL_SUCCESS) {
+			return -1;
+		}
+
 		global_work_size = (size_t)1 << task_units;
 
 		printf("[DEBUG] global_work_size = %lu\n", global_work_size);
 
 		assert(task_units + 2 <= task_size);
-
-		/* allocate hbegin, lbegin, hsup, lsup */
-		lbegin = malloc(sizeof(uint64_t) * global_work_size);
-		hbegin = malloc(sizeof(uint64_t) * global_work_size);
-		lsup = malloc(sizeof(uint64_t) * global_work_size);
-		hsup = malloc(sizeof(uint64_t) * global_work_size);
-
-		if (hbegin == NULL || lbegin == NULL || hsup == NULL || lsup == NULL) {
-			return -1;
-		}
-
-		/* fill begin and sup */
-		for (i = 0; i < global_work_size; ++i) {
-			uint128_t begin = (((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 0) << (task_size - task_units))) + 3;
-			uint128_t sup   = (((uint128_t)(task_id + 0) << task_size) + ((uint128_t)(i + 1) << (task_size - task_units))) + 3;
-
-			lbegin[i] = (uint64_t)begin;
-			hbegin[i] = (uint64_t)(begin >> 64);
-			lsup[i] = (uint64_t)sup;
-			hsup[i] = (uint64_t)(sup >> 64);
-		}
-
-		/* create mem objects */
-		mem_obj_lbegin = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
-
-		if (ret != CL_SUCCESS) {
-			printf("[ERROR] clCreateBuffer failed\n");
-			return -1;
-		}
-
-		mem_obj_hbegin = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
-
-		if (ret != CL_SUCCESS) {
-			printf("[ERROR] clCreateBuffer failed\n");
-			return -1;
-		}
-
-		mem_obj_lsup = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
-
-		if (ret != CL_SUCCESS) {
-			printf("[ERROR] clCreateBuffer failed\n");
-			return -1;
-		}
-
-		mem_obj_hsup = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
-
-		if (ret != CL_SUCCESS) {
-			printf("[ERROR] clCreateBuffer failed\n");
-			return -1;
-		}
-
-		/* transfer the begin and sup arrays to GPU global memory */
-		ret = clEnqueueWriteBuffer(command_queue, mem_obj_lbegin, CL_TRUE, 0, sizeof(uint64_t) << task_units, lbegin, 0, NULL, NULL);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
-
-		ret = clEnqueueWriteBuffer(command_queue, mem_obj_hbegin, CL_TRUE, 0, sizeof(uint64_t) << task_units, hbegin, 0, NULL, NULL);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
-
-		ret = clEnqueueWriteBuffer(command_queue, mem_obj_lsup, CL_TRUE, 0, sizeof(uint64_t) << task_units, lsup, 0, NULL, NULL);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
-
-		ret = clEnqueueWriteBuffer(command_queue, mem_obj_hsup, CL_TRUE, 0, sizeof(uint64_t) << task_units, hsup, 0, NULL, NULL);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
-
-		/* set kernel args */
-		ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&mem_obj_lbegin);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
-
-		ret = clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *)&mem_obj_hbegin);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
-
-		ret = clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&mem_obj_lsup);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
-
-		ret = clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&mem_obj_hsup);
-
-		if (ret != CL_SUCCESS) {
-			return -1;
-		}
 
 		sprintf(path, "sieve-%lu.map", (unsigned long)k);
 
@@ -738,13 +463,15 @@ next_platform:
 		ret = clEnqueueWriteBuffer(command_queue, mem_obj_sieve, CL_TRUE, 0, SIEVE_SIZE, g_map_sieve, 0, NULL, NULL);
 
 		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clEnqueueWriteBuffer() failed\n");
 			return -1;
 		}
 
 		/* set kernel arg */
-		ret = clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&mem_obj_sieve);
+		ret = clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&mem_obj_sieve);
 
 		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clSetKernelArg() failed\n");
 			return -1;
 		}
 
@@ -755,15 +482,17 @@ next_platform:
 			return -1;
 		}
 
-		ret = clSetKernelArg(kernel, 6, sizeof(cl_mem), (void *)&mem_obj_mxoffset);
+		ret = clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&mem_obj_mxoffset);
 
 		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clSetKernelArg() failed\n");
 			return -1;
 		}
 
 		ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
 
 		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clEnqueueNDRangeKernel() failed\n");
 			return -1;
 		}
 
@@ -822,20 +551,13 @@ next_platform:
 		ret = clReleaseContext(context);
 
 		for (i = 0; i < global_work_size; ++i) {
-			uint64_t overflow_counter = 0;
-
 			if (checksum_alpha[i] == 0) {
-				overflow_counter = cpu_worker(checksum_alpha, task_id, task_size, task_units, i);
+				printf("ABORTED_DUE_TO_OVERFLOW\n");
+				abort();
 			}
 
-			g_overflow_counter += overflow_counter;
 			g_checksum_alpha += checksum_alpha[i];
 		}
-
-		free(lbegin);
-		free(hbegin);
-		free(lsup);
-		free(hsup);
 
 		free(checksum_alpha);
 		free(mxoffset);
@@ -849,10 +571,6 @@ next_platform:
 
 done:
 	free(device_id);
-
-	if (g_overflow_counter) {
-		printf("[DEBUG] overflow occured!\n");
-	}
 
 	return 0;
 }
@@ -957,7 +675,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
+	printf("OVERFLOW 128 %" PRIu64 "\n", UINT64_C(0));
 
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, g_checksum_beta);
 

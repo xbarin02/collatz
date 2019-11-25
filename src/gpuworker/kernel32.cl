@@ -27,10 +27,9 @@ uint pow3(size_t n)
 
 __kernel void worker(
 	__global ulong *checksum_alpha,
-	__global ulong *lbegin,
-	__global ulong *hbegin,
-	__global ulong *lsup,
-	__global ulong *hsup,
+	ulong task_id,
+	ulong task_size,
+	ulong task_units,
 	__global uchar *sieve,
 	__global ulong *mxoffset
 )
@@ -54,13 +53,13 @@ __kernel void worker(
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	uint128_t n_begin = ((uint128_t)hbegin[id] << 64) + (uint128_t)lbegin[id];
-	uint128_t n_supremum = ((uint128_t)hsup[id] << 64) + (uint128_t)lsup[id];
+	uint128_t n_minimum  = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 0) << (task_size - task_units)) + 3;
+	uint128_t n_supremum = ((uint128_t)task_id << task_size) + ((uint128_t)(id + 1) << (task_size - task_units)) + 3;
 
 	uint128_t max_n = 0;
 	uint128_t max_n0;
 
-	for (uint128_t n0 = n_begin; n0 < n_supremum; n0 += 4) {
+	for (uint128_t n0 = n_minimum; n0 < n_supremum; n0 += 4) {
 		uint128_t n = n0;
 
 		if (!IS_LIVE(n0 & SIEVE_MASK)) {
@@ -95,5 +94,5 @@ __kernel void worker(
 
 end:
 	checksum_alpha[id] = private_checksum_alpha;
-	mxoffset[id] = (ulong)(max_n0 - n_begin);
+	mxoffset[id] = (ulong)(max_n0 - ((uint128_t)(task_id + 0) << task_size));
 }
