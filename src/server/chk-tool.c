@@ -134,13 +134,13 @@ int main()
 
 	/* checksums */
 	{
-		printf("sieve-4 (classical) checksums:\n");
+		printf("sieve-2^2 (classical) checksums:\n");
 		print_checksum_stats(0x17f0f);
 
-		printf("sieve-3 sieve-32 checksums:\n");
+		printf("sieve-3^1 sieve-2^32 (new cpu) checksums:\n");
 		print_checksum_stats(0x3354);
 
-		printf("sieve-16 checksums:\n");
+		printf("sieve-2^16 (new gpu) checksums:\n");
 		print_checksum_stats(0xa0ed);
 	}
 
@@ -207,6 +207,7 @@ int main()
 		printf("\n");
 	}
 
+	/* overflows */
 	{
 		int overflow_found = 0;
 		uint64_t overflow_count = 0;
@@ -232,6 +233,7 @@ int main()
 		printf("\n");
 	}
 
+	/* clientids */
 	{
 		uint64_t clientid_count = 0;
 
@@ -247,6 +249,7 @@ int main()
 		printf("\n");
 	}
 
+	/* mxoffsets */
 	{
 		uint64_t mxoffset_count = 0;
 
@@ -262,6 +265,7 @@ int main()
 		printf("\n");
 	}
 
+	/* cycleoffs */
 	{
 		uint64_t cycleoff_count = 0;
 
