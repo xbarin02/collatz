@@ -261,62 +261,14 @@ int main()
 			}
 		}
 
-#if 0
-		if (usertime_count > 0) {
-			uint64_t avg_usertime = (uint64_t) ((total_usertime+(usertime_count/2)) / usertime_count);
-
-			printf("user time records: %" PRIu64 "\n", usertime_count);
-			printf("- total user time: %" PRIu64 " hours = %" PRIu64 " days = %" PRIu64 " years\n",
-				(uint64_t)((total_usertime+1800)/3600) /* hours (60*60) */,
-				(uint64_t)((total_usertime+43200)/86400), /* days (60*60*24) */
-				(uint64_t)((total_usertime+15768000)/31536000) /* years (60*60*24*365) */
-			);
-			printf("- average user time: %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_usertime/60/60), (uint64_t)(avg_usertime/60%60), (uint64_t)(avg_usertime%60));
-		}
-		printf("\n");
-#else
 		printf("all user time records:\n");
 		avg_and_print_usertime(total_usertime, usertime_count);
-#endif
 
-#if 0
-		if (usertime_count_short > 0) {
-			uint64_t avg_usertime = (uint64_t) ((total_usertime_short+(usertime_count_short/2)) / usertime_count_short);
-
-			avg_usertime_short = avg_usertime;
-
-			printf("short user time records: %" PRIu64 "\n", usertime_count_short);
-			printf("- total user time (short): %" PRIu64 " hours = %" PRIu64 " days = %" PRIu64 " years\n",
-				(uint64_t)((total_usertime_short+1800)/3600) /* hours (60*60) */,
-				(uint64_t)((total_usertime_short+43200)/86400), /* days (60*60*24) */
-				(uint64_t)((total_usertime_short+15768000)/31536000) /* years (60*60*24*365) */
-			);
-			printf("- average user time (short): %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_usertime/60/60), (uint64_t)(avg_usertime/60%60), (uint64_t)(avg_usertime%60));
-		}
-		printf("\n");
-#else
 		printf("short user time records:\n");
 		avg_usertime_short = avg_and_print_usertime(total_usertime_short, usertime_count_short);
-#endif
 
-#if 0
-		if (usertime_count_long > 0) {
-			uint64_t avg_usertime = (uint64_t) ((total_usertime_long+(usertime_count_long/2)) / usertime_count_long);
-
-			avg_usertime_long = avg_usertime;
-
-			printf("long user time records: %" PRIu64 "\n", usertime_count_long);
-			printf("- total user time (long): %" PRIu64 " hours = %" PRIu64 " days = %" PRIu64 " years\n",
-				(uint64_t)((total_usertime_long+1800)/3600) /* hours (60*60) */,
-				(uint64_t)((total_usertime_long+43200)/86400), /* days (60*60*24) */
-				(uint64_t)((total_usertime_long+15768000)/31536000) /* years (60*60*24*365) */
-			);
-			printf("- average user time (long): %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 " (h:m:s)\n", (uint64_t)(avg_usertime/60/60), (uint64_t)(avg_usertime/60%60), (uint64_t)(avg_usertime%60));
-		}
-		printf("\n");
-#else
+		printf("long user time records:\n");
 		avg_usertime_long = avg_and_print_usertime(total_usertime_long, usertime_count_long);
-#endif
 
 		if (avg_usertime_short > 0) {
 			uint64_t speedup = (avg_usertime_long + avg_usertime_short/2) / avg_usertime_short;
