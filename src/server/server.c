@@ -480,8 +480,6 @@ int read_message(int fd, int thread_id, const char *ipv4)
 				message(ERR "client does not send maximum value offset\n");
 				return -1;
 			}
-
-			message(INFO "got maximum value offset +%" PRIu64 "\n", mxoffset);
 		}
 
 		if (protocol_version > 1) {
@@ -489,8 +487,6 @@ int read_message(int fd, int thread_id, const char *ipv4)
 				message(ERR "client does not send maximum cycle offset\n");
 				return -1;
 			}
-
-			message(INFO "got maximum cycle offset +%" PRIu64 "\n", cycleoff);
 		}
 
 		if (g_clientids[n] != clid) {
