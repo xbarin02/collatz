@@ -20,11 +20,10 @@
 
 #define ASSIGNMENTS_NO (UINT64_C(1) << 32)
 
-#define CHECKSUMS_SIZE (ASSIGNMENTS_NO * 8)
+#define RECORDS_SIZE (ASSIGNMENTS_NO * 8)
 
-const uint64_t *open_checksums()
+const uint64_t *open_records(const char *path)
 {
-	const char *path = "checksums.dat";
 	int fd = open(path, O_RDONLY, 0600);
 	const void *ptr;
 
@@ -33,7 +32,7 @@ const uint64_t *open_checksums()
 		abort();
 	}
 
-	ptr = mmap(NULL, (size_t)CHECKSUMS_SIZE, PROT_READ, MAP_SHARED, fd, 0);
+	ptr = mmap(NULL, (size_t)RECORDS_SIZE, PROT_READ, MAP_SHARED, fd, 0);
 
 	if (ptr == MAP_FAILED) {
 		perror("mmap");
@@ -46,13 +45,16 @@ const uint64_t *open_checksums()
 }
 
 const uint64_t *g_checksums = 0;
+const uint64_t *g_mxoffsets = 0;
 
 #define LUT_SIZE128 81
+#define LUT_SIZE64 41
 #ifdef _USE_GMP
 #	define LUT_SIZEMPZ 512
 #endif
 
 uint128_t g_lut[LUT_SIZE128];
+uint64_t g_lut64[LUT_SIZE64];
 #ifdef _USE_GMP
 mpz_t g_mpz_lut[LUT_SIZEMPZ];
 #endif
@@ -60,6 +62,19 @@ mpz_t g_mpz_lut[LUT_SIZEMPZ];
 static uint64_t g_checksum_alpha = 0;
 static uint128_t g_max = 0;
 static uint128_t g_max_n0 = 0;
+
+uint64_t pow3(uint64_t n)
+{
+	uint64_t r = 1;
+
+	for (; n > 0; --n) {
+		assert(r <= UINT64_MAX / 3);
+
+		r *= 3;
+	}
+
+	return r;
+}
 
 uint128_t pow3x(uint128_t n)
 {
@@ -87,6 +102,10 @@ void init_lut()
 
 	for (a = 0; a < LUT_SIZE128; ++a) {
 		g_lut[a] = pow3x((uint128_t)a);
+	}
+
+	for (a = 0; a < LUT_SIZE64; ++a) {
+		g_lut64[a] = pow3((uint64_t)a);
 	}
 
 #ifdef _USE_GMP
@@ -261,33 +280,98 @@ static void check(uint128_t n)
 	} while (1);
 }
 
+uint128_t get_max(uint128_t n0)
+{
+	int alpha, beta;
+	uint128_t max_n = 0;
+	uint128_t n = n0;
+
+	assert(n0 != UINT128_MAX);
+
+	do {
+		n++;
+
+		do {
+			alpha = __builtin_ctzu64(n);
+			if (alpha >= LUT_SIZE64) {
+				alpha = LUT_SIZE64 - 1;
+			}
+			n >>= alpha;
+			assert(n <= UINT128_MAX >> 2*alpha);
+			n *= g_lut64[alpha];
+		} while (!(n & 1));
+
+		n--;
+
+		if (n > max_n) {
+			max_n = n;
+		}
+
+		do {
+			beta = __builtin_ctzu64(n);
+			n >>= beta;
+		} while (!(n & 1));
+
+		if (n < n0) {
+			return max_n;
+		}
+	} while (1);
+}
+
 int main(int argc, char *argv[])
 {
 	uint64_t task_id = (argc > 1) ? atou64(argv[1]) : 0;
 	uint64_t task_size = TASK_SIZE;
 	uint128_t n;
+	uint128_t n_min;
 	uint128_t n_sup;
 	uint64_t checksum;
+	uint64_t mxoffset;
+	uint128_t mxoffset_n0;
+	uint128_t maximum;
+#ifdef _USE_GMP
+	mpz_t mpz_max_n0;
+	mpz_t mpz_maximum;
+#endif
 
 	init_lut();
 
 	printf("TASK_SIZE %" PRIu64 "\n", task_size);
 	printf("TASK_ID %" PRIu64 "\n", task_id);
 
-	g_checksums = open_checksums();
+	g_checksums = open_records("checksums.dat");
+	g_mxoffsets = open_records("mxoffsets.dat");
 
 	checksum = g_checksums[task_id];
 
 	printf("CHECKSUM %" PRIu64 " (recorded)\n", checksum);
 
+	mxoffset = g_mxoffsets[task_id];
+
+	if (mxoffset != 0) {
+		mxoffset_n0 = mxoffset + ((uint128_t)(task_id + 0) << task_size);
+		maximum = get_max(mxoffset_n0);
+#ifdef _USE_GMP
+		mpz_init_set_u128(mpz_max_n0, mxoffset_n0);
+		mpz_init_set_u128(mpz_maximum, maximum);
+
+		gmp_printf("GMP: maximum n0 = %Zi\n", mpz_max_n0);
+		gmp_printf("GMP: maximum n  = %Zi\n", mpz_maximum);
+#endif
+	}
+
 	assert((uint128_t)task_id <= (UINT128_MAX >> task_size));
 
 	/* n of the form 4n+3 */
-	n     = ((uint128_t)(task_id) << task_size) + 3;
-	n_sup = ((uint128_t)(task_id) << task_size) + 3 + (UINT128_C(1) << task_size);
+	n_min = ((uint128_t)(task_id + 0) << task_size) + 3;
+	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
 
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
-		(uint64_t)(n>>64), (uint64_t)n, (uint64_t)(n_sup>>64), (uint64_t)n_sup);
+		(uint64_t)(((uint128_t)(task_id + 0) << task_size)>>64),
+		(uint64_t)(((uint128_t)(task_id + 0) << task_size)    ),
+		(uint64_t)(((uint128_t)(task_id + 1) << task_size)>>64),
+		(uint64_t)(((uint128_t)(task_id + 1) << task_size)    )
+	);
 
 #ifdef _USE_GMP
 	mpz_init_set_ui(g_mpz_max, 0UL);
@@ -296,7 +380,7 @@ int main(int argc, char *argv[])
 
 	printf("[DEBUG] computing checksum...\n");
 
-	for (; n < n_sup; n += 4) {
+	for (n = n_min; n < n_sup; n += 4) {
 		check(n);
 	}
 
