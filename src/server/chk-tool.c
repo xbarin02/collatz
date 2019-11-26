@@ -167,6 +167,7 @@ int main()
 
 		printf("sieve-2^24 (new gpu) checksums:\n");
 		print_checksum_stats(0x6ed9);
+		print_checksum_stats(0x6eda);
 	}
 
 	/* missing checksums */
@@ -223,6 +224,10 @@ int main()
 			}
 
 			if (usertime != 0 && (checksum>>24) == 0x6ed9) {
+				ADD_TIME(tr_new_gpu24, usertime);
+			}
+
+			if (usertime != 0 && (checksum>>24) == 0x6eda) {
 				ADD_TIME(tr_new_gpu24, usertime);
 			}
 		}
