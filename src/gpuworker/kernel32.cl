@@ -22,6 +22,7 @@ uint pow3(size_t n)
 
 #define USE_LOCAL_SIEVE 1
 
+/* in log2 */
 #define SIEVE_LOGSIZE 16
 #define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8)
 #define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
