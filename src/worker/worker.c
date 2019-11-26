@@ -32,6 +32,10 @@
 #include "compat.h"
 #include "wideint.h"
 
+#if defined(USE_PRECALC) && !defined(USE_SIEVE)
+#	error Unsupported configuration
+#endif
+
 #ifdef USE_SIEVE
 #	define SIEVE_LOGSIZE 32
 #	define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
@@ -143,6 +147,8 @@ uint64_t mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 		/* n-- */
 		mpz_sub_ui(n, n, 1UL);
 
+		cycles++;
+
 		/* if (n > max_n) */
 		if (mpz_cmp(n, g_mpz_max_n) > 0) {
 			mpz_set(g_mpz_max_n, n);
@@ -156,11 +162,11 @@ uint64_t mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 		/* n >>= ctz(n) */
 		mpz_fdiv_q_2exp(n, n, beta);
 
+		/* all betas were factored out */
+
 		if (mpz_cmp(n, n0) < 0) {
 			break;
 		}
-
-		cycles++;
 
 		/* n++ */
 		mpz_add_ui(n, n, 1UL);
@@ -205,7 +211,62 @@ uint64_t check(uint128_t n)
 	do {
 		n++;
 
+		do {
+			alpha = __builtin_ctzu64(n);
+
+			if (alpha >= LUT_SIZE64) {
+				alpha = LUT_SIZE64 - 1;
+			}
+
+			g_checksum_alpha += alpha;
+
+			n >>= alpha;
+
+			if (n > UINT128_MAX >> 2*alpha) {
+				return cycles + mpz_check2(n0, n, alpha);
+			}
+
+			n *= g_lut64[alpha];
+		} while (!(n & 1));
+
+		n--;
+
 		cycles++;
+
+		if (n > g_max_n) {
+			g_max_n = n;
+			g_max_n0 = n0;
+		}
+
+		do {
+			beta = __builtin_ctzu64(n);
+
+			g_checksum_beta += beta;
+
+			n >>= beta;
+		} while (!(n & 1));
+
+		/* all betas were factored out */
+
+		if (n < n0) {
+			return cycles;
+		}
+	} while (1);
+}
+
+static uint64_t check2(uint128_t n0, uint128_t n)
+{
+	int alpha, beta;
+	uint64_t cycles = 0;
+
+	assert(n != UINT128_MAX);
+
+	if (!(n & 1)) {
+		goto even;
+	}
+
+	do {
+		n++;
 
 		do {
 			alpha = __builtin_ctzu64(n);
@@ -227,6 +288,9 @@ uint64_t check(uint128_t n)
 
 		n--;
 
+		cycles++;
+
+	even:
 		if (n > g_max_n) {
 			g_max_n = n;
 			g_max_n0 = n0;
@@ -243,6 +307,112 @@ uint64_t check(uint128_t n)
 		if (n < n0) {
 			return cycles;
 		}
+	} while (1);
+}
+
+static void calc(uint64_t L, int R, int Salpha, int Sbeta, uint64_t task_size, uint64_t L0, uint64_t task_id, uint64_t cycles)
+{
+	uint128_t h;
+
+	g_checksum_alpha += Salpha << (task_size - R);
+	g_checksum_beta  += Sbeta  << (task_size - R);
+
+	assert(R >= Salpha + Sbeta);
+
+	for (h = 0; h < (1UL << (task_size - R)); ++h) {
+		uint128_t H = (task_id << task_size) + (h << R);
+		uint128_t N;
+		uint128_t N0 = H + L0;
+		uint64_t cycles2;
+
+		assert(Salpha < LUT_SIZE64);
+
+		N = (H >> (Salpha + Sbeta)) * g_lut64[Salpha] + L;
+
+		cycles2 = cycles + check2(N0, N);
+
+		if (cycles2 > g_maxcycles) {
+			g_maxcycles = cycles2;
+			g_maxcycles_n0 = N0;
+		}
+	}
+}
+
+/**
+ * @param R remaining bits in 'n'
+ */
+void precalc(uint64_t n, int R, uint64_t task_size, uint64_t task_id)
+{
+	int R0 = R; /* copy of R */
+	uint64_t L = n; /* only R-LSbits in n */
+	uint64_t L0 = L;
+	int alpha, beta;
+	int Salpha = 0, Sbeta = 0; /* sum of alpha, beta */
+	uint64_t cycles = 0;
+
+	do {
+		L++;
+
+		do {
+			alpha = __builtin_ctzu64(L);
+
+			if (alpha > R) {
+				alpha = R;
+			}
+
+			R -= alpha;
+			Salpha += alpha;
+
+			L >>= alpha;
+
+			assert(L <= UINT64_MAX >> 2*alpha);
+
+			L *= g_lut64[alpha];
+
+			/* at this point, the L can be even (not all alpha were pulled out yet) or odd */
+			/* independently, the R can be zero */
+			if (R == 0) {
+				L--;
+
+				/* at this point, the L can be odd or even */
+				calc(L, R0, Salpha, Sbeta, task_size, L0, task_id, cycles);
+				return;
+			}
+		} while (!(L & 1));
+
+		/* all alphas were pulled out and the L is now odd */
+
+		L--;
+
+		/* the 3n/2 sequence is complete */
+		cycles++;
+
+		if (L == 0) {
+			/* no beta has been pulled out yet, the L is even */
+			calc(L, R0, Salpha, Sbeta, task_size, L0, task_id, cycles);
+			return;
+		}
+
+		do {
+			beta = __builtin_ctzu64(L);
+
+			if (beta > R) {
+				beta = R;
+			}
+
+			R -= beta;
+			Sbeta += beta;
+
+			L >>= beta;
+
+			if (R == 0) {
+				/* at least some (maybe all) betas were pulled out, the L can be even or odd */
+				calc(L, R0, Salpha, Sbeta, task_size, L0, task_id, cycles);
+				return;
+			}
+		} while (!(L & 1));
+
+		/* all betas were factored out, the n/2 sequence is now complete */
 	} while (1);
 }
 
@@ -301,25 +471,13 @@ const void *open_map(const char *path, size_t map_size)
 }
 #endif
 
-#ifdef USE_MOD12
-static uint128_t floor_mod12(uint128_t n)
-{
-	return (n + 0) / 12 * 12;
-}
-#endif
-
-#ifdef USE_MOD12
-static uint128_t ceil_mod12(uint128_t n)
-{
-	return (n + 11) / 12 * 12;
-}
-#endif
-
 int main(int argc, char *argv[])
 {
+#ifdef USE_PRECALC
+	uint64_t n;
+	int R = SIEVE_LOGSIZE;
+#else
 	uint128_t n, n_min, n_sup;
-#ifdef USE_MOD12
-	uint128_t n_min_mod12, n_sup_mod12;
 #endif
 	uint64_t task_id = 0;
 	uint64_t task_size = TASK_SIZE;
@@ -378,45 +536,30 @@ int main(int argc, char *argv[])
 		(uint64_t)(((uint128_t)(task_id + 1) << task_size)    )
 	);
 
-	/* n of the form 4n+3 */
-	n_min = ((uint128_t)(task_id + 0) << task_size) + 3;
-	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
-
-#ifdef USE_MOD12
-	n_min_mod12 =  ceil_mod12((uint128_t)(task_id + 0) << task_size) + 3;
-	n_sup_mod12 = floor_mod12((uint128_t)(task_id + 1) << task_size) + 3;
-#endif
-
 #ifdef _USE_GMP
 	mpz_init_set_ui(g_mpz_max_n, 0UL);
 #endif
 
 	init_lut();
 
-#ifdef USE_MOD12
-	assert(n_min <= n_min_mod12);
-	assert(n_min_mod12 < n_sup_mod12);
-	assert(n_sup_mod12 <= n_sup);
+#ifdef USE_PRECALC
+	assert(task_size >= SIEVE_LOGSIZE);
 
-	/* prologue */
-	for (n = n_min; n < n_min_mod12; n += 4) {
-		CHECK(n);
-	}
-
-	/* main loop */
-	for (n = n_min_mod12; n < n_sup_mod12; n += 12) {
-		int k;
-		for (k = 0; k < 2; ++k) {
-			uint128_t n_ = n + 4*k;
-			CHECK(n_);
+	/* iterate over lowest R-bits */
+	for (n = 0 + 3; n < (1UL << R) + 3; n += 4) {
+#	ifdef USE_SIEVE
+		if (IS_LIVE((n) & SIEVE_MASK)) {
+#	else
+		if (1) {
+#	endif
+			precalc(n, R, task_size, task_id);
 		}
 	}
-
-	/* epilogue */
-	for (n = n_sup_mod12; n < n_sup; n += 4) {
-		CHECK(n);
-	}
 #else
+	/* n of the form 4n+3 */
+	n_min = ((uint128_t)(task_id + 0) << task_size) + 3;
+	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
+
 	for (n = n_min; n < n_sup; n += 4) {
 		CHECK(n);
 	}

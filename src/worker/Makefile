@@ -10,8 +10,8 @@ ifeq ($(USE_SIEVE), 1)
 	CFLAGS+=-DUSE_SIEVE
 endif
 
-ifeq ($(USE_MOD12), 1)
-	CFLAGS+=-DUSE_MOD12
+ifeq ($(USE_PRECALC), 1)
+	CFLAGS+=-DUSE_PRECALC
 endif
 
 CFLAGS+=$(EXTRA_CFLAGS)
