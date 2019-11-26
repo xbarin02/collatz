@@ -6,4 +6,4 @@ killall worker gpuworker
 
 sleep 1
 
-~/collatz/scripts/bootstrap.sh
+~/collatz/scripts/bootstrap.sh $*
