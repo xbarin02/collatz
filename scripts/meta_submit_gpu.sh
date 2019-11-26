@@ -23,8 +23,9 @@ echo "PBS_JOBID=${PBS_JOBID}"
 # this is the cwd where qsub was executed, not cwd of the script itself
 echo "PBS_O_WORKDIR=${PBS_O_WORKDIR}"
 
-module load cuda-10.1
+module load clang-9.0
 module load gmp
+module load cuda-10.1
 
 nvidia-smi -L
 
