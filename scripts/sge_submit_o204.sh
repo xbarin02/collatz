@@ -10,7 +10,7 @@
 #$ -t 1-100000
 #$ -pe smp 2
 
-HOME=/mnt/matylda1/ibarina/sge
+HOME=$HOME
 
 export LANG=C
 
