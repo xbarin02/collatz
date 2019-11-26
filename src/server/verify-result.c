@@ -297,7 +297,9 @@ uint128_t get_max(uint128_t n0)
 				alpha = LUT_SIZE64 - 1;
 			}
 			n >>= alpha;
-			assert(n <= UINT128_MAX >> 2*alpha);
+			if (n > UINT128_MAX >> 2*alpha) {
+				return 0;
+			}
 			n *= g_lut64[alpha];
 		} while (!(n & 1));
 
