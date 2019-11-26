@@ -317,9 +317,9 @@ static uint128_t ceil_mod12(uint128_t n)
 
 int main(int argc, char *argv[])
 {
-	uint128_t n, n0, n_sup;
+	uint128_t n, n_min, n_sup;
 #ifdef USE_MOD12
-	uint128_t n0_mod12, n_sup_mod12;
+	uint128_t n_min_mod12, n_sup_mod12;
 #endif
 	uint64_t task_id = 0;
 	uint64_t task_size = TASK_SIZE;
@@ -373,17 +373,17 @@ int main(int argc, char *argv[])
 
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
 		(uint64_t)(((uint128_t)(task_id + 0) << task_size)>>64),
-		(uint64_t)((uint128_t)(task_id + 0) << task_size),
+		(uint64_t)(((uint128_t)(task_id + 0) << task_size)    ),
 		(uint64_t)(((uint128_t)(task_id + 1) << task_size)>>64),
-		(uint64_t)((uint128_t)(task_id + 1) << task_size)
+		(uint64_t)(((uint128_t)(task_id + 1) << task_size)    )
 	);
 
 	/* n of the form 4n+3 */
-	n0    = ((uint128_t)(task_id + 0) << task_size) + 3;
+	n_min = ((uint128_t)(task_id + 0) << task_size) + 3;
 	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
 
 #ifdef USE_MOD12
-	n0_mod12    =  ceil_mod12((uint128_t)(task_id + 0) << task_size) + 3;
+	n_min_mod12 =  ceil_mod12((uint128_t)(task_id + 0) << task_size) + 3;
 	n_sup_mod12 = floor_mod12((uint128_t)(task_id + 1) << task_size) + 3;
 #endif
 
@@ -394,17 +394,17 @@ int main(int argc, char *argv[])
 	init_lut();
 
 #ifdef USE_MOD12
-	assert(n0 <= n0_mod12);
-	assert(n0_mod12 < n_sup_mod12);
+	assert(n_min <= n_min_mod12);
+	assert(n_min_mod12 < n_sup_mod12);
 	assert(n_sup_mod12 <= n_sup);
 
 	/* prologue */
-	for (n = n0; n < n0_mod12; n += 4) {
+	for (n = n_min; n < n_min_mod12; n += 4) {
 		CHECK(n);
 	}
 
 	/* main loop */
-	for (n = n0_mod12; n < n_sup_mod12; n += 12) {
+	for (n = n_min_mod12; n < n_sup_mod12; n += 12) {
 		int k;
 		for (k = 0; k < 2; ++k) {
 			uint128_t n_ = n + 4*k;
@@ -417,7 +417,7 @@ int main(int argc, char *argv[])
 		CHECK(n);
 	}
 #else
-	for (n = n0; n < n_sup; n += 4) {
+	for (n = n_min; n < n_sup; n += 4) {
 		CHECK(n);
 	}
 #endif
