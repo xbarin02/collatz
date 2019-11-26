@@ -46,6 +46,7 @@ fi
 
 # don't forget git clone git@github.com:xbarin02/collatz.git into $HOME
 SRCDIR=$HOME/collatz/
+MAPDIR=$HOME/collatz-sieve/
 TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
 
 echo "SRCDIR=$SRCDIR"
@@ -59,8 +60,12 @@ cp -r "${SRCDIR}" .
 cd collatz/src
 
 # build mclient & gpuworker
-make -C gpuworker clean all USE_LIBGMP=1 CC=gcc TASK_UNITS=20
+make -C gpuworker clean all CC=$CC TASK_UNITS=20
 make -C mclient clean all
+
+pushd $MAPDIR
+./unpack.sh sieve-24 $TMP/collatz/src/gpuworker
+popd
 
 cd mclient
 

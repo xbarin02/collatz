@@ -74,7 +74,7 @@ fi
 
 # build mclient & worker
 make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 USE_MOD12=1
-make -C gpuworker clean all USE_LIBGMP=1 TASK_UNITS=${TASK_UNITS} || echo "unable to build gpuworker"
+make -C gpuworker clean all CC=$CC TASK_UNITS=${TASK_UNITS} || echo "unable to build gpuworker"
 make -C mclient clean all
 
 pushd "$MAPDIR"
