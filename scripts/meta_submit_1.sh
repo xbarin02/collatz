@@ -61,7 +61,7 @@ cp -r "${SRCDIR}" .
 cd collatz/src
 
 # build mclient & worker
-make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 USE_MOD12=1
+make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 USE_PRECALC=1
 make -C mclient clean all
 
 pushd $MAPDIR
