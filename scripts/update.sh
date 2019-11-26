@@ -1,11 +1,5 @@
 #!/bin/bash
 
-cd ~/collatz/
-
-git pull
-
-cd
-
 killall mclient
 
 killall worker gpuworker
