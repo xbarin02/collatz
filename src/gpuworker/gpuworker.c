@@ -663,13 +663,16 @@ next_platform:
 			uint128_t max_n0 = mxoffset[i] + ((uint128_t)(task_id + 0) << task_size);
 			uint128_t max_cycle_n0 = cycleoff[i] + ((uint128_t)(task_id + 0) << task_size);
 
-			uint128_t max_n = get_max(max_n0);
-			uint64_t max_cycle = get_cycles(max_cycle_n0);
+			uint128_t max_n;
+			uint64_t max_cycle;
 
 			if (checksum_alpha[i] == 0) {
 				printf("ABORTED_DUE_TO_OVERFLOW\n");
 				abort();
 			}
+
+			max_n = get_max(max_n0);
+			max_cycle = get_cycles(max_cycle_n0);
 
 			g_checksum_alpha += checksum_alpha[i];
 
