@@ -159,7 +159,7 @@ int main()
 		printf("sieve-2^2 (classical) checksums:\n");
 		print_checksum_stats(0x17f0f);
 
-		printf("sieve-3^1 sieve-2^32 (new cpu) checksums:\n");
+		printf("sieve-3^1 sieve-2^32 (new cpu, buggy) checksums:\n");
 		print_checksum_stats(0x3354);
 
 		printf("sieve-2^16 (new gpu) checksums:\n");
@@ -168,6 +168,9 @@ int main()
 		printf("sieve-2^24 (new gpu) checksums:\n");
 		print_checksum_stats(0x6ed9);
 		print_checksum_stats(0x6eda);
+
+		printf("sieve-2^32 (new cpu) checksums:\n");
+		print_checksum_stats(0x4cfe);
 	}
 
 	/* missing checksums */
@@ -195,6 +198,7 @@ int main()
 		struct timerec tr_short = timerec_create();
 		struct timerec tr_long = timerec_create();
 		struct timerec tr_new_cpu = timerec_create();
+		struct timerec tr_new_cpu32 = timerec_create();
 		struct timerec tr_new_gpu = timerec_create();
 		struct timerec tr_new_gpu24 = timerec_create();
 
@@ -230,25 +234,32 @@ int main()
 			if (usertime != 0 && (checksum>>24) == 0x6eda) {
 				ADD_TIME(tr_new_gpu24, usertime);
 			}
+
+			if (usertime != 0 && (checksum>>24) == 0x4cfe) {
+				ADD_TIME(tr_new_cpu32, usertime);
+			}
 		}
 
 		printf("all user time records:\n");
 		avg_and_print_usertime(tr_all.total, tr_all.count);
 
-		printf("classical short user time records:\n");
+		printf("classical (sieve-2^2) short user time records:\n");
 		tr_short.avg = avg_and_print_usertime(tr_short.total, tr_short.count);
 
-		printf("classical long user time records:\n");
+		printf("classical (sieve-2^2) long user time records:\n");
 		tr_long.avg = avg_and_print_usertime(tr_long.total, tr_long.count);
 
-		printf("new cpu user time records:\n");
+		printf("new cpu (buggy) user time records:\n");
 		avg_and_print_usertime(tr_new_cpu.total, tr_new_cpu.count);
 
-		printf("new gpu (sieve-16) user time records:\n");
+		printf("new gpu (sieve-2^16) user time records:\n");
 		avg_and_print_usertime(tr_new_gpu.total, tr_new_gpu.count);
 
-		printf("new gpu (sieve-24) user time records:\n");
+		printf("new gpu (sieve-2^24) user time records:\n");
 		avg_and_print_usertime(tr_new_gpu24.total, tr_new_gpu24.count);
+
+		printf("new gpu (sieve-2^32) user time records:\n");
+		avg_and_print_usertime(tr_new_cpu32.total, tr_new_cpu32.count);
 
 		printf("speedup (classical long/short) = %" PRIu64 "\n", round_div_ul(tr_long.avg, tr_short.avg));
 		printf("\n");
