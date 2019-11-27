@@ -723,13 +723,13 @@ int main(int argc, char *argv[])
 	if (invalidate_new) {
 		uint64_t n;
 
-		message(WARN "Invalidating new checksums...\n");
+		message(WARN "Invalidating new/buggy checksums...\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
 
-			if ((checksum>>28) == 0xff5) {
-				printf("- resetting the assignment %" PRIu64 " due to new checksum\n", n);
+			if ((checksum>>28) == 0xff5 || (checksum>>24) == 0x3354) {
+				printf("- resetting the assignment %" PRIu64 " due to new/buggy checksum\n", n);
 
 				SET_UNASSIGNED(n);
 				SET_INCOMPLETE(n);
