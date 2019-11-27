@@ -281,7 +281,7 @@ int main()
 				overflow_sum += overflow;
 
 				if (++c < 32) {
-					printf("- found %" PRIu64 " overflows on the assignment %" PRIu64 " (below %" PRIu64 " x 2^60)\n", overflow, n, (n >> 20) + 1);
+					printf("- #%i found %" PRIu64 " overflows on the assignment %" PRIu64 " (below %" PRIu64 " x 2^60)\n", c, overflow, n, (n >> 20) + 1);
 				}
 			}
 		}
