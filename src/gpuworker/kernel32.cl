@@ -79,7 +79,6 @@ __kernel void worker(
 		/* precalc(n0): */
 
 		int R = SIEVE_LOGSIZE; /* copy since we need to decrement it */
-		/* BUG here? can n0 > ulong? the outer loop should only iterate over 2^32 */
 		ulong L = (ulong)n0; /* only 32-LSbits in n0 */
 		ulong L0 = (ulong)n0; /* copy of L */
 		size_t Salpha = 0, Sbeta = 0; /* sum of alpha, beta */
@@ -148,7 +147,11 @@ lcalc:
 					N *= lut[alpha];
 					Salpha0 -= alpha;
 				} while (Salpha0 > 0);
-				N += L; /* BUG? could this overflow? */
+				if (N > UINT128_MAX - L) {
+					private_checksum_alpha = 0;
+					goto end;
+				}
+				N += L;
 
 				/* tot_cycles += check2(N0, N); */
 				if (!(N & 1)) {

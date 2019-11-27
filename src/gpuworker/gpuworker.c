@@ -125,12 +125,10 @@ uint128_t get_max(uint128_t n0)
 				alpha = LUT_SIZE64 - 1;
 			}
 			n >>= alpha;
-			if (n > UINT128_MAX >> 2*alpha) {
-				/* this is certainly a bug */
-				printf("BUG HERE\n");
+			if (n > UINT128_MAX / g_lut64[alpha]) {
 				printf("ABORTED_DUE_TO_OVERFLOW\n");
 			}
-			assert(n <= UINT128_MAX >> 2*alpha);
+			assert(n <= UINT128_MAX / g_lut64[alpha]);
 			n *= g_lut64[alpha];
 		} while (!(n & 1));
 
