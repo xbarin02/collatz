@@ -468,6 +468,16 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, u
 			message(INFO "maximum cycle of the length %" PRIu64 "\n", maximum_cycle);
 		} else if (c > 1 && strcmp(ln_part[0], "MAXIMUM") == 0) {
 			message(INFO "maximum value found: %s", line+8); /* incl. the newline character */
+		} else if (c == 1 && strcmp(ln_part[0], "ABORTED_DUE_TO_OVERFLOW") == 0) {
+			message(ERR "overflow occurred!\n");
+			if (gpu_mode == 1) {
+				message(WARN "trying to run on the CPU...\n");
+				if (run_assignment(task_id, task_size, p_overflow, p_usertime, p_checksum, p_mxoffset, p_cycleoff, alarm_seconds, 0) < 0) {
+					message(ERR "even the CPU worker failed!\n");
+					return -1
+				}
+				success = 1;
+			}
 		} else {
 			/* other cases... */
 			message(WARN "worker printed unknown message: %s", line);
