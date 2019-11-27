@@ -249,7 +249,7 @@ int main()
 		printf("classical (sieve-2^2) long user time records:\n");
 		tr_long.avg = avg_and_print_usertime(tr_long.total, tr_long.count);
 
-		printf("new cpu (buggy) user time records:\n");
+		printf("new cpu (3^1 2^32 buggy) user time records:\n");
 		avg_and_print_usertime(tr_new_cpu.total, tr_new_cpu.count);
 
 		printf("new gpu (sieve-2^16) user time records:\n");
@@ -258,7 +258,7 @@ int main()
 		printf("new gpu (sieve-2^24) user time records:\n");
 		avg_and_print_usertime(tr_new_gpu24.total, tr_new_gpu24.count);
 
-		printf("new gpu (sieve-2^32) user time records:\n");
+		printf("new cpu (sieve-2^32) user time records:\n");
 		avg_and_print_usertime(tr_new_cpu32.total, tr_new_cpu32.count);
 
 		printf("speedup (classical long/short) = %" PRIu64 "\n", round_div_ul(tr_long.avg, tr_short.avg));
