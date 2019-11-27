@@ -506,6 +506,13 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, u
 
 	} else {
 		message(ERR "WIFEXITED: the child terminated abnormally\n");
+
+		if (gpu_mode && success) {
+			message(WARN "maybe gpuworker --> overflow --> worker chain\n");
+			/* return success status only if the worker issued HALTED line */
+			return 0;
+		}
+
 		return -1;
 	}
 }
