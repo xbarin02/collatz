@@ -319,7 +319,7 @@ int main()
 			}
 		}
 
-		printf("found %" PRIu64 " maximum value offset records (mxoffsets)\n", mxoffset_count);
+		printf("found %" PRIu64 " (%" PRIu64 "M) maximum value offset records (mxoffsets)\n", mxoffset_count, round_div_ul(mxoffset_count, 1000000));
 		printf("\n");
 	}
 
@@ -335,7 +335,7 @@ int main()
 			}
 		}
 
-		printf("found %" PRIu64 " longest cycle offset records (cycleoffs)\n", cycleoff_count);
+		printf("found %" PRIu64 " (%" PRIu64 "M) longest cycle offset records (cycleoffs)\n", cycleoff_count, round_div_ul(cycleoff_count, 1000000));
 		printf("\n");
 	}
 
