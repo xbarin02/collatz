@@ -148,7 +148,7 @@ lcalc:
 					N *= lut[alpha];
 					Salpha0 -= alpha;
 				} while (Salpha0 > 0);
-				N += L;
+				N += L; /* BUG? could this overflow? */
 
 				/* tot_cycles += check2(N0, N); */
 				if (!(N & 1)) {
