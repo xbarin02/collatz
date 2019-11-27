@@ -79,6 +79,7 @@ __kernel void worker(
 		/* precalc(n0): */
 
 		int R = SIEVE_LOGSIZE; /* copy since we need to decrement it */
+		/* BUG here? can n0 > ulong? the outer loop should only iterate over 2^32 */
 		ulong L = (ulong)n0; /* only 32-LSbits in n0 */
 		ulong L0 = (ulong)n0; /* copy of L */
 		size_t Salpha = 0, Sbeta = 0; /* sum of alpha, beta */
