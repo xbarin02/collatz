@@ -320,7 +320,7 @@ static void calc(uint64_t L, int R, int Salpha, int Sbeta, uint64_t task_size, u
 	assert(R == Salpha + Sbeta);
 
 	for (h = 0; h < (1UL << (task_size - R)); ++h) {
-		uint128_t H = (task_id << task_size) + (h << R);
+		uint128_t H = ((uint128_t)task_id << task_size) + (h << R);
 		uint128_t N;
 		uint128_t N0 = H + L0;
 		uint64_t cycles2;
