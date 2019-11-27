@@ -108,6 +108,14 @@ uint128_t get_max(uint128_t n0)
 
 	assert(n0 != UINT128_MAX);
 
+	if (n0 == 0) {
+		printf("[DEBUG] get_max() on zero input\n");
+	}
+
+	if (!IS_LIVE(n0 & SIEVE_MASK)) {
+		printf("[DEBUG] get_max() on dead input\n");
+	}
+
 	do {
 		n++;
 
@@ -117,6 +125,11 @@ uint128_t get_max(uint128_t n0)
 				alpha = LUT_SIZE64 - 1;
 			}
 			n >>= alpha;
+			if (n > UINT128_MAX >> 2*alpha) {
+				/* this is certainly a bug */
+				printf("BUG HERE\n");
+				printf("ABORTED_DUE_TO_OVERFLOW\n");
+			}
 			assert(n <= UINT128_MAX >> 2*alpha);
 			n *= g_lut64[alpha];
 		} while (!(n & 1));
@@ -660,16 +673,18 @@ next_platform:
 		ret = clReleaseContext(context);
 
 		for (i = 0; i < global_work_size; ++i) {
+			if (checksum_alpha[i] == 0) {
+				printf("ABORTED_DUE_TO_OVERFLOW\n");
+				abort();
+			}
+		}
+
+		for (i = 0; i < global_work_size; ++i) {
 			uint128_t max_n0 = mxoffset[i] + ((uint128_t)(task_id + 0) << task_size);
 			uint128_t max_cycle_n0 = cycleoff[i] + ((uint128_t)(task_id + 0) << task_size);
 
 			uint128_t max_n;
 			uint64_t max_cycle;
-
-			if (checksum_alpha[i] == 0) {
-				printf("ABORTED_DUE_TO_OVERFLOW\n");
-				abort();
-			}
 
 			max_n = get_max(max_n0);
 			max_cycle = get_cycles(max_cycle_n0);

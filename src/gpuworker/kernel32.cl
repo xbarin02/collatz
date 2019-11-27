@@ -65,10 +65,10 @@ __kernel void worker(
 	uint128_t n_supremum = ((uint128_t)(id + 1) << (SIEVE_LOGSIZE - task_units));
 
 	uint128_t max_n = 0;
-	uint128_t max_n0;
+	uint128_t max_n0 = ((uint128_t)(task_id + 0) << task_size);
 
 	ulong max_cycles = 0;
-	uint128_t max_cycles_n0;
+	uint128_t max_cycles_n0 = ((uint128_t)(task_id + 0) << task_size);
 
 	/* iterate over lowest (32 - task_units) bits */
 	for (uint128_t n0 = n_minimum + 3; n0 < n_supremum + 3; n0 += 4) {
@@ -93,7 +93,7 @@ __kernel void worker(
 				R -= alpha;
 				Salpha += alpha;
 				L >>= alpha;
-				if (L > ~0UL / lut[alpha]) {
+				if (L > ~0UL >> 2*alpha) {
 					private_checksum_alpha = 0;
 					goto end;
 				}
@@ -140,6 +140,10 @@ lcalc:
 				size_t Salpha0 = Salpha;
 				do {
 					size_t alpha = min(Salpha0, (size_t)LUT_SIZE32 - 1);
+					if (N > UINT128_MAX >> 2*alpha) {
+						private_checksum_alpha = 0;
+						goto end;
+					}
 					N *= lut[alpha];
 					Salpha0 -= alpha;
 				} while (Salpha0 > 0);
