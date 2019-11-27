@@ -317,7 +317,7 @@ static void calc(uint64_t L, int R, int Salpha, int Sbeta, uint64_t task_size, u
 	g_checksum_alpha += Salpha << (task_size - R);
 	g_checksum_beta  += Sbeta  << (task_size - R);
 
-	assert(R >= Salpha + Sbeta);
+	assert(R == Salpha + Sbeta);
 
 	for (h = 0; h < (1UL << (task_size - R)); ++h) {
 		uint128_t H = (task_id << task_size) + (h << R);
@@ -389,6 +389,10 @@ void precalc(uint64_t n, int R, uint64_t task_size, uint64_t task_id)
 
 		if (L == 0) {
 			/* no beta has been pulled out yet, the L is even */
+			/* WARNING: not all R bits have been exhausted */
+			beta = R;
+			R -= beta;
+			Sbeta += beta;
 			calc(L, R0, Salpha, Sbeta, task_size, L0, task_id, cycles);
 			return;
 		}
