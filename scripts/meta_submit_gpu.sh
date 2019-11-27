@@ -3,11 +3,13 @@
 #PBS -S /bin/bash
 #PBS -M ibarina@fit.vutbr.cz
 #PBS -m a
+#
 #PBS -q gpu
-#PBS -l select=1:ncpus=1:ngpus=1
-#PBS -l walltime=4:00:00
+#PBS -l select=1:ncpus=1:ngpus=1:mem=1gb:scratch_local=1gb,walltime=4:00:00
 
 HOME=/storage/brno11-elixir/home/ibarina
+
+TMPDIR=$SCRATCHDIR
 
 export LANG=C
 
@@ -70,6 +72,7 @@ make -C mclient clean all
 pushd $MAPDIR
 ./unpack.sh sieve-16 $TMP/collatz/src/gpuworker || :
 ./unpack.sh sieve-24 $TMP/collatz/src/gpuworker
+./unpack.sh sieve-32 $TMP/collatz/src/gpuworker
 popd
 
 cd mclient
