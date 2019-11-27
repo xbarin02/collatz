@@ -184,16 +184,18 @@ int main()
 			if (checksum == 0) {
 				printf("- missing checksum on the assignment %" PRIu64 " (below %" PRIu64 " x 2^60)\n", n, (n >> 20) + 1);
 
-				if (++c == 4)
+				if (++c == 4) {
 					break;
+				}
 			}
 		}
 		printf("\n");
 	}
 
-#	define ADD_TIME(tr, time) do { (tr).total += (time); (tr).count++; } while (0)
 	/* usertime records */
 	{
+#		define ADD_TIME(tr, time) do { (tr).total += (time); (tr).count++; } while (0)
+
 		struct timerec tr_all = timerec_create();
 		struct timerec tr_short = timerec_create();
 		struct timerec tr_long = timerec_create();
@@ -263,6 +265,8 @@ int main()
 
 		printf("speedup (classical long/short) = %" PRIu64 "\n", round_div_ul(tr_long.avg, tr_short.avg));
 		printf("\n");
+
+#		undef ADD_TIME
 	}
 
 	/* overflows */
@@ -281,7 +285,7 @@ int main()
 				overflow_sum += overflow;
 
 				if (++c < 32) {
-					printf("- #%i found %" PRIu64 " overflows on the assignment %" PRIu64 " (below %" PRIu64 " x 2^60)\n", c, overflow, n, (n >> 20) + 1);
+					printf("- #%2i: found %" PRIu64 " overflows on the assignment %" PRIu64 " (below %" PRIu64 " x 2^60)\n", c, overflow, n, (n >> 20) + 1);
 				}
 			}
 		}
