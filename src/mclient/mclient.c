@@ -474,7 +474,7 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, u
 				message(WARN "trying to run on the CPU...\n");
 				if (run_assignment(task_id, task_size, p_overflow, p_usertime, p_checksum, p_mxoffset, p_cycleoff, alarm_seconds, 0) < 0) {
 					message(ERR "even the CPU worker failed!\n");
-					return -1
+					return -1;
 				}
 				success = 1;
 			}
