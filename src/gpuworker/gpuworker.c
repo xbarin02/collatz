@@ -30,7 +30,7 @@
 
 /* in log2 */
 #ifndef SIEVE_LOGSIZE
-#	define SIEVE_LOGSIZE 32
+#	define SIEVE_LOGSIZE 16
 #endif
 
 #define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
