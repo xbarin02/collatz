@@ -108,14 +108,6 @@ uint128_t get_max(uint128_t n0)
 
 	assert(n0 != UINT128_MAX);
 
-	if (n0 == 0) {
-		printf("[DEBUG] get_max() on zero input\n");
-	}
-
-	if (!IS_LIVE(n0 & SIEVE_MASK)) {
-		printf("[DEBUG] get_max() on dead input\n");
-	}
-
 	do {
 		n++;
 
