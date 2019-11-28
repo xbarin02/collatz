@@ -2,6 +2,11 @@ CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -D_XOPEN_SOURCE=500
 LDLIBS+=-lOpenCL
 LDFLAGS+=
 
+ifndef $(SIEVE_LOGSIZE)
+	SIEVE_LOGSIZE=16
+endif
+CFLAGS+=-DSIEVE_LOGSIZE=$(SIEVE_LOGSIZE)
+
 ifndef $(TASK_UNITS)
 	TASK_UNITS=16
 endif

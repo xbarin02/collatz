@@ -25,11 +25,14 @@
 
 /* in log2 */
 #ifndef TASK_UNITS
-#define TASK_UNITS 16
+#	define TASK_UNITS 16
 #endif
 
 /* in log2 */
-#define SIEVE_LOGSIZE 32
+#ifndef SIEVE_LOGSIZE
+#	define SIEVE_LOGSIZE 32
+#endif
+
 #define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
 #define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8) /* in bytes */
 #define IS_LIVE(n) ( ( g_map_sieve[ (n)>>3 ] >> ((n)&7) ) & 1 )
