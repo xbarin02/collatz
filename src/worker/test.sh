@@ -16,9 +16,9 @@ function verify()
 	echo "$1: checking..."
 
 	if test "$(check $1)" = "$2"; then
-		echo "$1: PASSED"
+		echo -e "$1: \e[32mPASSED\e[0m"
 	else
-		echo "$1: FAILED"
+		echo -e "$1: \e[31mFAILED\e[0m"
 	fi
 }
 
