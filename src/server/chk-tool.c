@@ -156,17 +156,17 @@ int main()
 
 	/* checksums */
 	{
-		printf("sieve-2^2 (classical) checksums:\n");
+		printf("sieve-2^2 (cpu, gpu) checksums:\n");
 		print_checksum_stats(0x17f0f);
 
-		printf("sieve-2^16 (new gpu) checksums:\n");
+		printf("sieve-2^16 (gpu) checksums:\n");
 		print_checksum_stats(0xa0ed);
 
-		printf("sieve-2^24 (new gpu) checksums:\n");
+		printf("sieve-2^24 (gpu) checksums:\n");
 		print_checksum_stats(0x6ed9);
 		print_checksum_stats(0x6eda);
 
-		printf("sieve-2^32 (new cpu) checksums:\n");
+		printf("sieve-2^32 (cpu, gpu) checksums:\n");
 		print_checksum_stats(0x4cfe);
 	}
 
@@ -194,11 +194,11 @@ int main()
 #		define ADD_TIME(tr, time) do { (tr).total += (time); (tr).count++; } while (0)
 
 		struct timerec tr_all = timerec_create();
-		struct timerec tr_short = timerec_create();
-		struct timerec tr_long = timerec_create();
-		struct timerec tr_new_cpu32 = timerec_create();
-		struct timerec tr_new_gpu = timerec_create();
-		struct timerec tr_new_gpu24 = timerec_create();
+		struct timerec tr_mod_2_2_short = timerec_create();
+		struct timerec tr_mod_2_2_long = timerec_create();
+		struct timerec tr_mod_2_32 = timerec_create();
+		struct timerec tr_mod_2_16 = timerec_create();
+		struct timerec tr_mod_2_24 = timerec_create();
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t usertime = g_usertimes[n];
@@ -210,49 +210,49 @@ int main()
 
 			/* classical sieve-4 results for both CPU & GPU */
 			if (usertime != 0 && (checksum>>24) == 0x17f0f && usertime < 30*60) {
-				ADD_TIME(tr_short, usertime);
+				ADD_TIME(tr_mod_2_2_short, usertime);
 			}
 
 			if (usertime != 0 && (checksum>>24) == 0x17f0f && usertime >= 30*60) {
-				ADD_TIME(tr_long, usertime);
+				ADD_TIME(tr_mod_2_2_long, usertime);
 			}
 
 			if (usertime != 0 && (checksum>>24) == 0xa0ed) {
-				ADD_TIME(tr_new_gpu, usertime);
+				ADD_TIME(tr_mod_2_16, usertime);
 			}
 
 			if (usertime != 0 && (checksum>>24) == 0x6ed9) {
-				ADD_TIME(tr_new_gpu24, usertime);
+				ADD_TIME(tr_mod_2_24, usertime);
 			}
 
 			if (usertime != 0 && (checksum>>24) == 0x6eda) {
-				ADD_TIME(tr_new_gpu24, usertime);
+				ADD_TIME(tr_mod_2_24, usertime);
 			}
 
 			if (usertime != 0 && (checksum>>24) == 0x4cfe) {
-				ADD_TIME(tr_new_cpu32, usertime);
+				ADD_TIME(tr_mod_2_32, usertime);
 			}
 		}
 
 		printf("all user time records:\n");
 		avg_and_print_usertime(tr_all.total, tr_all.count);
 
-		printf("classical (sieve-2^2) short user time records:\n");
-		tr_short.avg = avg_and_print_usertime(tr_short.total, tr_short.count);
+		printf("sieve-2^2 short user time records:\n");
+		tr_mod_2_2_short.avg = avg_and_print_usertime(tr_mod_2_2_short.total, tr_mod_2_2_short.count);
 
-		printf("classical (sieve-2^2) long user time records:\n");
-		tr_long.avg = avg_and_print_usertime(tr_long.total, tr_long.count);
+		printf("sieve-2^2 long user time records:\n");
+		tr_mod_2_2_long.avg = avg_and_print_usertime(tr_mod_2_2_long.total, tr_mod_2_2_long.count);
 
-		printf("new gpu (sieve-2^16) user time records:\n");
-		avg_and_print_usertime(tr_new_gpu.total, tr_new_gpu.count);
+		printf("sieve-2^16 user time records:\n");
+		avg_and_print_usertime(tr_mod_2_16.total, tr_mod_2_16.count);
 
-		printf("new gpu (sieve-2^24) user time records:\n");
-		avg_and_print_usertime(tr_new_gpu24.total, tr_new_gpu24.count);
+		printf("sieve-2^24 user time records:\n");
+		avg_and_print_usertime(tr_mod_2_24.total, tr_mod_2_24.count);
 
-		printf("new cpu (sieve-2^32) user time records:\n");
-		avg_and_print_usertime(tr_new_cpu32.total, tr_new_cpu32.count);
+		printf("sieve-2^32 user time records:\n");
+		avg_and_print_usertime(tr_mod_2_32.total, tr_mod_2_32.count);
 
-		printf("speedup (classical long/short) = %" PRIu64 "\n", round_div_ul(tr_long.avg, tr_short.avg));
+		printf("speedup (sieve-2^2 long/short) = %" PRIu64 "\n", round_div_ul(tr_mod_2_2_long.avg, tr_mod_2_2_short.avg));
 		printf("\n");
 
 #		undef ADD_TIME
