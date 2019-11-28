@@ -11,6 +11,8 @@ HOME=/storage/brno11-elixir/home/ibarina
 
 TMPDIR=$SCRATCHDIR
 
+export POCL_CACHE_DIR=${SCRATCHDIR}/kcache
+
 export LANG=C
 
 export SERVER_NAME=pcbarina.fit.vutbr.cz
@@ -84,3 +86,4 @@ stdbuf -o0 -e0 ./mclient -a 14300 -b 7200 -g 1
 
 popd
 rm -rf -- "$TMP"
+rm -rf -- "${POCL_CACHE_DIR}"
