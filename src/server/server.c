@@ -728,8 +728,7 @@ int main(int argc, char *argv[])
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
 
-			if ((checksum>>28) == 0xff5 || (checksum>>24) == 0x3354
-			 || (checksum>>24) == 0x4cfe) { /* 2^32 results came be buggy before 2019-11-28 */
+			if ((checksum>>28) == 0xff5 || (checksum>>24) == 0x3354) {
 				printf("- resetting the assignment %" PRIu64 " due to new/buggy checksum\n", n);
 
 				SET_UNASSIGNED(n);
