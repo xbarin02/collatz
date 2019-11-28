@@ -13,6 +13,8 @@ TMPDIR=$SCRATCHDIR
 
 export POCL_CACHE_DIR=${SCRATCHDIR}/kcache
 
+mkdir -p "${POCL_CACHE_DIR}"
+
 export LANG=C
 
 export SERVER_NAME=pcbarina.fit.vutbr.cz
