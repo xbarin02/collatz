@@ -20,8 +20,8 @@ representation of `n`.
 
 The sieves can be of two kinds: the power of two and the power of three sieves.
 The sieve `2^2` is used always, i.e. only numbers `n0 == 3 (mod 4)` are tested.
-Besides, the sieves `3^1` and `2^32` are used in the CPU implementation, and
-the sieve `2^16` or `2^24` is used in the GPU implementation.
+Besides, the sieve `2^32` is used in the CPU implementation, and the sieve
+`2^16` on the GPU.
 
 All `alpha`s occurred during the convergence test of the range are summed
 together to give raise the checksum (proof of work). These checksums are
