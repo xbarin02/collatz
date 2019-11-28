@@ -5,7 +5,7 @@
 #PBS -m a
 #
 #PBS -q gpu
-#PBS -l select=1:ncpus=1:ngpus=1:mem=1gb:scratch_local=1gb,walltime=4:00:00
+#PBS -l select=1:ncpus=1:ngpus=1:mem=2gb:scratch_local=2gb,walltime=4:00:00
 
 HOME=/storage/brno11-elixir/home/ibarina
 
@@ -66,10 +66,12 @@ cp -r "${SRCDIR}" .
 cd collatz/src
 
 # build mclient & gpuworker
+make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 USE_PRECALC=1
 make -C gpuworker clean all CC=gcc
 make -C mclient clean all
 
 pushd $MAPDIR
+./unpack.sh sieve-32 $TMP/collatz/src/worker
 ./unpack.sh sieve-16 $TMP/collatz/src/gpuworker
 ./unpack.sh sieve-24 $TMP/collatz/src/gpuworker
 ./unpack.sh sieve-32 $TMP/collatz/src/gpuworker
