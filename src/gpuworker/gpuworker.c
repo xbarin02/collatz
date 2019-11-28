@@ -704,6 +704,8 @@ next_platform:
 		goto done;
 	}
 
+	printf("NO_GPU_FOUND\n");
+
 	return -1;
 
 done:
