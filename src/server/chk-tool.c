@@ -150,12 +150,18 @@ struct timerec timerec_create()
 
 int main()
 {
-	uint64_t n;
+	int show_checksum_stats = 1;
+	int show_missing_checksums = 1;
+	int show_usertime_records = 1;
+	int show_overflows = 1;
+	int show_clientids = 1;
+	int show_mxoffsets = 1;
+	int show_cycleoffs = 1;
 
 	init();
 
 	/* checksums */
-	{
+	if (show_checksum_stats) {
 		printf("sieve-2^2 (cpu, gpu) checksums:\n");
 		print_checksum_stats(0x17f0f);
 
@@ -171,7 +177,8 @@ int main()
 	}
 
 	/* missing checksums */
-	{
+	if (show_missing_checksums) {
+		uint64_t n;
 		int c = 0;
 
 		printf("missing checksums:\n");
@@ -190,8 +197,9 @@ int main()
 	}
 
 	/* usertime records */
-	{
+	if (show_usertime_records) {
 #		define ADD_TIME(tr, time) do { (tr).total += (time); (tr).count++; } while (0)
+		uint64_t n;
 
 		struct timerec tr_all = timerec_create();
 		struct timerec tr_mod_2_2_short = timerec_create();
@@ -259,7 +267,8 @@ int main()
 	}
 
 	/* overflows */
-	{
+	if (show_overflows) {
+		uint64_t n;
 		int overflow_found = 0;
 		uint64_t overflow_count = 0;
 		uint64_t overflow_sum = 0;
@@ -285,7 +294,8 @@ int main()
 	}
 
 	/* clientids */
-	{
+	if (show_clientids) {
+		uint64_t n;
 		uint64_t clientid_count = 0;
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
@@ -301,7 +311,8 @@ int main()
 	}
 
 	/* mxoffsets */
-	{
+	if (show_mxoffsets) {
+		uint64_t n;
 		uint64_t mxoffset_count = 0;
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
@@ -317,7 +328,8 @@ int main()
 	}
 
 	/* cycleoffs */
-	{
+	if (show_cycleoffs) {
+		uint64_t n;
 		uint64_t cycleoff_count = 0;
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
