@@ -76,7 +76,7 @@ __kernel void worker(
 			continue;
 		}
 
-		/* precalc(n0): */
+		/* precalc(n0) */
 
 		int R = SIEVE_LOGSIZE; /* copy since we need to decrement it */
 		ulong L = (ulong)n0; /* only 32-LSbits in n0 */
@@ -122,8 +122,8 @@ __kernel void worker(
 			} while (!(L & 1));
 		} while (1);
 
+		/* tail */
 lcalc:
-		/* up to this point, the L, L0, alpha, and beta are okay */
 		{
 			R = Salpha + Sbeta; /* R-LSbits have been precalculated above */
 
@@ -153,7 +153,6 @@ lcalc:
 				}
 				N += L;
 
-				/* tot_cycles += check2(N0, N); */
 				if (!(N & 1)) {
 					goto even;
 				}
@@ -178,20 +177,20 @@ even:
 						max_n = N;
 						max_n0 = N0;
 					}
+
 					do {
 						size_t beta = (size_t)ctz((uint)N);
 						N >>= beta;
 					} while (!(N & 1));
 					if (N < N0) {
-						if (tot_cycles > max_cycles) {
-							max_cycles = tot_cycles;
-							max_cycles_n0 = N0;
-						}
 						goto next;
 					}
 				} while (1);
 next:
-				;
+				if (tot_cycles > max_cycles) {
+					max_cycles = tot_cycles;
+					max_cycles_n0 = N0;
+				}
 			} /* end for over highest 8 bits */
 		} /* end lcalc */
 	} /* end for over lowest 32 bits */
