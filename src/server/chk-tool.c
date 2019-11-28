@@ -1,3 +1,4 @@
+#define _XOPEN_SOURCE
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -148,15 +149,45 @@ struct timerec timerec_create()
 	return timerec;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-	int show_checksum_stats = 1;
-	int show_missing_checksums = 1;
-	int show_usertime_records = 1;
-	int show_overflows = 1;
-	int show_clientids = 1;
-	int show_mxoffsets = 1;
-	int show_cycleoffs = 1;
+	int show_checksum_stats = 0;
+	int show_missing_checksums = 0;
+	int show_usertime_records = 0;
+	int show_overflows = 0;
+	int show_clientids = 0;
+	int show_mxoffsets = 0;
+	int show_cycleoffs = 0;
+	int opt;
+
+	while ((opt = getopt(argc, argv, "sxtoimc")) != -1) {
+		switch (opt) {
+			case 's':
+				show_checksum_stats = 1;
+				break;
+			case 'x':
+				show_missing_checksums = 1;
+				break;
+			case 't':
+				show_usertime_records = 1;
+				break;
+			case 'o':
+				show_overflows = 1;
+				break;
+			case 'i':
+				show_clientids = 1;
+				break;
+			case 'm':
+				show_mxoffsets = 1;
+				break;
+			case 'c':
+				show_cycleoffs = 1;
+				break;
+			default:
+				printf("[ERROR] Usage: %s [options]\n", argv[0]);
+				return EXIT_FAILURE;
+		}
+	}
 
 	init();
 
