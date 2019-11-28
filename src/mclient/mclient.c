@@ -478,6 +478,10 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, u
 				}
 				success = 1;
 			}
+		} else if (c == 1 && strcmp(ln_part[0], "NO_GPU_FOUND") == 0) {
+			message(ERR "(gpu)worker reported that no GPU was found, exiting...\n");
+			quit = 1;
+			success = 0;
 		} else {
 			/* other cases... */
 			message(WARN "worker printed unknown message: %s", line);
