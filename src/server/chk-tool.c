@@ -159,9 +159,6 @@ int main()
 		printf("sieve-2^2 (classical) checksums:\n");
 		print_checksum_stats(0x17f0f);
 
-		printf("sieve-3^1 sieve-2^32 (new cpu, buggy) checksums:\n");
-		print_checksum_stats(0x3354);
-
 		printf("sieve-2^16 (new gpu) checksums:\n");
 		print_checksum_stats(0xa0ed);
 
@@ -199,7 +196,6 @@ int main()
 		struct timerec tr_all = timerec_create();
 		struct timerec tr_short = timerec_create();
 		struct timerec tr_long = timerec_create();
-		struct timerec tr_new_cpu = timerec_create();
 		struct timerec tr_new_cpu32 = timerec_create();
 		struct timerec tr_new_gpu = timerec_create();
 		struct timerec tr_new_gpu24 = timerec_create();
@@ -219,10 +215,6 @@ int main()
 
 			if (usertime != 0 && (checksum>>24) == 0x17f0f && usertime >= 30*60) {
 				ADD_TIME(tr_long, usertime);
-			}
-
-			if (usertime != 0 && (checksum>>24) == 0x3354) {
-				ADD_TIME(tr_new_cpu, usertime);
 			}
 
 			if (usertime != 0 && (checksum>>24) == 0xa0ed) {
@@ -250,9 +242,6 @@ int main()
 
 		printf("classical (sieve-2^2) long user time records:\n");
 		tr_long.avg = avg_and_print_usertime(tr_long.total, tr_long.count);
-
-		printf("new cpu (3^1 2^32 buggy) user time records:\n");
-		avg_and_print_usertime(tr_new_cpu.total, tr_new_cpu.count);
 
 		printf("new gpu (sieve-2^16) user time records:\n");
 		avg_and_print_usertime(tr_new_gpu.total, tr_new_gpu.count);
