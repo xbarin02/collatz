@@ -254,6 +254,16 @@ uint64_t check(uint128_t n)
 	} while (1);
 }
 
+void full_check(uint128_t n)
+{
+	uint64_t cycles = check(n);
+
+	if (cycles > g_maxcycles) {
+		g_maxcycles = cycles;
+		g_maxcycles_n0 = (n);
+	}
+}
+
 static uint64_t check2(uint128_t n0, uint128_t n)
 {
 	int alpha, beta;
@@ -419,15 +429,6 @@ void precalc(uint64_t n, int R, uint64_t task_size, uint64_t task_id)
 		/* all betas were factored out, the n/2 sequence is now complete */
 	} while (1);
 }
-
-#define CHECK_WITH_CYCLES(n) \
-	do { \
-		uint64_t cycles = check(n); \
-		if (cycles > g_maxcycles) { \
-			g_maxcycles = cycles; \
-			g_maxcycles_n0 = (n); \
-		} \
-	} while (0)
 
 unsigned long atoul(const char *nptr)
 {
@@ -641,7 +642,7 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 #	else
 		if (1) {
 #	endif
-			CHECK_WITH_CYCLES(n);
+			full_check(n);
 		}
 	}
 #endif
