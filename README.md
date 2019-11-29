@@ -1,5 +1,4 @@
-# collatz
-Distributed computing project to check the convergence of the Collatz problem.
+# Convergence verification of the Collatz problem
 
 [![Build Status](https://travis-ci.com/xbarin02/collatz.svg?branch=master)](https://travis-ci.com/xbarin02/collatz)
 
