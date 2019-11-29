@@ -620,7 +620,7 @@ int parse_args(int argc, char *argv[], uint64_t *p_task_id, uint64_t *p_task_siz
 void solve_task(uint64_t task_id, uint64_t task_size)
 {
 #ifdef USE_PRECALC
-	uint64_t n;
+	uint64_t n, n_min, n_sup;
 	int R = SIEVE_LOGSIZE;
 #else
 	uint128_t n, n_min, n_sup;
@@ -629,8 +629,12 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 #ifdef USE_PRECALC
 	assert(task_size >= SIEVE_LOGSIZE);
 
+	/* n of the form 4n+3 */
+	n_min = (0UL << R) + 3;
+	n_sup = (1UL << R) + 3;
+
 	/* iterate over lowest R-bits */
-	for (n = 0 + 3; n < (1UL << R) + 3; n += 4) {
+	for (n = n_min; n < n_sup; n += 4) {
 #	ifdef USE_SIEVE
 		if (IS_LIVE((n) & SIEVE_MASK)) {
 #	else
