@@ -98,7 +98,7 @@ static mp_bitcnt_t mpz_ctz(const mpz_t n)
 #endif
 
 #ifdef _USE_GMP
-static void mpz_init_set_u128(mpz_t rop, uint128_t op)
+void mpz_init_set_u128(mpz_t rop, uint128_t op)
 {
 	uint64_t nh = (uint64_t)(op>>64);
 	uint64_t nl = (uint64_t)(op);
@@ -587,25 +587,16 @@ void init()
 	init_lut();
 }
 
-int main(int argc, char *argv[])
+int parse_args(int argc, char *argv[], uint64_t *p_task_id, uint64_t *p_task_size)
 {
-#ifdef USE_PRECALC
-	uint64_t n;
-	int R = SIEVE_LOGSIZE;
-#else
-	uint128_t n, n_min, n_sup;
-#endif
-	uint64_t task_id = 0;
-	uint64_t task_size = TASK_SIZE;
 	int opt;
-
-	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
 	while ((opt = getopt(argc, argv, "t:a:")) != -1) {
 		switch (opt) {
 			unsigned long seconds;
 			case 't':
-				task_size = atou64(optarg);
+				assert(p_task_size != NULL);
+				*p_task_size = atou64(optarg);
 				break;
 #ifndef __WIN32__
 			case 'a':
@@ -619,13 +610,21 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	task_id = (optind < argc) ? atou64(argv[optind]) : 0;
+	assert(p_task_id != NULL);
 
-	assert((uint128_t)(task_id + 1) <= (UINT128_MAX >> task_size));
+	*p_task_id = (optind < argc) ? atou64(argv[optind]) : 0;
 
-	report_prologue(task_id, task_size);
+	return 0;
+}
 
-	init();
+void solve_task(uint64_t task_id, uint64_t task_size)
+{
+#ifdef USE_PRECALC
+	uint64_t n;
+	int R = SIEVE_LOGSIZE;
+#else
+	uint128_t n, n_min, n_sup;
+#endif
 
 #ifdef USE_PRECALC
 	assert(task_size >= SIEVE_LOGSIZE);
@@ -649,6 +648,29 @@ int main(int argc, char *argv[])
 		CHECK(n);
 	}
 #endif
+}
+
+int main(int argc, char *argv[])
+{
+	uint64_t task_id = 0;
+	uint64_t task_size = TASK_SIZE;
+	int err;
+
+	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+	err = parse_args(argc, argv, &task_id, &task_size);
+
+	if (err) {
+		return err;
+	}
+
+	assert((uint128_t)(task_id + 1) <= (UINT128_MAX >> task_size));
+
+	report_prologue(task_id, task_size);
+
+	init();
+
+	solve_task(task_id, task_size);
 
 	report_epilogue(task_id, task_size);
 
