@@ -1,8 +1,10 @@
 #!/bin/bash
 
+KERNEL=kernel32-precalc.cl
+
 function check()
 {
-	T=$(./gpuworker $1)
+	T=$(./gpuworker -k $KERNEL $1)
 
 	CHECKSUM=$(echo "$T" | sed -unE '/CHECKSUM/s/.* (.*) .*/\1/p')
 	MAXIMUM_OFFSET=$(echo "$T" | sed -unE '/MAXIMUM_OFFSET/s/.* (.*)/\1/p')
@@ -14,12 +16,12 @@ function check()
 
 function verify()
 {
-	echo "$1: checking..."
+	echo -e "\e[1m$1\e[0m: checking..."
 
 	if test "$(check $1)" = "$2"; then
-		echo "$1: PASSED"
+		echo -e "\e[1m$1\e[0m: \e[32mPASSED\e[0m"
 	else
-		echo "$1: FAILED"
+		echo -e "\e[1m$1\e[0m: \e[31mFAILED\e[0m"
 	fi
 }
 
