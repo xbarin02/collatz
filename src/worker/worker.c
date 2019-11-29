@@ -475,98 +475,13 @@ const void *open_map(const char *path, size_t map_size)
 }
 #endif
 
-int main(int argc, char *argv[])
+void report_usertime()
 {
-#ifdef USE_PRECALC
-	uint64_t n;
-	int R = SIEVE_LOGSIZE;
-#else
-	uint128_t n, n_min, n_sup;
-#endif
-	uint64_t task_id = 0;
-	uint64_t task_size = TASK_SIZE;
-	int opt;
 #ifndef __WIN32__
 	struct rusage usage;
 #else
 	FILETIME ftCreation, ftExit, ftUser, ftKernel;
 	HANDLE hProcess = GetCurrentProcess();
-#endif
-#ifdef USE_SIEVE
-	char path[4096];
-	size_t k = SIEVE_LOGSIZE;
-	size_t map_size = SIEVE_SIZE;
-
-	sprintf(path, "sieve-%lu.map", (unsigned long)k);
-
-	g_map_sieve = open_map(path, map_size);
-#endif
-
-	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
-
-#ifdef USE_SIEVE
-	printf("SIEVE_LOGSIZE %lu\n", (unsigned long)SIEVE_LOGSIZE);
-#endif
-
-	while ((opt = getopt(argc, argv, "t:a:")) != -1) {
-		switch (opt) {
-			unsigned long seconds;
-			case 't':
-				task_size = atou64(optarg);
-				break;
-#ifndef __WIN32__
-			case 'a':
-				alarm(seconds = atoul(optarg));
-				printf("ALARM %lu\n", seconds);
-				break;
-#endif
-			default:
-				fprintf(stderr, "Usage: %s [-t task_size] task_id\n", argv[0]);
-				return EXIT_FAILURE;
-		}
-	}
-
-	task_id = (optind < argc) ? atou64(argv[optind]) : 0;
-
-	printf("TASK_SIZE %" PRIu64 "\n", task_size);
-	printf("TASK_ID %" PRIu64 "\n", task_id);
-
-	assert((uint128_t)(task_id + 1) <= (UINT128_MAX >> task_size));
-
-	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
-		(uint64_t)(((uint128_t)(task_id + 0) << task_size)>>64),
-		(uint64_t)(((uint128_t)(task_id + 0) << task_size)    ),
-		(uint64_t)(((uint128_t)(task_id + 1) << task_size)>>64),
-		(uint64_t)(((uint128_t)(task_id + 1) << task_size)    )
-	);
-
-#ifdef _USE_GMP
-	mpz_init_set_ui(g_mpz_max_n, 0UL);
-#endif
-
-	init_lut();
-
-#ifdef USE_PRECALC
-	assert(task_size >= SIEVE_LOGSIZE);
-
-	/* iterate over lowest R-bits */
-	for (n = 0 + 3; n < (1UL << R) + 3; n += 4) {
-#	ifdef USE_SIEVE
-		if (IS_LIVE((n) & SIEVE_MASK)) {
-#	else
-		if (1) {
-#	endif
-			precalc(n, R, task_size, task_id);
-		}
-	}
-#else
-	/* n of the form 4n+3 */
-	n_min = ((uint128_t)(task_id + 0) << task_size) + 3;
-	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
-
-	for (n = n_min; n < n_sup; n += 4) {
-		CHECK(n);
-	}
 #endif
 
 #ifndef __WIN32__
@@ -594,11 +509,10 @@ int main(int argc, char *argv[])
 		printf("USERTIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
 	}
 #endif
+}
 
-	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
-
-	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, g_checksum_beta);
-
+void report_maximum(uint64_t task_id, uint64_t task_size)
+{
 #ifdef _USE_GMP
 	if (1) {
 		mpz_t t_max_n, mpz_maximum;
@@ -620,11 +534,123 @@ int main(int argc, char *argv[])
 #endif
 
 	printf("MAXIMUM_OFFSET %" PRIu64 "\n", (uint64_t)(g_max_n0 - ((uint128_t)(task_id + 0) << task_size)));
+}
+
+void report_prologue(uint64_t task_id, uint64_t task_size)
+{
+#ifdef USE_SIEVE
+	printf("SIEVE_LOGSIZE %lu\n", (unsigned long)SIEVE_LOGSIZE);
+#endif
+
+	printf("TASK_SIZE %" PRIu64 "\n", task_size);
+	printf("TASK_ID %" PRIu64 "\n", task_id);
+
+	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
+		(uint64_t)(((uint128_t)(task_id + 0) << task_size)>>64),
+		(uint64_t)(((uint128_t)(task_id + 0) << task_size)    ),
+		(uint64_t)(((uint128_t)(task_id + 1) << task_size)>>64),
+		(uint64_t)(((uint128_t)(task_id + 1) << task_size)    )
+	);
+}
+
+void report_epilogue(uint64_t task_id, uint64_t task_size)
+{
+	report_usertime();
+
+	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
+
+	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, g_checksum_beta);
+
+	report_maximum(task_id, task_size);
 
 	printf("MAXIMUM_CYCLE %" PRIu64 "\n", g_maxcycles);
 	printf("MAXIMUM_CYCLE_OFFSET %" PRIu64 "\n", (uint64_t)(g_maxcycles_n0 - ((uint128_t)(task_id + 0) << task_size)));
 
 	printf("HALTED\n");
+}
+
+void init()
+{
+#ifdef USE_SIEVE
+	char path[4096];
+	size_t k = SIEVE_LOGSIZE;
+	size_t map_size = SIEVE_SIZE;
+
+	sprintf(path, "sieve-%lu.map", (unsigned long)k);
+
+	g_map_sieve = open_map(path, map_size);
+#endif
+#ifdef _USE_GMP
+	mpz_init_set_ui(g_mpz_max_n, 0UL);
+#endif
+
+	init_lut();
+}
+
+int main(int argc, char *argv[])
+{
+#ifdef USE_PRECALC
+	uint64_t n;
+	int R = SIEVE_LOGSIZE;
+#else
+	uint128_t n, n_min, n_sup;
+#endif
+	uint64_t task_id = 0;
+	uint64_t task_size = TASK_SIZE;
+	int opt;
+
+	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+	while ((opt = getopt(argc, argv, "t:a:")) != -1) {
+		switch (opt) {
+			unsigned long seconds;
+			case 't':
+				task_size = atou64(optarg);
+				break;
+#ifndef __WIN32__
+			case 'a':
+				alarm(seconds = atoul(optarg));
+				printf("ALARM %lu\n", seconds);
+				break;
+#endif
+			default:
+				fprintf(stderr, "Usage: %s [-t task_size] task_id\n", argv[0]);
+				return EXIT_FAILURE;
+		}
+	}
+
+	task_id = (optind < argc) ? atou64(argv[optind]) : 0;
+
+	assert((uint128_t)(task_id + 1) <= (UINT128_MAX >> task_size));
+
+	report_prologue(task_id, task_size);
+
+	init();
+
+#ifdef USE_PRECALC
+	assert(task_size >= SIEVE_LOGSIZE);
+
+	/* iterate over lowest R-bits */
+	for (n = 0 + 3; n < (1UL << R) + 3; n += 4) {
+#	ifdef USE_SIEVE
+		if (IS_LIVE((n) & SIEVE_MASK)) {
+#	else
+		if (1) {
+#	endif
+			precalc(n, R, task_size, task_id);
+		}
+	}
+#else
+	/* n of the form 4n+3 */
+	n_min = ((uint128_t)(task_id + 0) << task_size) + 3;
+	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
+
+	for (n = n_min; n < n_sup; n += 4) {
+		CHECK(n);
+	}
+#endif
+
+	report_epilogue(task_id, task_size);
 
 	return 0;
 }
