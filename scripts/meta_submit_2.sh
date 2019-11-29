@@ -4,8 +4,8 @@
 #PBS -M ibarina@fit.vutbr.cz
 #PBS -m a
 #
-#PBS -R eo
 #PBS -l select=1:ncpus=2:mem=2gb:scratch_local=1gb,walltime=4:00:00
+#PBS -R eo
 
 HOME=/storage/brno11-elixir/home/ibarina
 

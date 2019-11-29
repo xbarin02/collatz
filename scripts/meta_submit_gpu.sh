@@ -6,6 +6,7 @@
 #
 #PBS -q gpu
 #PBS -l select=1:ncpus=1:ngpus=1:mem=2gb:scratch_local=2gb,walltime=4:00:00
+#PBS -R eo
 
 HOME=/storage/brno11-elixir/home/ibarina
 
