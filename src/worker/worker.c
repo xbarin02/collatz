@@ -40,7 +40,7 @@
 #	define SIEVE_LOGSIZE 32
 #	define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
 #	define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8) /* 2^k bits */
-#	define IS_LIVE(n) ( ( g_map_sieve[ (n)>>3 ] >> ((n)&7) ) & 1 )
+#	define IS_LIVE(n) ( ( g_map_sieve[ ((n) & SIEVE_MASK)>>3 ] >> (((n) & SIEVE_MASK)&7) ) & 1 )
 #endif
 
 #define TASK_SIZE 40
@@ -429,19 +429,6 @@ void precalc(uint64_t n, int R, uint64_t task_size, uint64_t task_id)
 		} \
 	} while (0)
 
-#ifdef USE_SIEVE
-#	define CHECK_IF_LIVE(n) \
-		if (IS_LIVE((n) & SIEVE_MASK)) { \
-			CHECK_WITH_CYCLES(n); \
-		}
-#endif
-
-#ifdef USE_SIEVE
-#	define CHECK(n) CHECK_IF_LIVE(n)
-#else
-#	define CHECK(n) CHECK_WITH_CYCLES(n)
-#endif
-
 unsigned long atoul(const char *nptr)
 {
 	return strtoul(nptr, NULL, 10);
@@ -636,7 +623,7 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 	/* iterate over lowest R-bits */
 	for (n = n_min; n < n_sup; n += 4) {
 #	ifdef USE_SIEVE
-		if (IS_LIVE((n) & SIEVE_MASK)) {
+		if (IS_LIVE(n)) {
 #	else
 		if (1) {
 #	endif
@@ -649,7 +636,13 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
 
 	for (n = n_min; n < n_sup; n += 4) {
-		CHECK(n);
+#	ifdef USE_SIEVE
+		if (IS_LIVE(n)) {
+#	else
+		if (1) {
+#	endif
+			CHECK_WITH_CYCLES(n);
+		}
 	}
 #endif
 }
