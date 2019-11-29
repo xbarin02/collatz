@@ -13,12 +13,12 @@ function check()
 
 function verify()
 {
-	echo "$1: checking..."
+	echo -e "\e[1m$1\e[0m: checking..."
 
 	if test "$(check $1)" = "$2"; then
-		echo -e "$1: \e[32mPASSED\e[0m"
+		echo -e "\e[1m$1\e[0m: \e[32mPASSED\e[0m"
 	else
-		echo -e "$1: \e[31mFAILED\e[0m"
+		echo -e "\e[1m$1\e[0m: \e[31mFAILED\e[0m"
 	fi
 }
 
