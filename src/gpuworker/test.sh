@@ -4,12 +4,17 @@ KERNEL=kernel32-precalc.cl
 
 function check()
 {
-	T=$(./gpuworker -k $KERNEL $1)
+	T=$(./gpuworker -k "$KERNEL" $1)
 
 	CHECKSUM=$(echo "$T" | sed -unE '/CHECKSUM/s/.* (.*) .*/\1/p')
 	MAXIMUM_OFFSET=$(echo "$T" | sed -unE '/MAXIMUM_OFFSET/s/.* (.*)/\1/p')
 	MAXIMUM_CYCLE_OFFSET=$(echo "$T" | sed -unE '/MAXIMUM_CYCLE_OFFSET/s/.* (.*)/\1/p')
 	# '
+
+	if [[ "$T" =~ ABORTED_DUE_TO_OVERFLOW ]]; then
+		echo "ABORTED_DUE_TO_OVERFLOW"
+		return
+	fi
 
 	echo "$CHECKSUM $MAXIMUM_OFFSET $MAXIMUM_CYCLE_OFFSET"
 }
@@ -18,7 +23,11 @@ function verify()
 {
 	echo -e "\e[1m$1\e[0m: checking..."
 
-	if test "$(check $1)" = "$2"; then
+	R="$(check $1)"
+
+	if test "$R" = ABORTED_DUE_TO_OVERFLOW; then
+		echo -e "\e[1m$1\e[0m: \e[31m$R\e[0m"
+	elif test "$R" = "$2"; then
 		echo -e "\e[1m$1\e[0m: \e[32mPASSED\e[0m"
 	else
 		echo -e "\e[1m$1\e[0m: \e[31mFAILED\e[0m"
