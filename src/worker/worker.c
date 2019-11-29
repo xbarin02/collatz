@@ -320,17 +320,17 @@ static uint64_t check2(uint128_t n0, uint128_t n)
 	} while (1);
 }
 
-static void calc(uint64_t L, int R, int Salpha, int Sbeta, uint64_t task_size, uint64_t L0, uint64_t task_id, uint64_t cycles)
+static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint64_t L, int Salpha, int Sbeta, uint64_t cycles)
 {
 	uint128_t h;
 
-	g_checksum_alpha += Salpha << (task_size - R);
-	g_checksum_beta  += Sbeta  << (task_size - R);
+	g_checksum_alpha += Salpha << (task_size - R0);
+	g_checksum_beta  += Sbeta  << (task_size - R0);
 
-	assert(R == Salpha + Sbeta);
+	assert(R0 == Salpha + Sbeta);
 
-	for (h = 0; h < (1UL << (task_size - R)); ++h) {
-		uint128_t H = ((uint128_t)task_id << task_size) + (h << R);
+	for (h = 0; h < (1UL << (task_size - R0)); ++h) {
+		uint128_t H = ((uint128_t)task_id << task_size) + (h << R0);
 		uint128_t N;
 		uint128_t N0 = H + L0;
 		uint64_t cycles2;
@@ -351,20 +351,18 @@ static void calc(uint64_t L, int R, int Salpha, int Sbeta, uint64_t task_size, u
 /**
  * @param R remaining bits in 'n'
  */
-void precalc(uint64_t n, int R, uint64_t task_size, uint64_t task_id)
+void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 {
-	int R0 = R; /* copy of R */
-	uint64_t L = n; /* only R-LSbits in n */
-	uint64_t L0 = L;
-	int alpha, beta;
+	uint64_t L = L0; /* only R-LSbits in n */
 	int Salpha = 0, Sbeta = 0; /* sum of alpha, beta */
 	uint64_t cycles = 0;
+	int R = R0; /* copy of R */
 
 	do {
 		L++;
 
 		do {
-			alpha = __builtin_ctzu64(L);
+			int alpha = __builtin_ctzu64(L);
 
 			if (alpha > R) {
 				alpha = R;
@@ -385,7 +383,7 @@ void precalc(uint64_t n, int R, uint64_t task_size, uint64_t task_id)
 				L--;
 
 				/* at this point, the L can be odd or even */
-				calc(L, R0, Salpha, Sbeta, task_size, L0, task_id, cycles);
+				calc(task_id, task_size, L0, R0, L, Salpha, Sbeta, cycles);
 				return;
 			}
 		} while (!(L & 1));
@@ -400,15 +398,15 @@ void precalc(uint64_t n, int R, uint64_t task_size, uint64_t task_id)
 		if (L == 0) {
 			/* no beta has been pulled out yet, the L is even */
 			/* WARNING: not all R bits have been exhausted */
-			beta = R;
+			int beta = R;
 			R -= beta;
 			Sbeta += beta;
-			calc(L, R0, Salpha, Sbeta, task_size, L0, task_id, cycles);
+			calc(task_id, task_size, L0, R0, L, Salpha, Sbeta, cycles);
 			return;
 		}
 
 		do {
-			beta = __builtin_ctzu64(L);
+			int beta = __builtin_ctzu64(L);
 
 			if (beta > R) {
 				beta = R;
@@ -421,7 +419,7 @@ void precalc(uint64_t n, int R, uint64_t task_size, uint64_t task_id)
 
 			if (R == 0) {
 				/* at least some (maybe all) betas were pulled out, the L can be even or odd */
-				calc(L, R0, Salpha, Sbeta, task_size, L0, task_id, cycles);
+				calc(task_id, task_size, L0, R0, L, Salpha, Sbeta, cycles);
 				return;
 			}
 		} while (!(L & 1));
@@ -628,7 +626,7 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 #	else
 		if (1) {
 #	endif
-			precalc(n, R, task_size, task_id);
+			precalc(task_id, task_size, n, R);
 		}
 	}
 #else
