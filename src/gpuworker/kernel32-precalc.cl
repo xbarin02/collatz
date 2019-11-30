@@ -106,8 +106,8 @@ __kernel void worker(
 			L--;
 			cycles++;
 			if (L == 0) {
-				R -= R;
 				Sbeta += R;
+				R -= R;
 				goto lcalc;
 			}
 			do {
