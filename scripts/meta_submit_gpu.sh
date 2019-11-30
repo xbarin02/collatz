@@ -29,6 +29,7 @@ echo "TMPDIR=$TMPDIR"
 echo "PBS_JOBID=${PBS_JOBID}"
 # this is the cwd where qsub was executed, not cwd of the script itself
 echo "PBS_O_WORKDIR=${PBS_O_WORKDIR}"
+echo "SCRATCHDIR=$SCRATCHDIR"
 
 type 'clean_scratch' || :
 trap 'clean_scratch' TERM EXIT
