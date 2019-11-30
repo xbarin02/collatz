@@ -201,7 +201,6 @@ int main(int argc, char *argv[])
 
 		printf("sieve-2^24 (gpu) checksums:\n");
 		print_checksum_stats(0x6ed9);
-		print_checksum_stats(0x6eda);
 
 		printf("sieve-2^32 (cpu, gpu) checksums:\n");
 		print_checksum_stats(0x4cfe);
@@ -261,10 +260,6 @@ int main(int argc, char *argv[])
 			}
 
 			if (usertime != 0 && (checksum>>24) == 0x6ed9) {
-				ADD_TIME(tr_mod_2_24, usertime);
-			}
-
-			if (usertime != 0 && (checksum>>24) == 0x6eda) {
 				ADD_TIME(tr_mod_2_24, usertime);
 			}
 
