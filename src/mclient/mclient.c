@@ -937,6 +937,10 @@ int main(int argc, char *argv[])
 			if (one_shot)
 				break;
 
+			if (!quit) {
+				/* even if revoking assignments was successful, wait few seconds to give others a chance to pick up the just revoked assignments */
+				sleep(SLEEP_INTERVAL);
+			}
 			continue;
 		}
 
