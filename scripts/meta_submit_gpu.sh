@@ -90,3 +90,5 @@ stdbuf -o0 -e0 ./mclient -a 14300 -b 7200 -g 1
 popd
 rm -rf -- "$TMP"
 rm -rf -- "${POCL_CACHE_DIR}"
+
+clean_scratch

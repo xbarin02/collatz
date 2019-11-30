@@ -75,3 +75,5 @@ stdbuf -o0 -e0 ./mclient -a 14300 -1 2
 
 popd
 rm -rf -- "$TMP"
+
+clean_scratch
