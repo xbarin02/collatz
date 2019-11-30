@@ -25,6 +25,9 @@ echo "PBS_JOBID=${PBS_JOBID}"
 # this is the cwd where qsub was executed, not cwd of the script itself
 echo "PBS_O_WORKDIR=${PBS_O_WORKDIR}"
 
+type 'clean_scratch' || :
+trap 'clean_scratch' TERM EXIT
+
 module load clang-9.0
 module load gmp
 

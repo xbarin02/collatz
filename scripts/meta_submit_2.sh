@@ -28,6 +28,9 @@ echo "PBS_O_WORKDIR=${PBS_O_WORKDIR}"
 module load clang-9.0
 module load gmp
 
+type 'clean_scratch' || :
+trap 'clean_scratch' TERM EXIT
+
 set -u
 set -e
 
