@@ -151,9 +151,9 @@ struct timerec timerec_create()
 
 int main(int argc, char *argv[])
 {
-	int show_checksum_stats = 0;
+	int show_checksums = 0;
 	int show_missing_checksums = 0;
-	int show_usertime_records = 0;
+	int show_usertimes = 0;
 	int show_overflows = 0;
 	int show_clientids = 0;
 	int show_mxoffsets = 0;
@@ -163,13 +163,13 @@ int main(int argc, char *argv[])
 	while ((opt = getopt(argc, argv, "sxtoimc")) != -1) {
 		switch (opt) {
 			case 's':
-				show_checksum_stats = 1;
+				show_checksums = 1;
 				break;
 			case 'x':
 				show_missing_checksums = 1;
 				break;
 			case 't':
-				show_usertime_records = 1;
+				show_usertimes = 1;
 				break;
 			case 'o':
 				show_overflows = 1;
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
 	init();
 
 	/* checksums */
-	if (show_checksum_stats) {
+	if (show_checksums) {
 		printf("sieve-2^2 (cpu, gpu) checksums:\n");
 		print_checksum_stats(0x17f0f);
 
@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* usertime records */
-	if (show_usertime_records) {
+	if (show_usertimes) {
 #		define ADD_TIME(tr, time) do { (tr).total += (time); (tr).count++; } while (0)
 		uint64_t n;
 
