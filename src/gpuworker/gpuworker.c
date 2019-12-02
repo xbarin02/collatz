@@ -163,7 +163,10 @@ uint64_t get_cycles(uint128_t n0)
 				alpha = LUT_SIZE64 - 1;
 			}
 			n >>= alpha;
-			assert(n <= UINT128_MAX >> 2*alpha);
+			if (n > UINT128_MAX / g_lut64[alpha]){
+				printf("ABORTED_DUE_TO_OVERFLOW\n");
+			}
+			assert(n <= UINT128_MAX / g_lut64[alpha]);
 			n *= g_lut64[alpha];
 		} while (!(n & 1));
 
