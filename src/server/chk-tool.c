@@ -199,9 +199,6 @@ int main(int argc, char *argv[])
 		printf("sieve-2^16 (gpu) checksums:\n");
 		print_checksum_stats(0xa0ed);
 
-		printf("sieve-2^24 (gpu) checksums:\n");
-		print_checksum_stats(0x6ed9);
-
 		printf("sieve-2^32 (cpu, gpu) checksums:\n");
 		print_checksum_stats(0x4cfe);
 	}
@@ -236,7 +233,6 @@ int main(int argc, char *argv[])
 		struct timerec tr_mod_2_2_long = timerec_create();
 		struct timerec tr_mod_2_32 = timerec_create();
 		struct timerec tr_mod_2_16 = timerec_create();
-		struct timerec tr_mod_2_24 = timerec_create();
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t usertime = g_usertimes[n];
@@ -259,10 +255,6 @@ int main(int argc, char *argv[])
 				ADD_TIME(tr_mod_2_16, usertime);
 			}
 
-			if (usertime != 0 && (checksum>>24) == 0x6ed9) {
-				ADD_TIME(tr_mod_2_24, usertime);
-			}
-
 			if (usertime != 0 && (checksum>>24) == 0x4cfe) {
 				ADD_TIME(tr_mod_2_32, usertime);
 			}
@@ -279,9 +271,6 @@ int main(int argc, char *argv[])
 
 		printf("sieve-2^16 user time records:\n");
 		avg_and_print_usertime(tr_mod_2_16.total, tr_mod_2_16.count);
-
-		printf("sieve-2^24 user time records:\n");
-		avg_and_print_usertime(tr_mod_2_24.total, tr_mod_2_24.count);
 
 		printf("sieve-2^32 user time records:\n");
 		avg_and_print_usertime(tr_mod_2_32.total, tr_mod_2_32.count);
