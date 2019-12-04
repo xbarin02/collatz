@@ -9,7 +9,6 @@ The trick is that, when calculating the function iterates, the programs switch b
 This approach differs significantly from the commonly used approach utilizing a space-time tradeoff using huge lookup tables.
 Mathematical details on this approach are given [here](doc/ALGORITHM.md).
 The programs can check 128-bit numbers.
-The processing time of individual *N*-bit blocks (*2<sup>N</sup>* numbers) is independent of their magnitude.
 
 ## Contact
 David Barina <ibarina@fit.vutbr.cz>
