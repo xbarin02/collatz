@@ -744,6 +744,10 @@ int main(int argc, char *argv[])
 			if ((checksum>>24) == 0xa0ed || (checksum>>24) == 0x4cfe) {
 				if (mxoffset == 0) {
 					printf("- resetting the assignment %" PRIu64 " due to missing mxoffset\n", n);
+
+					SET_UNASSIGNED(n);
+					SET_INCOMPLETE(n);
+
 					c++;
 				}
 			}
