@@ -735,6 +735,17 @@ int main(int argc, char *argv[])
 				SET_INCOMPLETE(n);
 			}
 		}
+
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			uint64_t checksum = g_checksums[n];
+			uint64_t mxoffset = g_mxoffsets[n];
+
+			if ((checksum>>24) == 0xa0ed || (checksum>>24) == 0x4cfe) {
+				if (mxoffset == 0) {
+					printf("- resetting the assignment %" PRIu64 " due to missing mxoffset\n", n);
+				}
+			}
+		}
 	}
 
 	/* fix records the *.map and *.dat */
