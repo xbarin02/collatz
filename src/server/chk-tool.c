@@ -191,26 +191,6 @@ int main(int argc, char *argv[])
 
 	init();
 
-	/* results with new checksums and missing mxoffset */
-	if (1) {
-		uint64_t n;
-		uint64_t c = 0;
-
-		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
-			uint64_t checksum = g_checksums[n];
-			uint64_t mxoffset = g_mxoffsets[n];
-
-			if ((checksum>>24) == 0xa0ed || (checksum>>24) == 0x4cfe) {
-				if (mxoffset == 0) {
-					c++;
-				}
-			}
-		}
-
-		printf("*** found %" PRIu64 " new results without mxoffset ***\n", c);
-		printf("\n");
-	}
-
 	/* checksums */
 	if (show_checksums) {
 		printf("sieve-2^2 (cpu, gpu) checksums:\n");
