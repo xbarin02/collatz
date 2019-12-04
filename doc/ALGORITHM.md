@@ -8,11 +8,11 @@ n = n0
 
 while n >= n0 do
 	n = n + 1
-	alpha = ctz(n)
-	n = n / 2^alpha * 3^alpha
+	α = ctz(n)
+	n = n / 2^α * 3^α
 	n = n - 1
-	beta = ctz(n)
-	n = n / 2^beta
+	β = ctz(n)
+	n = n / 2^β
 ```
 
 where the `ctz(n)` is the number of trailing zero bits in binary
