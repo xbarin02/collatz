@@ -722,6 +722,7 @@ int main(int argc, char *argv[])
 
 	if (invalidate_new) {
 		uint64_t n;
+		uint64_t c = 0;
 
 		message(WARN "Invalidating new/buggy/outdated checksums...\n");
 
@@ -743,9 +744,12 @@ int main(int argc, char *argv[])
 			if ((checksum>>24) == 0xa0ed || (checksum>>24) == 0x4cfe) {
 				if (mxoffset == 0) {
 					printf("- resetting the assignment %" PRIu64 " due to missing mxoffset\n", n);
+					c++;
 				}
 			}
 		}
+
+		message(WARN "invalidated %" PRIu64 " new results without mxoffset\n", c);
 	}
 
 	/* fix records the *.map and *.dat */
