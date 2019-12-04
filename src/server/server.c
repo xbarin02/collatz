@@ -534,6 +534,10 @@ int read_message(int fd, int thread_id, const char *ipv4)
 
 		g_overflows[n] = overflow_counter;
 
+		if (g_mxoffsets[n] != 0 && g_mxoffsets[n] != mxoffset) {
+			message(ERR "mxoffsets do not match! (the other mxoffset was +%" PRIu64 ")\n", g_mxoffsets[n]);
+		}
+
 		g_mxoffsets[n] = mxoffset;
 
 		g_cycleoffs[n] = cycleoff;
