@@ -1,6 +1,6 @@
 CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -D_XOPEN_SOURCE
-LDLIBS+=-lm
 LDFLAGS=
+LDLIBS+=-lm
 BINS=steps max-steps max-value max-strength max-completeness max-residue
 
 ifeq ($(USE_LIBGMP), 1)
@@ -9,6 +9,7 @@ ifeq ($(USE_LIBGMP), 1)
 endif
 
 CFLAGS+=$(EXTRA_CFLAGS)
+LDFLAGS+=$(EXTRA_LDFLAGS)
 LDLIBS+=$(EXTRA_LDLIBS)
 
 .PHONY: all
