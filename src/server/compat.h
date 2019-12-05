@@ -6,6 +6,18 @@
 	#pragma GCC diagnostic ignored "-Wformat"
 #endif
 
+#include <limits.h>
+
+/* count trailing zeros */
+__attribute__ ((unused))
+static int __builtin_ctzx(uint128_t n)
+{
+	if ((unsigned long)n == 0)
+		return (sizeof(unsigned long) * CHAR_BIT) + __builtin_ctzl((unsigned long)(n >> (sizeof(unsigned long) * CHAR_BIT)));
+	else
+		return __builtin_ctzl((unsigned long)n);
+}
+
 #include <assert.h>
 
 __attribute__ ((unused))

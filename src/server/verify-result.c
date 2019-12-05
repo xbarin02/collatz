@@ -13,8 +13,8 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#include "compat.h"
 #include "wideint.h"
+#include "compat.h"
 
 #define TASK_SIZE 40
 
