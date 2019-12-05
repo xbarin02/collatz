@@ -428,11 +428,6 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 	} while (1);
 }
 
-unsigned long atoul(const char *nptr)
-{
-	return strtoul(nptr, NULL, 10);
-}
-
 #ifdef USE_SIEVE
 const void *open_map(const char *path, size_t map_size)
 {

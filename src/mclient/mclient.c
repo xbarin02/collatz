@@ -264,11 +264,6 @@ int open_socket_to_server()
 	return fd;
 }
 
-unsigned long atoul(const char *nptr)
-{
-	return strtoul(nptr, NULL, 10);
-}
-
 const char *get_task_path(int gpu_mode)
 {
 	return gpu_mode ? taskpath_gpu : taskpath_cpu;

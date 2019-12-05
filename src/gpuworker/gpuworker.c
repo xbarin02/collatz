@@ -72,11 +72,6 @@ const void *open_map(const char *path, size_t map_size)
 	return ptr;
 }
 
-unsigned long atoul(const char *nptr)
-{
-	return strtoul(nptr, NULL, 10);
-}
-
 uint64_t pow3(uint64_t n)
 {
 	uint64_t r = 1;

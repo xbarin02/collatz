@@ -46,4 +46,10 @@ static uint64_t atou64(const char *nptr)
 	}
 }
 
+UNUSED
+static unsigned long atoul(const char *nptr)
+{
+	return strtoul(nptr, NULL, 10);
+}
+
 #endif /* COMPAT_COMPAT_H_ */
