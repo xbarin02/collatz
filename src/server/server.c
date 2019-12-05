@@ -172,16 +172,6 @@ int write_uint64(int fd, uint64_t n)
 	return 0;
 }
 
-int write_assignment_no(int fd, uint64_t n)
-{
-	return write_uint64(fd, n);
-}
-
-int read_assignment_no(int fd, uint64_t *n)
-{
-	return read_uint64(fd, n);
-}
-
 #define TASK_SIZE 40
 
 /* 2^32 assignments (tasks) */
@@ -197,36 +187,6 @@ int read_assignment_no(int fd, uint64_t *n)
 #define SET_UNASSIGNED(n) ( g_map_assigned[(n)>>3] &= UCHAR_MAX ^ (1<<((n)&7)) )
 #define SET_COMPLETE(n)   ( g_map_complete[(n)>>3] |= (1<<((n)&7)) )
 #define SET_INCOMPLETE(n) ( g_map_complete[(n)>>3] &= UCHAR_MAX ^ (1<<((n)&7)) )
-
-int write_task_size(int fd)
-{
-	return write_uint64(fd, TASK_SIZE);
-}
-
-int read_task_size(int fd, uint64_t *task_size)
-{
-	return read_uint64(fd, task_size);
-}
-
-int read_overflow_counter(int fd, uint64_t *overflow_counter)
-{
-	return read_uint64(fd, overflow_counter);
-}
-
-int read_user_time(int fd, uint64_t *user_time)
-{
-	return read_uint64(fd, user_time);
-}
-
-int read_check_sum(int fd, uint64_t *check_sum)
-{
-	return read_uint64(fd, check_sum);
-}
-
-int read_clid(int fd, uint64_t *clid)
-{
-	return read_uint64(fd, clid);
-}
 
 uint64_t g_lowest_unassigned = 0; /* bit index, not byte */
 uint64_t g_lowest_incomplete = 0;
@@ -409,16 +369,16 @@ int read_message(int fd, int thread_id, const char *ipv4)
 
 		message(INFO "assignment requested: %" PRIu64 "\n", n);
 
-		if (write_assignment_no(fd, n) < 0) {
+		if (write_uint64(fd, n) < 0) {
 			return -1;
 		}
 
-		if (write_task_size(fd) < 0) {
+		if (write_uint64(fd, TASK_SIZE) < 0) {
 			message(ERR "unable to write task size, update the client!\n");
 			return -1;
 		}
 
-		if (read_clid(fd, &clid) < 0) {
+		if (read_uint64(fd, &clid) < 0) {
 			message(ERR "client does not send client ID\n");
 			unset_assignment(n);
 			return -1;
@@ -440,11 +400,11 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		uint64_t mxoffset = 0;
 		uint64_t cycleoff = 0;
 
-		if (read_assignment_no(fd, &n) < 0) {
+		if (read_uint64(fd, &n) < 0) {
 			return -1;
 		}
 
-		if (read_task_size(fd, &task_size) < 0) {
+		if (read_uint64(fd, &task_size) < 0) {
 			message(ERR "unable to read task size, update the client!\n");
 			return -1;
 		}
@@ -454,22 +414,22 @@ int read_message(int fd, int thread_id, const char *ipv4)
 			return -1;
 		}
 
-		if (read_overflow_counter(fd, &overflow_counter) < 0) {
+		if (read_uint64(fd, &overflow_counter) < 0) {
 			message(ERR "client does not send the overflow counter!\n");
 			return -1;
 		}
 
-		if (read_user_time(fd, &user_time) < 0) {
+		if (read_uint64(fd, &user_time) < 0) {
 			message(ERR "client does not send the user time!\n");
 			return -1;
 		}
 
-		if (read_check_sum(fd, &checksum) < 0) {
+		if (read_uint64(fd, &checksum) < 0) {
 			message(ERR "client does not send the check sum!\n");
 			return -1;
 		}
 
-		if (read_clid(fd, &clid) < 0) {
+		if (read_uint64(fd, &clid) < 0) {
 			message(ERR "client does not send client ID\n");
 			return -1;
 		}
@@ -551,16 +511,16 @@ int read_message(int fd, int thread_id, const char *ipv4)
 
 		message(INFO "assignment requested: %" PRIu64 " (lowest incomplete +%i)\n", n, thread_id);
 
-		if (write_assignment_no(fd, n) < 0) {
+		if (write_uint64(fd, n) < 0) {
 			return -1;
 		}
 
-		if (write_task_size(fd) < 0) {
+		if (write_uint64(fd, TASK_SIZE) < 0) {
 			message(ERR "unable to write task size, update the client!\n");
 			return -1;
 		}
 
-		if (read_clid(fd, &clid) < 0) {
+		if (read_uint64(fd, &clid) < 0) {
 			message(ERR "client does not send client ID\n");
 			return -1;
 		}
@@ -576,16 +536,16 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		uint64_t task_size = 0;
 		uint64_t clid = 0;
 
-		if (read_assignment_no(fd, &n) < 0) {
+		if (read_uint64(fd, &n) < 0) {
 			return -1;
 		}
 
-		if (read_task_size(fd, &task_size) < 0) {
+		if (read_uint64(fd, &task_size) < 0) {
 			message(ERR "unable to read task size, update the client!\n");
 			return -1;
 		}
 
-		if (read_clid(fd, &clid) < 0) {
+		if (read_uint64(fd, &clid) < 0) {
 			message(ERR "client does not send client ID\n");
 			return -1;
 		}
@@ -607,19 +567,19 @@ int read_message(int fd, int thread_id, const char *ipv4)
 
 		g_clientids[n] = 0;
 	} else if (strcmp(msg, "LOI") == 0) {
-		if (write_assignment_no(fd, g_lowest_incomplete) < 0) {
+		if (write_uint64(fd, g_lowest_incomplete) < 0) {
 			return -1;
 		}
 
-		if (write_task_size(fd) < 0) {
+		if (write_uint64(fd, TASK_SIZE) < 0) {
 			return -1;
 		}
 	} else if (strcmp(msg, "HIR") == 0) {
-		if (write_assignment_no(fd, g_lowest_unassigned) < 0) {
+		if (write_uint64(fd, g_lowest_unassigned) < 0) {
 			return -1;
 		}
 
-		if (write_task_size(fd) < 0) {
+		if (write_uint64(fd, TASK_SIZE) < 0) {
 			return -1;
 		}
 	} else {
