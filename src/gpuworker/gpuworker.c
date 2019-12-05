@@ -17,8 +17,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#include "compat.h"
 #include "wideint.h"
+#include "compat.h"
 
 /* in log2 */
 #define TASK_SIZE 40

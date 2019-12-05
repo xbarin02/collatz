@@ -20,6 +20,15 @@ static int __builtin_ctzu64(uint64_t n)
 	}
 }
 
+__attribute__ ((unused))
+static int __builtin_ctzu128(uint128_t n)
+{
+	if ((uint64_t)n == 0)
+		return 64 + __builtin_ctzu64((uint64_t)(n >> 64));
+	else
+		return __builtin_ctzu64((uint64_t)n);
+}
+
 #include <stdlib.h>
 
 __attribute__ ((unused))
