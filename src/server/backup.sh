@@ -1,27 +1,20 @@
 #!/bin/bash
 
-# assigned.map complete.map
-test -e assigned.000.map && mv -f -- assigned.000.map assigned.001.map
-test -e assigned.map && cp -- assigned.map assigned.000.map
+function backup()
+{
+	F=$1
+	F000=${1%%.*}.000.${1#*.}
+	F001=${1%%.*}.001.${1#*.}
 
-test -e complete.000.map && mv -f -- complete.000.map complete.001.map
-test -e complete.map && cp -- complete.map complete.000.map
+	echo "Backing up file $F..."
+	test -e $F000 && mv -f -- $F000 $F001
+	test -e $F && cp -- $F $F000
+}
 
-# clientids.dat cycleoffs.dat checksums.dat mxoffsets.dat overflows.dat usertimes.dat
-test -e clientids.000.dat && mv -f -- clientids.000.dat clientids.001.dat
-test -e clientids.dat && cp -- clientids.dat clientids.000.dat
+MAPS=( assigned.map complete.map )
 
-test -e cycleoffs.000.dat && mv -f -- cycleoffs.000.dat cycleoffs.001.dat
-test -e cycleoffs.dat && cp -- cycleoffs.dat cycleoffs.000.dat
+for F in ${MAPS[@]}; do backup $F; done
 
-test -e checksums.000.dat && mv -f -- checksums.000.dat checksums.001.dat
-test -e checksums.dat && cp -- checksums.dat checksums.000.dat
+DATS=( clientids.dat cycleoffs.dat checksums.dat mxoffsets.dat overflows.dat usertimes.dat )
 
-test -e mxoffsets.000.dat && mv -f -- mxoffsets.000.dat mxoffsets.001.dat
-test -e mxoffsets.dat && cp -- mxoffsets.dat mxoffsets.000.dat
-
-test -e overflows.000.dat && mv -f -- overflows.000.dat overflows.001.dat
-test -e overflows.dat && cp -- overflows.dat overflows.000.dat
-
-test -e usertimes.000.dat && mv -f -- usertimes.000.dat usertimes.001.dat
-test -e usertimes.dat && cp -- usertimes.dat usertimes.000.dat
+for F in ${DATS[@]}; do backup $F; done
