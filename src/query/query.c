@@ -145,27 +145,6 @@ int read_uint64(int fd, uint64_t *nptr)
 	return 0;
 }
 
-int write_uint64(int fd, uint64_t n)
-{
-	uint32_t nh, nl;
-
-	nh = (uint32_t)(n >> 32);
-	nl = (uint32_t)(n);
-
-	nh = htonl(nh);
-	nl = ntohl(nl);
-
-	if (write_(fd, (void *)&nh, 4) < 0) {
-		return -1;
-	}
-
-	if (write_(fd, (void *)&nl, 4) < 0) {
-		return -1;
-	}
-
-	return 0;
-}
-
 int query_lowest_incomplete(int fd)
 {
 	if (write_(fd, "LOI", 4) < 0) {
