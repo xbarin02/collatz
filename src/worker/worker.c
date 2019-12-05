@@ -29,8 +29,8 @@
 #	include <unistd.h>
 #endif
 
-#include "compat.h"
 #include "wideint.h"
+#include "compat.h"
 
 #if defined(USE_PRECALC) && !defined(USE_SIEVE)
 #	error Unsupported configuration

@@ -29,18 +29,6 @@ typedef __int128 int128_t;
 #define INT128_MAX ( (int128_t)(UINT128_MAX >> 1) )
 #define INT128_MIN ( -INT128_MAX - 1 )
 
-#include "compat.h"
-
-/* count trailing zeros */
-__attribute__ ((unused))
-static int __builtin_ctzu128(uint128_t n)
-{
-	if ((uint64_t)n == 0)
-		return 64 + __builtin_ctzu64((uint64_t)(n >> 64));
-	else
-		return __builtin_ctzu64((uint64_t)n);
-}
-
 #else
 #	error "Unsupported compiler"
 #endif /* defined(__GNUC__) */
