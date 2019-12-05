@@ -59,4 +59,23 @@ static int min(int a, int b)
 	return a < b ? a : b;
 }
 
+UNUSED
+static uint64_t pow3u64(uint64_t n)
+{
+	uint64_t r = 1;
+	uint64_t b = 3;
+
+	assert(n < 41);
+
+	while (n) {
+		if (n & 1) {
+			r *= b;
+		}
+		b *= b;
+		n >>= 1;
+	}
+
+	return r;
+}
+
 #endif /* COMPAT_COMPAT_H_ */

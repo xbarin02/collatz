@@ -20,25 +20,12 @@
 
 uint64_t g_lut64[LUT_SIZE64];
 
-uint64_t pow3(uint64_t n)
-{
-	uint64_t r = 1;
-
-	for (; n > 0; --n) {
-		assert(r <= UINT64_MAX / 3);
-
-		r *= 3;
-	}
-
-	return r;
-}
-
 void init_lut()
 {
 	int a;
 
 	for (a = 0; a < LUT_SIZE64; ++a) {
-		g_lut64[a] = pow3((uint64_t)a);
+		g_lut64[a] = pow3u64((uint64_t)a);
 	}
 }
 
