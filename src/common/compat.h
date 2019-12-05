@@ -14,6 +14,7 @@
 #	define HOT
 #endif
 
+#include <stdint.h>
 #include <assert.h>
 
 UNUSED HOT
