@@ -11,6 +11,10 @@
 __attribute__ ((unused))
 static int __builtin_ctzu64(uint64_t n)
 {
+	if (n == 0) {
+		return 64;
+	}
+
 	switch (sizeof(uint64_t)) {
 		case sizeof(unsigned long): return __builtin_ctzl((unsigned long)n);
 #ifdef __WIN32__
@@ -18,15 +22,6 @@ static int __builtin_ctzu64(uint64_t n)
 #endif
 		default: assert(!"matching type"); /* __builtin_trap() in gcc 4.7 */
 	}
-}
-
-__attribute__ ((unused))
-static int __builtin_ctzu128(uint128_t n)
-{
-	if ((uint64_t)n == 0)
-		return 64 + __builtin_ctzu64((uint64_t)(n >> 64));
-	else
-		return __builtin_ctzu64((uint64_t)n);
 }
 
 #include <stdlib.h>

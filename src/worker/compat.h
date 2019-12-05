@@ -11,6 +11,10 @@
 __attribute__ ((unused))
 static int __builtin_ctzu64(uint64_t n)
 {
+	if (n == 0) {
+		return 64;
+	}
+
 	switch (sizeof(uint64_t)) {
 		case sizeof(unsigned long): return __builtin_ctzl((unsigned long)n);
 #ifdef __WIN32__
