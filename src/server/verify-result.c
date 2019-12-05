@@ -51,7 +51,6 @@ const uint64_t *g_mxoffsets = 0;
 
 uint64_t g_lut64[LUT_SIZE64];
 
-static uint64_t g_checksum_alpha = 0;
 static uint128_t g_max = 0;
 static uint128_t g_max_n0 = 0;
 
@@ -129,9 +128,9 @@ mpz_t g_mpz_max;
 uint128_t g_mpz_max_n0;
 #endif
 
-#ifdef _USE_GMP
 static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 {
+#ifdef _USE_GMP
 	mp_bitcnt_t alpha, beta;
 	mpz_t n;
 	mpz_t n0;
@@ -171,16 +170,20 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 
 		alpha = mpz_ctz(n);
 
-		g_checksum_alpha += alpha;
-
 		/* n >>= alpha */
 		mpz_fdiv_q_2exp(n, n, alpha);
 	} while (1);
 
 	mpz_clear(n);
 	mpz_clear(n0);
-}
+#else
+	(void)n0_;
+	(void)n_;
+	(void)alpha_;
+
+	abort();
 #endif
+}
 
 static void check2(uint128_t n0, uint128_t n, int alpha)
 {
@@ -188,12 +191,8 @@ static void check2(uint128_t n0, uint128_t n, int alpha)
 
 	do {
 		if (n > UINT128_MAX >> 2*alpha) {
-#ifdef _USE_GMP
 			mpz_check2(n0, n, alpha);
 			return;
-#else
-			abort();
-#endif
 		}
 
 		do {
@@ -224,8 +223,6 @@ static void check2(uint128_t n0, uint128_t n, int alpha)
 			alpha += ctzu64((uint64_t)n);
 		} while (!(n & 1));
 
-		g_checksum_alpha += alpha;
-
 		n >>= alpha;
 	} while (1);
 }
@@ -236,7 +233,6 @@ static void check(uint128_t n)
 	int alpha;
 
 	if (n == UINT128_MAX) {
-		g_checksum_alpha += 128;
 		check2(n0, UINT128_C(1), 128);
 		return;
 	}
@@ -248,8 +244,6 @@ static void check(uint128_t n)
 		do {
 			alpha += ctzu64((uint64_t)n);
 		} while (!(n & 1));
-
-		g_checksum_alpha += alpha;
 
 		n >>= alpha;
 
@@ -385,14 +379,6 @@ int main(int argc, char *argv[])
 
 	for (n = n_min; n < n_sup; n += 4) {
 		check(n);
-	}
-
-	printf("CHECKSUM %" PRIu64 " (computed)\n", g_checksum_alpha);
-
-	if (checksum) {
-		if (checksum != g_checksum_alpha) {
-			printf("[ERROR] checksum does not match!\n");
-		}
 	}
 
 #ifdef _USE_GMP
