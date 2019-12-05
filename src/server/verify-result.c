@@ -329,9 +329,9 @@ int main(int argc, char *argv[])
 	uint128_t n_sup;
 	uint64_t checksum;
 	uint64_t mxoffset;
+#ifdef _USE_GMP
 	uint128_t mxoffset_n0;
 	uint128_t maximum;
-#ifdef _USE_GMP
 	mpz_t mpz_max_n0;
 	mpz_t mpz_maximum;
 #endif
@@ -351,9 +351,9 @@ int main(int argc, char *argv[])
 	mxoffset = g_mxoffsets[task_id];
 
 	if (mxoffset != 0) {
+#ifdef _USE_GMP
 		mxoffset_n0 = mxoffset + ((uint128_t)(task_id + 0) << task_size);
 		maximum = get_max(mxoffset_n0);
-#ifdef _USE_GMP
 		mpz_init_set_u128(mpz_max_n0, mxoffset_n0);
 		mpz_init_set_u128(mpz_maximum, maximum);
 
