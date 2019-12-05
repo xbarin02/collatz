@@ -2,13 +2,21 @@
 #define COMPAT_COMPAT_H_
 
 #ifdef __WIN32__
-	#pragma GCC diagnostic ignored "-Wlong-long"
-	#pragma GCC diagnostic ignored "-Wformat"
+#	pragma GCC diagnostic ignored "-Wlong-long"
+#	pragma GCC diagnostic ignored "-Wformat"
+#endif
+
+#if defined(__GNUC__)
+#	define UNUSED __attribute__ ((unused))
+#	define HOT __attribute__ ((hot))
+#else
+#	define UNUSED
+#	define HOT
 #endif
 
 #include <assert.h>
 
-__attribute__ ((unused))
+UNUSED HOT
 static int ctzu64(uint64_t n)
 {
 	if (n == 0) {
@@ -26,7 +34,7 @@ static int ctzu64(uint64_t n)
 
 #include <stdlib.h>
 
-__attribute__ ((unused))
+UNUSED
 static uint64_t atou64(const char *nptr)
 {
 	switch (sizeof(uint64_t)) {

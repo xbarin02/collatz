@@ -5,6 +5,7 @@ all:
 	$(MAKE) -C worker all
 	-$(MAKE) -C gpuworker all
 	$(MAKE) -C query all
+	-$(MAKE) -C steps all
 
 .PHONY: clean
 clean:
@@ -13,3 +14,4 @@ clean:
 	$(MAKE) -C worker clean
 	$(MAKE) -C gpuworker clean
 	$(MAKE) -C query clean
+	$(MAKE) -C steps clean

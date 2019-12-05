@@ -48,6 +48,9 @@ int main(int argc, char *argv[])
 	mpz_clear(max);
 	mpz_clear(n);
 	mpz_clear(n0);
+#else
+	(void)argc;
+	(void)argv;
 #endif
 
 	return 0;
