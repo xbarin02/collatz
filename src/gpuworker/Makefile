@@ -1,6 +1,7 @@
 CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -D_XOPEN_SOURCE=500
 LDLIBS+=-lOpenCL
 LDFLAGS+=
+BINS=gpuworker
 
 ifndef $(SIEVE_LOGSIZE)
 	SIEVE_LOGSIZE=16
@@ -20,8 +21,6 @@ endif
 CFLAGS+=$(EXTRA_CFLAGS)
 LDLIBS+=$(EXTRA_LDLIBS)
 LDFLAGS+=$(EXTRA_LDFLAGS)
-
-BINS=gpuworker
 
 .PHONY: all
 all: $(BINS)
