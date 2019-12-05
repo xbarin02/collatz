@@ -48,14 +48,8 @@ const uint64_t *g_checksums = 0;
 const uint64_t *g_mxoffsets = 0;
 
 #define LUT_SIZE64 41
-#ifdef _USE_GMP
-#	define LUT_SIZEMPZ 512
-#endif
 
 uint64_t g_lut64[LUT_SIZE64];
-#ifdef _USE_GMP
-mpz_t g_mpz_lut[LUT_SIZEMPZ];
-#endif
 
 static uint64_t g_checksum_alpha = 0;
 static uint128_t g_max = 0;
@@ -74,23 +68,29 @@ uint64_t pow3(uint64_t n)
 	return r;
 }
 
-uint128_t pow3x(uint128_t n)
-{
-	uint128_t r = 1;
-
-	for (; n > 0; --n) {
-		assert(r <= UINT128_MAX / 3);
-
-		r *= 3;
-	}
-
-	return r;
-}
-
 #ifdef _USE_GMP
 static void mpz_pow3(mpz_t r, unsigned long n)
 {
 	mpz_ui_pow_ui(r, 3UL, n);
+}
+#endif
+
+#ifdef _USE_GMP
+void mpz_mul_pow3(mpz_t r, mp_bitcnt_t alpha)
+{
+	mpz_t a;
+
+	assert(alpha <= ~0UL);
+
+	mpz_init(a);
+
+	/* 3^alpha */
+	mpz_pow3(a, (unsigned long)alpha);
+
+	/* r *= 3^alpha */
+	mpz_mul(r, r, a);
+
+	mpz_clear(a);
 }
 #endif
 
@@ -101,13 +101,6 @@ void init_lut()
 	for (a = 0; a < LUT_SIZE64; ++a) {
 		g_lut64[a] = pow3((uint64_t)a);
 	}
-
-#ifdef _USE_GMP
-	for (a = 0; a < LUT_SIZEMPZ; ++a) {
-		mpz_init(g_mpz_lut[a]);
-		mpz_pow3(g_mpz_lut[a], (unsigned long)a);
-	}
-#endif
 }
 
 #ifdef _USE_GMP
@@ -152,12 +145,8 @@ static void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	mpz_init_set_u128(n0, n0_);
 
 	do {
-		if (alpha >= LUT_SIZEMPZ) {
-			abort();
-		}
-
-		/* n *= lut[alpha] */
-		mpz_mul(n, n, g_mpz_lut[alpha]);
+		/* n *= 3^alpha */
+		mpz_mul_pow3(n, alpha);
 
 		/* n-- */
 		mpz_sub_ui(n, n, 1UL);
