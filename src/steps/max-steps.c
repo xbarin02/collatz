@@ -10,8 +10,8 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#include "compat.h"
 #include "wideint.h"
+#include "compat.h"
 
 #define REACH_ONE 0
 #define SUM_ODD_STEPS 1

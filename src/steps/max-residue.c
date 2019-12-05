@@ -10,8 +10,8 @@
 #include <inttypes.h>
 #include <math.h>
 
-#include "compat.h"
 #include "wideint.h"
+#include "compat.h"
 
 #define REACH_ONE 1
 #define START_VALUE 1

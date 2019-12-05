@@ -9,8 +9,8 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#include "compat.h"
 #include "wideint.h"
+#include "compat.h"
 
 #define REACH_ONE 1
 
