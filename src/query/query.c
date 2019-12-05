@@ -166,16 +166,6 @@ int write_uint64(int fd, uint64_t n)
 	return 0;
 }
 
-int read_assignment_no(int fd, uint64_t *n)
-{
-	return read_uint64(fd, n);
-}
-
-int read_task_size(int fd, uint64_t *task_size)
-{
-	return read_uint64(fd, task_size);
-}
-
 int query_lowest_incomplete(int fd)
 {
 	if (write_(fd, "LOI", 4) < 0) {
@@ -235,12 +225,12 @@ int open_socket_and_query_lowest_incomplete(uint64_t *n, uint64_t *task_size)
 		return -1;
 	}
 
-	if (read_assignment_no(fd, n) < 0) {
+	if (read_uint64(fd, n) < 0) {
 		close(fd);
 		return -1;
 	}
 
-	if (read_task_size(fd, task_size) < 0) {
+	if (read_uint64(fd, task_size) < 0) {
 		close(fd);
 		return -1;
 	}
@@ -265,12 +255,12 @@ int open_socket_and_query_highest_requested(uint64_t *n, uint64_t *task_size)
 		return -1;
 	}
 
-	if (read_assignment_no(fd, n) < 0) {
+	if (read_uint64(fd, n) < 0) {
 		close(fd);
 		return -1;
 	}
 
-	if (read_task_size(fd, task_size) < 0) {
+	if (read_uint64(fd, task_size) < 0) {
 		close(fd);
 		return -1;
 	}
