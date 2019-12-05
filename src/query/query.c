@@ -1,4 +1,3 @@
-#define _XOPEN_SOURCE
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -58,7 +57,7 @@ int init_sockaddr(struct sockaddr_in *name, const char *hostname, uint16_t port)
 {
 	struct hostent *hostinfo;
 
-	assert(name);
+	assert(name != NULL);
 
 	bzero(name, sizeof(struct sockaddr_in));
 
@@ -139,7 +138,7 @@ int read_uint64(int fd, uint64_t *nptr)
 
 	n = ((uint64_t)nh << 32) + nl;
 
-	assert( nptr != NULL );
+	assert(nptr != NULL);
 
 	*nptr = n;
 
@@ -170,7 +169,7 @@ int write_uint64(int fd, uint64_t n)
 /* DEPRECATED */
 int read_ul(int fd, unsigned long *nptr)
 {
-	assert( sizeof(unsigned long) == sizeof(uint64_t) );
+	assert(sizeof(unsigned long) == sizeof(uint64_t));
 
 	return read_uint64(fd, (uint64_t *)nptr);
 }
@@ -178,7 +177,7 @@ int read_ul(int fd, unsigned long *nptr)
 /* DEPRECATED */
 int write_ul(int fd, unsigned long n)
 {
-	assert( sizeof(unsigned long) == sizeof(uint64_t) );
+	assert(sizeof(unsigned long) == sizeof(uint64_t));
 
 	return write_uint64(fd, (uint64_t)n);
 }
