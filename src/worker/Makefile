@@ -1,5 +1,7 @@
 CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -D_XOPEN_SOURCE
+LDFLAGS=
 LDLIBS+=
+BINS=worker
 
 ifeq ($(USE_LIBGMP), 1)
 	CFLAGS+=-D_USE_GMP
@@ -15,10 +17,8 @@ ifeq ($(USE_PRECALC), 1)
 endif
 
 CFLAGS+=$(EXTRA_CFLAGS)
+LDFLAGS+=$(EXTRA_LDFLAGS)
 LDLIBS+=$(EXTRA_LDLIBS)
-
-LDFLAGS=
-BINS=worker
 
 .PHONY: all
 all: $(BINS)
