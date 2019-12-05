@@ -222,7 +222,9 @@ static void check2(uint128_t n0, uint128_t n, int alpha)
 			g_max_n0 = n0;
 		}
 
-		n >>= __builtin_ctzx(n);
+		do {
+			n >>= __builtin_ctzu64((uint64_t)n);
+		} while (!(n & 1));
 
 		if (n < n0) {
 			return;
@@ -230,7 +232,10 @@ static void check2(uint128_t n0, uint128_t n, int alpha)
 
 		n++;
 
-		alpha = __builtin_ctzx(n);
+		alpha = 0;
+		do {
+			alpha += __builtin_ctzu64((uint64_t)n);
+		} while (!(n & 1));
 
 		g_checksum_alpha += alpha;
 
@@ -252,7 +257,10 @@ static void check(uint128_t n)
 	do {
 		n++;
 
-		alpha = __builtin_ctzx(n);
+		alpha = 0;
+		do {
+			alpha += __builtin_ctzu64((uint64_t)n);
+		} while (!(n & 1));
 
 		g_checksum_alpha += alpha;
 
@@ -272,7 +280,9 @@ static void check(uint128_t n)
 			g_max_n0 = n0;
 		}
 
-		n >>= __builtin_ctzx(n);
+		do {
+			n >>= __builtin_ctzu64((uint64_t)n);
+		} while (!(n & 1));
 
 		if (n < n0) {
 			return;
