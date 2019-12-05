@@ -306,6 +306,21 @@ static uint64_t check2(uint128_t n0, uint128_t n)
 	} while (1);
 }
 
+#ifdef USE_SIEVE3
+HOT
+static int is_live_in_sieve3(uint128_t n)
+{
+	uint64_t r = 0;
+
+	r += (uint32_t)(n);
+	r += (uint32_t)(n >> 32);
+	r += (uint32_t)(n >> 64);
+	r += (uint32_t)(n >> 96);
+
+	return r % 3 != 2;
+}
+#endif
+
 static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint64_t L, int Salpha, int Sbeta, uint64_t cycles)
 {
 	uint128_t h;
@@ -320,6 +335,12 @@ static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint
 		uint128_t N;
 		uint128_t N0 = H + L0;
 		uint64_t cycles2;
+
+#ifdef USE_SIEVE3
+		if (!is_live_in_sieve3(N0)) {
+			continue;
+		}
+#endif
 
 		assert(Salpha < LUT_SIZE64);
 
@@ -617,9 +638,17 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 
 	for (n = n_min; n < n_sup; n += 4) {
 #	ifdef USE_SIEVE
-		if (IS_LIVE(n)) {
+		if (IS_LIVE(n)
+#		ifdef USE_SIEVE3
+			&& is_live_in_sieve3(n)
+#		endif
+		) {
 #	else
-		if (1) {
+		if (1
+#		ifdef USE_SIEVE3
+			&& is_live_in_sieve3(n)
+#		endif
+		) {
 #	endif
 			full_check(n);
 		}
