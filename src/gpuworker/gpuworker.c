@@ -115,7 +115,7 @@ uint128_t get_max(uint128_t n0)
 		n++;
 
 		do {
-			alpha = __builtin_ctzu64(n);
+			alpha = ctzu64(n);
 			if (alpha >= LUT_SIZE64) {
 				alpha = LUT_SIZE64 - 1;
 			}
@@ -134,7 +134,7 @@ uint128_t get_max(uint128_t n0)
 		}
 
 		do {
-			beta = __builtin_ctzu64(n);
+			beta = ctzu64(n);
 			n >>= beta;
 		} while (!(n & 1));
 
@@ -158,7 +158,7 @@ uint64_t get_cycles(uint128_t n0)
 		cycles++;
 
 		do {
-			alpha = __builtin_ctzu64(n);
+			alpha = ctzu64(n);
 			if (alpha >= LUT_SIZE64) {
 				alpha = LUT_SIZE64 - 1;
 			}
@@ -173,7 +173,7 @@ uint64_t get_cycles(uint128_t n0)
 		n--;
 
 		do {
-			beta = __builtin_ctzu64(n);
+			beta = ctzu64(n);
 			n >>= beta;
 		} while (!(n & 1));
 

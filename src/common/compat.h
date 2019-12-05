@@ -9,7 +9,7 @@
 #include <assert.h>
 
 __attribute__ ((unused))
-static int __builtin_ctzu64(uint64_t n)
+static int ctzu64(uint64_t n)
 {
 	if (n == 0) {
 		return 64;

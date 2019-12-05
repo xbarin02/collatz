@@ -62,7 +62,7 @@ int64_t check(uint128_t n)
 #endif
 		n++;
 
-		alpha = min(__builtin_ctzu64(n), LUT_SIZE64 - 1);
+		alpha = min(ctzu64(n), LUT_SIZE64 - 1);
 
 		steps_alpha += alpha;
 
@@ -74,7 +74,7 @@ int64_t check(uint128_t n)
 
 		n--;
 
-		beta = __builtin_ctzu64(n);
+		beta = ctzu64(n);
 
 		steps_beta += beta;
 

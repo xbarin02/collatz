@@ -212,7 +212,7 @@ uint64_t check(uint128_t n)
 		n++;
 
 		do {
-			alpha = __builtin_ctzu64(n);
+			alpha = ctzu64(n);
 
 			if (alpha >= LUT_SIZE64) {
 				alpha = LUT_SIZE64 - 1;
@@ -239,7 +239,7 @@ uint64_t check(uint128_t n)
 		}
 
 		do {
-			beta = __builtin_ctzu64(n);
+			beta = ctzu64(n);
 
 			g_checksum_beta += beta;
 
@@ -279,7 +279,7 @@ static uint64_t check2(uint128_t n0, uint128_t n)
 		n++;
 
 		do {
-			alpha = __builtin_ctzu64(n);
+			alpha = ctzu64(n);
 
 			if (alpha >= LUT_SIZE64) {
 				alpha = LUT_SIZE64 - 1;
@@ -307,7 +307,7 @@ static uint64_t check2(uint128_t n0, uint128_t n)
 		}
 
 		do {
-			beta = __builtin_ctzu64(n);
+			beta = ctzu64(n);
 
 			g_checksum_beta += beta;
 
@@ -362,7 +362,7 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 		L++;
 
 		do {
-			int alpha = __builtin_ctzu64(L);
+			int alpha = ctzu64(L);
 
 			if (alpha > R) {
 				alpha = R;
@@ -406,7 +406,7 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 		}
 
 		do {
-			int beta = __builtin_ctzu64(L);
+			int beta = ctzu64(L);
 
 			if (beta > R) {
 				beta = R;

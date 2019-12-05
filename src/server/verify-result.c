@@ -223,7 +223,7 @@ static void check2(uint128_t n0, uint128_t n, int alpha)
 		}
 
 		do {
-			n >>= __builtin_ctzu64((uint64_t)n);
+			n >>= ctzu64((uint64_t)n);
 		} while (!(n & 1));
 
 		if (n < n0) {
@@ -234,7 +234,7 @@ static void check2(uint128_t n0, uint128_t n, int alpha)
 
 		alpha = 0;
 		do {
-			alpha += __builtin_ctzu64((uint64_t)n);
+			alpha += ctzu64((uint64_t)n);
 		} while (!(n & 1));
 
 		g_checksum_alpha += alpha;
@@ -259,7 +259,7 @@ static void check(uint128_t n)
 
 		alpha = 0;
 		do {
-			alpha += __builtin_ctzu64((uint64_t)n);
+			alpha += ctzu64((uint64_t)n);
 		} while (!(n & 1));
 
 		g_checksum_alpha += alpha;
@@ -281,7 +281,7 @@ static void check(uint128_t n)
 		}
 
 		do {
-			n >>= __builtin_ctzu64((uint64_t)n);
+			n >>= ctzu64((uint64_t)n);
 		} while (!(n & 1));
 
 		if (n < n0) {
@@ -302,7 +302,7 @@ uint128_t get_max(uint128_t n0)
 		n++;
 
 		do {
-			alpha = __builtin_ctzu64(n);
+			alpha = ctzu64(n);
 			if (alpha >= LUT_SIZE64) {
 				alpha = LUT_SIZE64 - 1;
 			}
@@ -320,7 +320,7 @@ uint128_t get_max(uint128_t n0)
 		}
 
 		do {
-			beta = __builtin_ctzu64(n);
+			beta = ctzu64(n);
 			n >>= beta;
 		} while (!(n & 1));
 
