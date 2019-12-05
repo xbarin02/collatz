@@ -43,11 +43,6 @@ void init_lut()
 	}
 }
 
-static int min(int a, int b)
-{
-	return a < b ? a : b;
-}
-
 double check(uint128_t n)
 {
 #if (REACH_ONE == 0)

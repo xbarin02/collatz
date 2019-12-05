@@ -47,13 +47,11 @@ const uint64_t *open_records(const char *path)
 const uint64_t *g_checksums = 0;
 const uint64_t *g_mxoffsets = 0;
 
-#define LUT_SIZE128 81
 #define LUT_SIZE64 41
 #ifdef _USE_GMP
 #	define LUT_SIZEMPZ 512
 #endif
 
-uint128_t g_lut[LUT_SIZE128];
 uint64_t g_lut64[LUT_SIZE64];
 #ifdef _USE_GMP
 mpz_t g_mpz_lut[LUT_SIZEMPZ];
@@ -99,10 +97,6 @@ static void mpz_pow3(mpz_t r, unsigned long n)
 void init_lut()
 {
 	int a;
-
-	for (a = 0; a < LUT_SIZE128; ++a) {
-		g_lut[a] = pow3x((uint128_t)a);
-	}
 
 	for (a = 0; a < LUT_SIZE64; ++a) {
 		g_lut64[a] = pow3((uint64_t)a);
@@ -204,16 +198,20 @@ static void check2(uint128_t n0, uint128_t n, int alpha)
 	printf("OVERFLOW 128 @ n0=0x%016" PRIx64 ":%016" PRIx64 " (not maximum)\n", (uint64_t)(n0>>64), (uint64_t)n0);
 
 	do {
-		if (alpha >= LUT_SIZE128 || n > UINT128_MAX / g_lut[alpha]) {
+		if (n > UINT128_MAX >> 2*alpha) {
 #ifdef _USE_GMP
 			mpz_check2(n0, n, alpha);
+			return;
 #else
 			abort();
 #endif
-			return;
 		}
 
-		n *= g_lut[alpha];
+		do {
+			int alpha0 = min(alpha, LUT_SIZE64 - 1);
+			n *= g_lut64[alpha0];
+			alpha -= alpha0;
+		} while (alpha > 0);
 
 		n--;
 
@@ -266,12 +264,16 @@ static void check(uint128_t n)
 
 		n >>= alpha;
 
-		if (n > UINT128_MAX >> 2*alpha || alpha >= LUT_SIZE128) {
+		if (n > UINT128_MAX >> 2*alpha) {
 			check2(n0, n, alpha);
 			return;
 		}
 
-		n *= g_lut[alpha];
+		do {
+			int alpha0 = min(alpha, LUT_SIZE64 - 1);
+			n *= g_lut64[alpha0];
+			alpha -= alpha0;
+		} while (alpha > 0);
 
 		n--;
 
