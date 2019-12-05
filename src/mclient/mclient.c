@@ -227,46 +227,6 @@ int write_uint64(int fd, uint64_t n)
 	return 0;
 }
 
-int write_clientid(int fd, uint64_t clientid)
-{
-	return write_uint64(fd, clientid);
-}
-
-int read_assignment_no(int fd, uint64_t *n)
-{
-	return read_uint64(fd, n);
-}
-
-int write_assignment_no(int fd, uint64_t n)
-{
-	return write_uint64(fd, n);
-}
-
-int read_task_size(int fd, uint64_t *task_size)
-{
-	return read_uint64(fd, task_size);
-}
-
-int write_task_size(int fd, uint64_t task_size)
-{
-	return write_uint64(fd, task_size);
-}
-
-int write_overflow(int fd, uint64_t overflow)
-{
-	return write_uint64(fd, overflow);
-}
-
-int write_usertime(int fd, uint64_t usertime)
-{
-	return write_uint64(fd, usertime);
-}
-
-int write_checksum(int fd, uint64_t checksum)
-{
-	return write_uint64(fd, checksum);
-}
-
 int open_socket_to_server()
 {
 	int fd;
@@ -557,17 +517,17 @@ int request_assignment(int fd, int request_lowest_incomplete, uint64_t *task_id,
 		}
 	}
 
-	if (write_clientid(fd, clientid) < 0) {
-		message(ERR "write_clientid() failed\n");
+	if (write_uint64(fd, clientid) < 0) {
+		message(ERR "write_uint64() failed\n");
 		return -1;
 	}
 
-	if (read_assignment_no(fd, task_id) < 0) {
-		message(ERR "read_assignment_no() failed\n");
+	if (read_uint64(fd, task_id) < 0) {
+		message(ERR "read_uint64() failed\n");
 		return -1;
 	}
 
-	if (read_task_size(fd, task_size) < 0) {
+	if (read_uint64(fd, task_size) < 0) {
 		return -1;
 	}
 
@@ -615,15 +575,15 @@ int revoke_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t clientid)
 		return -1;
 	}
 
-	if (write_assignment_no(fd, n) < 0) {
+	if (write_uint64(fd, n) < 0) {
 		return -1;
 	}
 
-	if (write_task_size(fd, task_size) < 0) {
+	if (write_uint64(fd, task_size) < 0) {
 		return -1;
 	}
 
-	if (write_clientid(fd, clientid) < 0) {
+	if (write_uint64(fd, clientid) < 0) {
 		return -1;
 	}
 
@@ -681,27 +641,27 @@ int return_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t overflow,
 		return -1;
 	}
 
-	if (write_assignment_no(fd, n) < 0) {
+	if (write_uint64(fd, n) < 0) {
 		return -1;
 	}
 
-	if (write_task_size(fd, task_size) < 0) {
+	if (write_uint64(fd, task_size) < 0) {
 		return -1;
 	}
 
-	if (write_overflow(fd, overflow) < 0) {
+	if (write_uint64(fd, overflow) < 0) {
 		return -1;
 	}
 
-	if (write_usertime(fd, usertime) < 0) {
+	if (write_uint64(fd, usertime) < 0) {
 		return -1;
 	}
 
-	if (write_checksum(fd, checksum) < 0) {
+	if (write_uint64(fd, checksum) < 0) {
 		return -1;
 	}
 
-	if (write_clientid(fd, clientid) < 0) {
+	if (write_uint64(fd, clientid) < 0) {
 		return -1;
 	}
 
