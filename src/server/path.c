@@ -1,14 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <gmp.h>
+#ifdef _USE_GMP
+#	include <gmp.h>
+#endif
 
 int main(int argc, char *argv[])
 {
+#ifdef _USE_GMP
 	mpz_t n0, n, max;
 	unsigned step = 0;
 
 	if (argc < 2) {
 		printf("[ERROR] argument expected\n");
+		return EXIT_FAILURE;
 	}
 
 	mpz_init(n0);
@@ -44,6 +48,7 @@ int main(int argc, char *argv[])
 	mpz_clear(max);
 	mpz_clear(n);
 	mpz_clear(n0);
+#endif
 
 	return 0;
 }
