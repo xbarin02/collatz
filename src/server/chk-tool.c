@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
 
 	init();
 
-#if 1
+#if 0
 	/* find holes in mxoffset[] */
 	if (1) {
 		int state = 0; /* zero/hole */
@@ -224,6 +224,8 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
+
+		printf("\n");
 	}
 #endif
 
