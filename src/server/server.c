@@ -468,7 +468,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 			return -1;
 		}
 
-		if ((checksum>>23) != 196126 && (checksum>>24) != 0xa0ed && (checksum>>24) != 0x4cfe) {
+		if ((checksum>>23) != 196126 && (checksum>>24) != 0xa0ed && (checksum>>24) != 0x4cfe && (checksum>>24) != 0x3354) {
 			message(ERR "suspicious checksum (%" PRIu64 ", 0x%" PRIx64 "), done in %" PRIu64 " secs, rejecting the result! (assignment %" PRIu64 ")\n",
 				checksum, checksum, user_time, n);
 			return -1;
@@ -687,12 +687,12 @@ int main(int argc, char *argv[])
 		uint64_t n;
 		uint64_t c = 0;
 
-		message(WARN "Invalidating new/buggy/outdated checksums...\n");
+		message(WARN "Invalidating new/buggy/outdated/incomplete checksums...\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
 
-			if ((checksum>>28) == 0xff5 || (checksum>>24) == 0x3354 || (checksum>>24) == 0x6eda || (checksum>>24) == 0x6ed9) {
+			if ((checksum>>28) == 0xff5 || (checksum>>24) == 0x6eda || (checksum>>24) == 0x6ed9) {
 				printf("- resetting the assignment %" PRIu64 " due to new/buggy checksum\n", n);
 
 				SET_UNASSIGNED(n);
