@@ -190,6 +190,39 @@ int main(int argc, char *argv[])
 
 	init();
 
+#if 1
+	/* find holes in mxoffset[] */
+	if (1) {
+		int state = 0; /* zero/hole */
+		uint64_t n;
+		uint64_t n0 = 0;
+
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			uint64_t mxoffset = g_mxoffsets[n];
+
+			if (state == 0) {
+				if (mxoffset == 0) {
+					/* ok, still hole :/ */
+				} else {
+					/* transition hole -> nonzero mxoffset :) */
+					state = 1;
+					printf("hole: [%lu .. %lu) of size %lu\n", n0, n, n - n0);
+					n0 = n;
+				}
+			} else {
+				if (mxoffset == 0) {
+					/* transition nonzero mxoffset -> hole :( */
+					state = 0;
+					printf("fill: [%lu .. %lu) of size %lu\n", n0, n, n - n0);
+					n0 = n;
+				} else {
+					/* ok, still sequence of nonzero mxoffsets :) */
+				}
+			}
+		}
+	}
+#endif
+
 #if 0
 	/* find records that have incomplete triple (usertime, mxoffset, cycleoff) */
 	if (1) {
