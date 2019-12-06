@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -118,10 +119,16 @@ int main()
 			mpz_get_maximum(max, n0);
 
 			if (mpz_cmp(max, g_max) > 0) {
+				mpz_t t_n0;
+
 				mpz_set(g_max, max);
 				g_max_n0 = n0;
 
-				gmp_printf("new maximum: n0 = ??? max = %Zi (bitsize %lu)\n", g_max, (unsigned long)mpz_sizeinbase(g_max, 2));
+				mpz_init_set_u128(t_n0, g_max_n0);
+
+				gmp_printf("new maximum: assignment = %" PRIu64 " n0 = %Zi max = %Zi (bitsize %lu)\n", n, t_n0, g_max, (unsigned long)mpz_sizeinbase(g_max, 2));
+
+				mpz_clear(t_n0);
 			}
 #else
 			(void)n0;
