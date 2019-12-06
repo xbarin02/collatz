@@ -82,7 +82,7 @@ uint64_t avg_and_print_usertime(uint128_t total, uint64_t count)
 	return average;
 }
 
-void print_checksum_stats(uint64_t mask)
+void print_checksum_stats_ex(uint64_t mask, size_t shift)
 {
 	uint64_t n;
 	uint64_t min = UINT64_MAX, max = 0;
@@ -91,7 +91,7 @@ void print_checksum_stats(uint64_t mask)
 	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 		uint64_t checksum = g_checksums[n];
 
-		if ((checksum>>24) != mask) {
+		if ((checksum>>shift) != mask) {
 			continue; /* other type */
 		}
 
@@ -123,6 +123,11 @@ void print_checksum_stats(uint64_t mask)
 	);
 
 	printf("\n");
+}
+
+void print_checksum_stats(uint64_t mask)
+{
+	print_checksum_stats_ex(mask, 24);
 }
 
 void init()
@@ -265,6 +270,9 @@ int main(int argc, char *argv[])
 
 		printf("sieve-2^32 sieve-3^1 checksums:\n");
 		print_checksum_stats(0x3354);
+
+		printf("esieve-2^16 checksums:\n");
+		print_checksum_stats_ex(0x83b, 28);
 	}
 
 	/* missing checksums */
