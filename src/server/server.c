@@ -702,14 +702,18 @@ int main(int argc, char *argv[])
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
+			uint64_t usertime = g_usertimes[n];
 			uint64_t mxoffset = g_mxoffsets[n];
+			uint64_t cycleoff = g_cycleoffs[n];
 
-			if ((checksum>>24) == 0xa0ed || (checksum>>24) == 0x4cfe) {
-				if (mxoffset == 0) {
+			if (checksum && (checksum>>24) != 0x17f0f) {
+				if (!usertime || !mxoffset || !cycleoff) {
 					printf("- resetting the assignment %" PRIu64 " due to missing mxoffset\n", n);
 
+#if 0
 					SET_UNASSIGNED(n);
 					SET_INCOMPLETE(n);
+#endif
 
 					c++;
 				}
