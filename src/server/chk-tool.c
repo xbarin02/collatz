@@ -370,7 +370,7 @@ int main(int argc, char *argv[])
 				overflow_sum += overflow;
 
 				if (++c < 48) {
-					printf("- #%2i: found %" PRIu64 " overflows on the assignment %9" PRIu64 " (below %" PRIu64 " x 2^60)\n", c, overflow, n, (n >> 20) + 1);
+					printf("- #%2i: found %" PRIu64 " overflows on the assignment %9" PRIu64 " (below %3" PRIu64 " x 2^60)\n", c, overflow, n, (n >> 20) + 1);
 				}
 			}
 		}
