@@ -304,6 +304,7 @@ int main(int argc, char *argv[])
 		struct timerec tr_mod_2_2_short = timerec_create();
 		struct timerec tr_mod_2_2_long = timerec_create();
 		struct timerec tr_mod_2_16 = timerec_create();
+		struct timerec tr_mod_2_16_e = timerec_create();
 		struct timerec tr_mod_2_32 = timerec_create();
 		struct timerec tr_mod_2_32_3_1 = timerec_create();
 
@@ -326,6 +327,10 @@ int main(int argc, char *argv[])
 
 			if (usertime != 0 && (checksum>>24) == 0xa0ed) {
 				ADD_TIME(tr_mod_2_16, usertime);
+			}
+
+			if (usertime != 0 && (checksum>>28) == 0x83b) {
+				ADD_TIME(tr_mod_2_16_e, usertime);
 			}
 
 			if (usertime != 0 && (checksum>>24) == 0x4cfe) {
@@ -354,6 +359,9 @@ int main(int argc, char *argv[])
 
 		printf("sieve-2^32 sieve-3^1 user time records:\n");
 		avg_and_print_usertime(tr_mod_2_32_3_1.total, tr_mod_2_32_3_1.count);
+
+		printf("esieve-2^16 user time records:\n");
+		avg_and_print_usertime(tr_mod_2_16_e.total, tr_mod_2_16_e.count);
 
 		printf("speedup (sieve-2^2 long/short) = %" PRIu64 "\n", round_div_ul(tr_mod_2_2_long.avg, tr_mod_2_2_short.avg));
 		printf("\n");
