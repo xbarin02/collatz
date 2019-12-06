@@ -2,6 +2,7 @@ server
 chk-tool
 verify-result
 path
+find-maxima
 *~
 *.gcda
 *.map
