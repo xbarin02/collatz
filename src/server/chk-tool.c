@@ -206,14 +206,18 @@ int main(int argc, char *argv[])
 				} else {
 					/* transition hole -> nonzero mxoffset :) */
 					state = 1;
-					printf("hole: [%lu .. %lu) of size %lu\n", n0, n, n - n0);
+					if (n0 != 0) {
+						printf("hole: [%lu .. %lu) of size %lu\n", n0, n, n - n0);
+					}
 					n0 = n;
 				}
 			} else {
 				if (mxoffset == 0) {
 					/* transition nonzero mxoffset -> hole :( */
 					state = 0;
+#					if 0
 					printf("fill: [%lu .. %lu) of size %lu\n", n0, n, n - n0);
+#					endif
 					n0 = n;
 				} else {
 					/* ok, still sequence of nonzero mxoffsets :) */
