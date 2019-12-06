@@ -190,6 +190,27 @@ int main(int argc, char *argv[])
 
 	init();
 
+	/* find records that have incomplete triple (usertime, mxoffset, cycleoff) */
+	if (1) {
+		uint64_t n;
+		int c = 0;
+
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			uint64_t checksum = g_checksums[n];
+			uint64_t usertime = g_usertimes[n];
+			uint64_t mxoffset = g_mxoffsets[n];
+			uint64_t cycleoff = g_cycleoffs[n];
+
+			if (checksum && (checksum>>24) != 0x17f0f) {
+				if (!usertime || !mxoffset || !cycleoff) {
+					c++;
+				}
+			}
+		}
+
+		printf("*** found %i incomplete records ***\n", c);
+	}
+
 	/* checksums */
 	if (show_checksums) {
 		printf("sieve-2^2 (cpu, gpu) checksums:\n");
