@@ -119,7 +119,7 @@ ssize_t write_(int fd, const char *buf, size_t count)
 		int t = send(fd, buf + written, count - written, 0);
 
 		if (t == SOCKET_ERROR) {
-			message(ERR, "send() failed\n");
+			message(ERR "send() failed\n");
 			return -1;
 		}
 
