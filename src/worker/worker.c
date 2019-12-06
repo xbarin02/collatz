@@ -325,8 +325,10 @@ static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint
 {
 	uint128_t h;
 
+#ifndef USE_SIEVE3
 	g_checksum_alpha += Salpha << (task_size - R0);
 	g_checksum_beta  += Sbeta  << (task_size - R0);
+#endif
 
 	assert(R0 == Salpha + Sbeta);
 
@@ -340,6 +342,9 @@ static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint
 		if (!is_live_in_sieve3(N0)) {
 			continue;
 		}
+
+		g_checksum_alpha += Salpha;
+		g_checksum_beta  += Sbeta;
 #endif
 
 		assert(Salpha < LUT_SIZE64);
