@@ -517,7 +517,11 @@ next_platform:
 
 		assert(task_units + 2 <= task_size);
 
+#ifdef USE_ESIEVE
+		sprintf(path, "esieve-%lu.map", (unsigned long)k);
+#else
 		sprintf(path, "sieve-%lu.map", (unsigned long)k);
+#endif
 
 		/* allocate memory for sieve & load sieve */
 		g_map_sieve = open_map(path, map_size);
