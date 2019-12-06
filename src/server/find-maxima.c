@@ -89,7 +89,9 @@ void mpz_get_maximum(mpz_t max, uint128_t n0_)
 }
 #endif
 
+#ifdef _USE_GMP
 mpz_t g_max;
+#endif
 uint128_t g_max_n0;
 
 int main()
@@ -121,6 +123,9 @@ int main()
 
 				gmp_printf("new maximum: n0 = ??? max = %Zi (bitsize %lu)\n", g_max, (unsigned long)mpz_sizeinbase(g_max, 2));
 			}
+#else
+			(void)n0;
+			abort();
 #endif
 		}
 	}
