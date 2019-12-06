@@ -190,6 +190,7 @@ int main(int argc, char *argv[])
 
 	init();
 
+#if 0
 	/* find records that have incomplete triple (usertime, mxoffset, cycleoff) */
 	if (1) {
 		uint64_t n;
@@ -210,6 +211,7 @@ int main(int argc, char *argv[])
 
 		printf("*** found %i incomplete records ***\n", c);
 	}
+#endif
 
 	/* checksums */
 	if (show_checksums) {
