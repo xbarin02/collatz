@@ -708,12 +708,10 @@ int main(int argc, char *argv[])
 
 			if (checksum && (checksum>>24) != 0x17f0f) {
 				if (!usertime || !mxoffset || !cycleoff) {
-					printf("- resetting the assignment %" PRIu64 " due to missing mxoffset\n", n);
+					printf("- resetting the assignment %" PRIu64 " due to incomplete record\n", n);
 
-#if 0
 					SET_UNASSIGNED(n);
 					SET_INCOMPLETE(n);
-#endif
 
 					c++;
 				}
