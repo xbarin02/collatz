@@ -65,8 +65,6 @@ make -C mclient clean all
 
 pushd $MAPDIR
 ./unpack.sh sieve-16 $TMP/collatz/src/gpuworker
-./unpack.sh sieve-24 $TMP/collatz/src/gpuworker
-./unpack.sh sieve-32 $TMP/collatz/src/gpuworker
 popd
 
 cd mclient

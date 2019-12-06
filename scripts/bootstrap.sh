@@ -73,15 +73,13 @@ if [[ "$HOSTNAME" =~ ^pco204-..$ ]]; then
 fi
 
 # build mclient & worker
-make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 USE_PRECALC=1
+make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 USE_PRECALC=1 USE_SIEVE3=1
 make -C gpuworker clean all CC=$CC TASK_UNITS=${TASK_UNITS} || echo "unable to build gpuworker"
 make -C mclient clean all
 
 pushd "$MAPDIR"
 ./unpack.sh sieve-32 "$TMP"/collatz/src/worker
 ./unpack.sh sieve-16 "$TMP"/collatz/src/gpuworker
-./unpack.sh sieve-24 "$TMP"/collatz/src/gpuworker
-./unpack.sh sieve-32 "$TMP"/collatz/src/gpuworker
 popd
 
 cd mclient
