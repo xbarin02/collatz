@@ -569,7 +569,11 @@ void init()
 	size_t k = SIEVE_LOGSIZE;
 	size_t map_size = SIEVE_SIZE;
 
+#ifdef USE_ESIEVE
+	sprintf(path, "esieve-%lu.map", (unsigned long)k);
+#else
 	sprintf(path, "sieve-%lu.map", (unsigned long)k);
+#endif
 
 	g_map_sieve = open_map(path, map_size);
 #endif
