@@ -56,11 +56,12 @@ cp -r "${SRCDIR}" .
 cd collatz/src
 
 # build mclient & worker
-make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 USE_PRECALC=1 USE_SIEVE3=1
+make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 USE_PRECALC=1 USE_SIEVE3=1 USE_ESIEVE=1
 make -C mclient clean all
 
 pushd $MAPDIR
-./unpack.sh sieve-32 $TMP/collatz/src/worker
+./unpack.sh sieve-32 "$TMP"/collatz/src/worker
+./unpack.sh esieve-32 "$TMP"/collatz/src/worker
 popd
 
 cd mclient
