@@ -60,7 +60,8 @@ make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 USE_PRECALC=1 USE_SIEVE
 make -C mclient clean all
 
 pushd $MAPDIR
-./unpack.sh sieve-32 $TMP/collatz/src/worker
+./unpack.sh sieve-32 "$TMP"/collatz/src/worker
+./unpack.sh esieve-32 "$TMP"/collatz/src/worker
 popd
 
 cd mclient
