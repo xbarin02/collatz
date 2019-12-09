@@ -74,8 +74,8 @@ popd
 
 cd mclient
 
-# no limit for mclient; 4 hours minus 100 secs for the worker
-stdbuf -o0 -e0 ./mclient -a 14300 -1 1
+# limit 2 hours for the mclient; 3 hours for worker, not one-shot run
+stdbuf -o0 -e0 ./mclient -a 10800 -b 7200 1
 
 popd
 rm -rf -- "$TMP"
