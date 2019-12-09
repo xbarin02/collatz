@@ -271,6 +271,9 @@ int main(int argc, char *argv[])
 		printf("esieve-2^24 checksums:\n");
 		print_checksum_stats_ex(0x5ae, 28);
 
+		printf("esieve-2^24 sieve-3^1 checksums:\n");
+		print_checksum_stats(0x3c96);
+
 		printf("sieve-2^32 checksums:\n");
 		print_checksum_stats(0x4cfe);
 
@@ -312,6 +315,7 @@ int main(int argc, char *argv[])
 		struct timerec tr_mod_2_16 = timerec_create();
 		struct timerec tr_mod_2_16_e = timerec_create();
 		struct timerec tr_mod_2_24_e = timerec_create();
+		struct timerec tr_mod_2_24_3_1_e = timerec_create();
 		struct timerec tr_mod_2_32 = timerec_create();
 		struct timerec tr_mod_2_32_3_1 = timerec_create();
 		struct timerec tr_mod_2_32_3_1_e = timerec_create();
@@ -360,6 +364,10 @@ int main(int argc, char *argv[])
 			if (usertime != 0 && (checksum>>24) == 0x5ae1) {
 				ADD_TIME(tr_mod_2_24_e, usertime);
 			}
+
+			if (usertime != 0 && (checksum>>24) == 0x3c96) {
+				ADD_TIME(tr_mod_2_24_3_1_e, usertime);
+			}
 		}
 
 		printf("all user time records:\n");
@@ -379,6 +387,9 @@ int main(int argc, char *argv[])
 
 		printf("esieve-2^24 user time records:\n");
 		avg_and_print_usertime(tr_mod_2_24_e.total, tr_mod_2_24_e.count);
+
+		printf("esieve-2^24 sieve-3^1 user time records:\n");
+		avg_and_print_usertime(tr_mod_2_24_3_1_e.total, tr_mod_2_24_3_1_e.count);
 
 		printf("sieve-2^32 user time records:\n");
 		avg_and_print_usertime(tr_mod_2_32.total, tr_mod_2_32.count);
