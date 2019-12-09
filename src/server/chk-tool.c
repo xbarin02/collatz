@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
 		print_checksum_stats_ex(0x83b, 28);
 
 		printf("esieve-2^24 checksums:\n");
-		print_checksum_stats(0x5ae2);
+		print_checksum_stats_ex(0x5ae, 28);
 
 		printf("sieve-2^32 checksums:\n");
 		print_checksum_stats(0x4cfe);
@@ -363,6 +363,10 @@ int main(int argc, char *argv[])
 			}
 
 			if (usertime != 0 && (checksum>>24) == 0x5ae2) {
+				ADD_TIME(tr_mod_2_24_e, usertime);
+			}
+
+			if (usertime != 0 && (checksum>>24) == 0x5ae1) {
 				ADD_TIME(tr_mod_2_24_e, usertime);
 			}
 		}
