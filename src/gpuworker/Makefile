@@ -22,6 +22,10 @@ ifeq ($(USE_ESIEVE), 1)
 	CFLAGS+=-DUSE_ESIEVE
 endif
 
+ifeq ($(USE_SIEVE3), 1)
+	CFLAGS+=-DUSE_SIEVE3
+endif
+
 ifeq ($(DEBUG), 1)
         CFLAGS+=-Og -g -DDEBUG
         LDLIBS+=-rdynamic

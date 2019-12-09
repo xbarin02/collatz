@@ -418,10 +418,15 @@ next_platform:
 			return -1;
 		}
 
-		sprintf(options, "%s -D SIEVE_LOGSIZE=%i -D USE_LOCAL_SIEVE=%i",
+		sprintf(options, "%s -D SIEVE_LOGSIZE=%i -D USE_LOCAL_SIEVE=%i %s",
 			g_ocl_ver1 ? "" : "-cl-std=CL2.0",
 			SIEVE_LOGSIZE,
-			SIEVE_LOGSIZE > 16 ? 0 : 1
+			SIEVE_LOGSIZE > 16 ? 0 : 1,
+#ifdef USE_SIEVE3
+			"-D USE_SIEVE3"
+#else
+			""
+#endif
 		);
 
 		printf("[DEBUG] clBuildProgram options: %s\n", options);

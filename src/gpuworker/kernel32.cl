@@ -18,6 +18,20 @@ uint pow3(size_t n)
 	return r;
 }
 
+#ifdef USE_SIEVE3
+static int is_live_in_sieve3(uint128_t n)
+{
+	ulong r = 0;
+
+	r += (uint)(n);
+	r += (uint)(n >> 32);
+	r += (uint)(n >> 64);
+	r += (uint)(n >> 96);
+
+	return r % 3 != 2;
+}
+#endif
+
 #define LUT_SIZE32 21
 
 #ifndef USE_LOCAL_SIEVE
@@ -87,6 +101,12 @@ __kernel void worker(
 		if (!IS_LIVE(n0 & SIEVE_MASK)) {
 			continue;
 		}
+
+#ifdef USE_SIEVE3
+		if (!is_live_in_sieve3(n0)) {
+			continue;
+		}
+#endif
 
 		do {
 			n++;
