@@ -272,6 +272,8 @@ int solve(uint64_t task_id, uint64_t task_size)
 	uint64_t *cycleoff;
 	cl_mem mem_obj_cycleoff;
 
+	char options[4096];
+
 	assert((uint128_t)task_id <= (UINT128_MAX >> task_size));
 
 	/* informative */
@@ -416,7 +418,15 @@ next_platform:
 			return -1;
 		}
 
-		ret = clBuildProgram(program, 1, &device_id[device_index], g_ocl_ver1 ? NULL : "-cl-std=CL2.0", NULL, NULL);
+		sprintf(options, "%s -D SIEVE_LOGSIZE=%i -D USE_LOCAL_SIEVE=%i",
+			g_ocl_ver1 ? "" : "-cl-std=CL2.0",
+			SIEVE_LOGSIZE,
+			SIEVE_LOGSIZE > 16 ? 0 : 1
+		);
+
+		printf("[DEBUG] clBuildProgram options: %s\n", options);
+
+		ret = clBuildProgram(program, 1, &device_id[device_index], options, NULL, NULL);
 
 		if (ret == CL_BUILD_PROGRAM_FAILURE) {
 			size_t log_size;

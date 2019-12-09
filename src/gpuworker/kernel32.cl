@@ -20,10 +20,15 @@ uint pow3(size_t n)
 
 #define LUT_SIZE32 21
 
-#define USE_LOCAL_SIEVE 1
+#ifndef USE_LOCAL_SIEVE
+#	define USE_LOCAL_SIEVE 1
+#endif
 
 /* in log2 */
-#define SIEVE_LOGSIZE 16
+#ifndef SIEVE_LOGSIZE
+#	define SIEVE_LOGSIZE 16
+#endif
+
 #define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8)
 #define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
 
