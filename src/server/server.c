@@ -693,13 +693,13 @@ int main(int argc, char *argv[])
 		uint64_t n;
 		uint64_t c = 0;
 
-		message(WARN "Invalidating new/buggy/outdated/incomplete checksums...\n");
+		message(WARN "Invalidating new/buggy/outdated/incomplete/obsolete checksums...\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
 
-			if ((checksum>>28) == 0xff5 || (checksum>>24) == 0x6eda || (checksum>>24) == 0x6ed9) {
-				printf("- resetting the assignment %" PRIu64 " due to new/buggy checksum\n", n);
+			if ((checksum>>28) == 0xff5 || (checksum>>24) == 0x6eda || (checksum>>24) == 0x6ed9 || (checksum>>24) == 0x2320) {
+				printf("- resetting the assignment %" PRIu64 " due to obsolete checksum\n", n);
 
 				SET_UNASSIGNED(n);
 				SET_INCOMPLETE(n);
