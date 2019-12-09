@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
 			uint64_t checksum = g_checksums[n];
 			uint64_t mxoffset = g_mxoffsets[n];
 
-			if (checksum && (checksum>>24) != 0x17f0f) {
+			if (checksum) {
 				if (!mxoffset) {
 					c++;
 				}
@@ -275,6 +275,7 @@ int main(int argc, char *argv[])
 		}
 
 		printf("*** found %i incomplete records ***\n", c);
+		printf("\n");
 	}
 #endif
 
