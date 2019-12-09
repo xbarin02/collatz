@@ -265,20 +265,24 @@ int main(int argc, char *argv[])
 		printf("sieve-2^16 checksums:\n");
 		print_checksum_stats(0xa0ed);
 
+		printf("esieve-2^16 checksums:\n");
+		print_checksum_stats_ex(0x83b, 28);
+
+		printf("esieve-2^24 checksums:\n");
+		print_checksum_stats(0x5ae2);
+
 		printf("sieve-2^32 checksums:\n");
 		print_checksum_stats(0x4cfe);
 
 		printf("sieve-2^32 sieve-3^1 checksums:\n");
 		print_checksum_stats(0x3354);
 
-		printf("esieve-2^16 checksums:\n");
-		print_checksum_stats_ex(0x83b, 28);
-
 		printf("esieve-2^32 sieve-3^1 checksums:\n");
 		print_checksum_stats(0x2a27);
 
 		printf("esieve-2^32 sieve-3^2 checksums:\n");
 		print_checksum_stats(0x2320);
+
 	}
 
 	/* missing checksums */
