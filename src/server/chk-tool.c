@@ -257,6 +257,27 @@ int main(int argc, char *argv[])
 	}
 #endif
 
+#if 1
+	/* find records that have incomplete mxoffset */
+	if (1) {
+		uint64_t n;
+		int c = 0;
+
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			uint64_t checksum = g_checksums[n];
+			uint64_t mxoffset = g_mxoffsets[n];
+
+			if (checksum && (checksum>>24) != 0x17f0f) {
+				if (!mxoffset) {
+					c++;
+				}
+			}
+		}
+
+		printf("*** found %i incomplete records ***\n", c);
+	}
+#endif
+
 	/* checksums */
 	if (show_checksums) {
 		printf("sieve-2^2 checksums:\n");
