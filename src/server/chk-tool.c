@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
 #endif
 
 #if 0
-	/* find records that have incomplete triple (usertime, mxoffset, cycleoff) */
+	/* find records that have incomplete pair (usertime, mxoffset) */
 	if (1) {
 		uint64_t n;
 		int c = 0;
@@ -244,16 +244,16 @@ int main(int argc, char *argv[])
 			uint64_t checksum = g_checksums[n];
 			uint64_t usertime = g_usertimes[n];
 			uint64_t mxoffset = g_mxoffsets[n];
-			uint64_t cycleoff = g_cycleoffs[n];
 
-			if (checksum && (checksum>>24) != 0x17f0f) {
-				if (!usertime || !mxoffset || !cycleoff) {
+			if (checksum) {
+				if (!usertime || !mxoffset) {
 					c++;
 				}
 			}
 		}
 
 		printf("*** found %i incomplete records ***\n", c);
+		printf("\n");
 	}
 #endif
 
