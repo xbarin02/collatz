@@ -233,11 +233,6 @@ void check(uint128_t n)
 	} while (1);
 }
 
-void full_check(uint128_t n)
-{
-	check(n);
-}
-
 static void check2(uint128_t n0, uint128_t n)
 {
 	int alpha, beta;
@@ -637,7 +632,7 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 #		endif
 		) {
 #	endif
-			full_check(n);
+			check(n);
 		}
 	}
 #endif
