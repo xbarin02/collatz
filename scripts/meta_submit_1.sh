@@ -74,7 +74,7 @@ popd
 
 cd mclient
 
-# limit 2 hours for the mclient; 3 hours for worker, not one-shot run
+# limit 2 hours for the mclient; 3 hours for worker
 stdbuf -o0 -e0 ./mclient -a 10800 -b 7200 1
 
 popd

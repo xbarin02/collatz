@@ -61,12 +61,11 @@ cp -r "${SRCDIR}" .
 cd collatz/src
 
 # build mclient & gpuworker
-make -C gpuworker clean all CC=$CC TASK_UNITS=20 USE_ESIEVE=1
+make -C gpuworker clean all CC=$CC TASK_UNITS=20 USE_ESIEVE=1 SIEVE_LOGSIZE=24 USE_SIEVE3=1
 make -C mclient clean all
 
 pushd $MAPDIR
-./unpack.sh sieve-16 $TMP/collatz/src/gpuworker
-./unpack.sh esieve-16 $TMP/collatz/src/gpuworker
+./unpack.sh esieve-24 $TMP/collatz/src/gpuworker
 popd
 
 cd mclient

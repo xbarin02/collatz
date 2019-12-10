@@ -26,11 +26,11 @@ echo "PBS_JOBID=${PBS_JOBID}"
 echo "PBS_O_WORKDIR=${PBS_O_WORKDIR}"
 echo "SCRATCHDIR=$SCRATCHDIR"
 
-module load clang-9.0
-module load gmp
-
 type 'clean_scratch' || :
 trap 'clean_scratch' TERM EXIT
+
+module load clang-9.0
+module load gmp
 
 set -u
 set -e
@@ -65,17 +65,17 @@ cp -r "${SRCDIR}" .
 cd collatz/src
 
 # build mclient & worker
-make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 USE_PRECALC=1 USE_SIEVE3=1
+make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 USE_PRECALC=1 USE_SIEVE3=1 USE_ESIEVE=1
 make -C mclient clean all
 
 pushd $MAPDIR
-./unpack.sh sieve-32 $TMP/collatz/src/worker
+./unpack.sh esieve-32 "$TMP"/collatz/src/worker
 popd
 
 cd mclient
 
-# no limit for mclient; 4 hours minus 100 secs for the worker
-stdbuf -o0 -e0 ./mclient -a 14300 -1 2
+# limit 2 hours for the mclient; 3 hours for worker
+stdbuf -o0 -e0 ./mclient -a 10800 -b 7200 2
 
 popd
 rm -rf -- "$TMP"
