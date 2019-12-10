@@ -42,7 +42,6 @@ const uint64_t *g_usertimes = 0;
 const uint64_t *g_overflows = 0;
 const uint64_t *g_clientids = 0;
 const uint64_t *g_mxoffsets = 0;
-const uint64_t *g_cycleoffs = 0;
 
 #define MIN(a, b) ( ((a) < (b)) ? (a): (b) )
 #define MAX(a, b) ( ((a) > (b)) ? (a): (b) )
@@ -137,7 +136,6 @@ void init()
 	g_overflows = open_records("overflows.dat");
 	g_clientids = open_records("clientids.dat");
 	g_mxoffsets = open_records("mxoffsets.dat");
-	g_cycleoffs = open_records("cycleoffs.dat");
 }
 
 struct timerec {
@@ -161,7 +159,6 @@ int main(int argc, char *argv[])
 	int show_overflows = 0;
 	int show_clientids = 0;
 	int show_mxoffsets = 0;
-	int show_cycleoffs = 0;
 	int opt;
 
 	while ((opt = getopt(argc, argv, "sxtoimc")) != -1) {
@@ -183,9 +180,6 @@ int main(int argc, char *argv[])
 				break;
 			case 'm':
 				show_mxoffsets = 1;
-				break;
-			case 'c':
-				show_cycleoffs = 1;
 				break;
 			default:
 				printf("[ERROR] Usage: %s [options]\n", argv[0]);
@@ -230,29 +224,6 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		printf("\n");
-	}
-#endif
-
-#if 0
-	/* find records that have incomplete pair (usertime, mxoffset) */
-	if (1) {
-		uint64_t n;
-		int c = 0;
-
-		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
-			uint64_t checksum = g_checksums[n];
-			uint64_t usertime = g_usertimes[n];
-			uint64_t mxoffset = g_mxoffsets[n];
-
-			if (checksum) {
-				if (!usertime || !mxoffset) {
-					c++;
-				}
-			}
-		}
-
-		printf("*** found %i incomplete records ***\n", c);
 		printf("\n");
 	}
 #endif
@@ -486,23 +457,6 @@ int main(int argc, char *argv[])
 		}
 
 		printf("found %" PRIu64 " (%" PRIu64 "M) maximum value offset records (mxoffsets)\n", mxoffset_count, round_div_ul(mxoffset_count, 1000000));
-		printf("\n");
-	}
-
-	/* cycleoffs */
-	if (show_cycleoffs) {
-		uint64_t n;
-		uint64_t cycleoff_count = 0;
-
-		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
-			uint64_t cycleoff = g_cycleoffs[n];
-
-			if (cycleoff != 0) {
-				cycleoff_count++;
-			}
-		}
-
-		printf("found %" PRIu64 " (%" PRIu64 "M) longest cycle offset records (cycleoffs)\n", cycleoff_count, round_div_ul(cycleoff_count, 1000000));
 		printf("\n");
 	}
 
