@@ -13,11 +13,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <sys/time.h>
-#ifndef __WIN32__
-#	include <sys/resource.h>
-#else
-#	include <windows.h>
-#endif
+#include <sys/resource.h>
 #include <stdint.h>
 #include <inttypes.h>
 
@@ -444,14 +440,9 @@ const void *open_map(const char *path, size_t map_size)
 
 void report_usertime()
 {
-#ifndef __WIN32__
 	struct rusage usage;
-#else
-	FILETIME ftCreation, ftExit, ftUser, ftKernel;
-	HANDLE hProcess = GetCurrentProcess();
-#endif
+	uint64_t usecs, secs;
 
-#ifndef __WIN32__
 	assert(sizeof(uint64_t) >= sizeof(time_t));
 	assert(sizeof(uint64_t) >= sizeof(suseconds_t));
 	assert(sizeof(uint64_t) >= sizeof(time_t));
@@ -460,22 +451,15 @@ void report_usertime()
 	if (getrusage(RUSAGE_SELF, &usage) < 0) {
 		/* errno is set appropriately. */
 		perror("getrusage");
-	} else {
-		/* may wrap around */
-		uint64_t usecs = usage.ru_utime.tv_sec * UINT64_C(1000000) + usage.ru_utime.tv_usec
-		               + usage.ru_stime.tv_sec * UINT64_C(1000000) + usage.ru_stime.tv_usec;
-		uint64_t secs = (usecs + 500000) / 1000000;
+		return;
+	}
 
-		printf("TIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
-	}
-#else
-	if (GetProcessTimes(hProcess, &ftCreation, &ftExit, &ftKernel, &ftUser)) {
-		uint64_t t = ((uint64_t)ftUser.dwHighDateTime << 32) + ftUser.dwLowDateTime;
-		uint64_t secs = (t + 10000000/2) / 10000000;
-		uint64_t usecs = (t + 10/2) / 10;
-		printf("USERTIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
-	}
-#endif
+	/* may wrap around */
+	usecs = usage.ru_utime.tv_sec * UINT64_C(1000000) + usage.ru_utime.tv_usec
+	      + usage.ru_stime.tv_sec * UINT64_C(1000000) + usage.ru_stime.tv_usec;
+	secs = (usecs + 500000) / 1000000;
+
+	printf("TIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
 }
 
 void report_maximum(uint64_t task_id, uint64_t task_size)
@@ -568,12 +552,10 @@ int parse_args(int argc, char *argv[], uint64_t *p_task_id, uint64_t *p_task_siz
 				assert(p_task_size != NULL);
 				*p_task_size = atou64(optarg);
 				break;
-#ifndef __WIN32__
 			case 'a':
 				alarm(seconds = atoul(optarg));
 				printf("ALARM %lu\n", seconds);
 				break;
-#endif
 			default:
 				fprintf(stderr, "Usage: %s [-t task_size] task_id\n", argv[0]);
 				return EXIT_FAILURE;
