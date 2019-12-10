@@ -8,6 +8,7 @@
 #$ -e /dev/null
 #$ -tc 20
 #$ -t 1-100000
+#$ -p -1023
 #$ -pe smp 2
 
 HOME=$HOME

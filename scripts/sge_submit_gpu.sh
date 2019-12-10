@@ -8,6 +8,7 @@
 #$ -e /dev/null
 #$ -tc 20
 #$ -t 1-100000
+#$ -p -1023
 #$ -l gpu=1
 
 HOME=$HOME
