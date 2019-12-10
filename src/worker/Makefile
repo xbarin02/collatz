@@ -20,10 +20,6 @@ ifeq ($(USE_SIEVE3), 1)
 	CFLAGS+=-DUSE_SIEVE3
 endif
 
-ifeq ($(USE_SIEVE9), 1)
-	CFLAGS+=-DUSE_SIEVE9
-endif
-
 ifeq ($(USE_ESIEVE), 1)
         CFLAGS+=-DUSE_ESIEVE
 endif

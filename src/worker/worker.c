@@ -36,10 +36,6 @@
 #	error Unsupported configuration
 #endif
 
-#if defined(USE_SIEVE9) && !defined(USE_SIEVE3)
-#	error Unsupported configuration
-#endif
-
 #ifdef USE_SIEVE
 #	define SIEVE_LOGSIZE 32
 #	define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
@@ -307,17 +303,8 @@ static int is_live_in_sieve3(uint128_t n)
 	r += (uint32_t)(n >> 64);
 	r += (uint32_t)(n >> 96);
 
-#	ifdef USE_SIEVE9
-	/* n is not {2, 4, 5, 8} (mod 9) */
-	if (r % 3 == 2)
-		return 0;
-	if (n % 9 == 4)
-		return 0;
-	return 1;
-#	else
 	/* n is not {2, 5, 8} (mod 9) */
 	return r % 3 != 2;
-#	endif
 }
 #endif
 
