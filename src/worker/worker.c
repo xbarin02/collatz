@@ -106,14 +106,13 @@ mpz_t g_mpz_max_n;
 uint128_t g_mpz_max_n0;
 #endif
 
-uint64_t mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
+void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 {
 #ifdef _USE_GMP
 	mp_bitcnt_t alpha, beta;
 	mpz_t n;
 	mpz_t n0;
 	mpz_t a;
-	uint64_t cycles = 0;
 
 	g_overflow_counter++;
 
@@ -136,8 +135,6 @@ uint64_t mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 
 		/* n-- */
 		mpz_sub_ui(n, n, 1UL);
-
-		cycles++;
 
 		/* if (n > max_n) */
 		if (mpz_cmp(n, g_mpz_max_n) > 0) {
@@ -173,7 +170,7 @@ uint64_t mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 	mpz_clear(n);
 	mpz_clear(n0);
 
-	return cycles;
+	return;
 #else
 	(void)n0_;
 	(void)n_;
@@ -187,14 +184,11 @@ uint64_t mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 
 uint128_t g_max_n = 0;
 uint128_t g_max_n0;
-uint64_t g_maxcycles = 0;
-uint128_t g_maxcycles_n0;
 
-uint64_t check(uint128_t n)
+void check(uint128_t n)
 {
 	const uint128_t n0 = n;
 	int alpha, beta;
-	uint64_t cycles = 0;
 
 	assert(n != UINT128_MAX);
 
@@ -213,15 +207,14 @@ uint64_t check(uint128_t n)
 			n >>= alpha;
 
 			if (n > UINT128_MAX >> 2*alpha) {
-				return cycles + mpz_check2(n0, n, alpha);
+				mpz_check2(n0, n, alpha);
+				return;
 			}
 
 			n *= g_lut64[alpha];
 		} while (!(n & 1));
 
 		n--;
-
-		cycles++;
 
 		if (n > g_max_n) {
 			g_max_n = n;
@@ -239,25 +232,19 @@ uint64_t check(uint128_t n)
 		/* all betas were factored out */
 
 		if (n < n0) {
-			return cycles;
+			return;
 		}
 	} while (1);
 }
 
 void full_check(uint128_t n)
 {
-	uint64_t cycles = check(n);
-
-	if (cycles > g_maxcycles) {
-		g_maxcycles = cycles;
-		g_maxcycles_n0 = (n);
-	}
+	check(n);
 }
 
-static uint64_t check2(uint128_t n0, uint128_t n)
+static void check2(uint128_t n0, uint128_t n)
 {
 	int alpha, beta;
-	uint64_t cycles = 0;
 
 	assert(n != UINT128_MAX);
 
@@ -280,15 +267,14 @@ static uint64_t check2(uint128_t n0, uint128_t n)
 			n >>= alpha;
 
 			if (n > UINT128_MAX >> 2*alpha) {
-				return cycles + mpz_check2(n0, n, alpha);
+				mpz_check2(n0, n, alpha);
+				return;
 			}
 
 			n *= g_lut64[alpha];
 		} while (!(n & 1));
 
 		n--;
-
-		cycles++;
 
 	even:
 		if (n > g_max_n) {
@@ -305,7 +291,7 @@ static uint64_t check2(uint128_t n0, uint128_t n)
 		} while (!(n & 1));
 
 		if (n < n0) {
-			return cycles;
+			return;
 		}
 	} while (1);
 }
@@ -335,7 +321,7 @@ static int is_live_in_sieve3(uint128_t n)
 }
 #endif
 
-static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint64_t L, int Salpha, int Sbeta, uint64_t cycles)
+static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint64_t L, int Salpha, int Sbeta)
 {
 	uint128_t h;
 
@@ -350,7 +336,6 @@ static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint
 		uint128_t H = ((uint128_t)task_id << task_size) + (h << R0);
 		uint128_t N;
 		uint128_t N0 = H + L0;
-		uint64_t cycles2;
 
 #ifdef USE_SIEVE3
 		if (!is_live_in_sieve3(N0)) {
@@ -365,12 +350,7 @@ static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint
 
 		N = (H >> (Salpha + Sbeta)) * g_lut64[Salpha] + L;
 
-		cycles2 = cycles + check2(N0, N);
-
-		if (cycles2 > g_maxcycles) {
-			g_maxcycles = cycles2;
-			g_maxcycles_n0 = N0;
-		}
+		check2(N0, N);
 	}
 }
 
@@ -381,7 +361,6 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 {
 	uint64_t L = L0; /* only R-LSbits in n */
 	int Salpha = 0, Sbeta = 0; /* sum of alpha, beta */
-	uint64_t cycles = 0;
 	int R = R0; /* copy of R */
 
 	do {
@@ -409,7 +388,7 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 				L--;
 
 				/* at this point, the L can be odd or even */
-				calc(task_id, task_size, L0, R0, L, Salpha, Sbeta, cycles);
+				calc(task_id, task_size, L0, R0, L, Salpha, Sbeta);
 				return;
 			}
 		} while (!(L & 1));
@@ -419,7 +398,6 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 		L--;
 
 		/* the 3n/2 sequence is complete */
-		cycles++;
 
 		if (L == 0) {
 			/* no beta has been pulled out yet, the L is even */
@@ -427,7 +405,7 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 			int beta = R;
 			R -= beta;
 			Sbeta += beta;
-			calc(task_id, task_size, L0, R0, L, Salpha, Sbeta, cycles);
+			calc(task_id, task_size, L0, R0, L, Salpha, Sbeta);
 			return;
 		}
 
@@ -445,7 +423,7 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 
 			if (R == 0) {
 				/* at least some (maybe all) betas were pulled out, the L can be even or odd */
-				calc(task_id, task_size, L0, R0, L, Salpha, Sbeta, cycles);
+				calc(task_id, task_size, L0, R0, L, Salpha, Sbeta);
 				return;
 			}
 		} while (!(L & 1));
@@ -570,8 +548,7 @@ void report_epilogue(uint64_t task_id, uint64_t task_size)
 
 	report_maximum(task_id, task_size);
 
-	printf("MAXIMUM_CYCLE %" PRIu64 "\n", g_maxcycles);
-	printf("MAXIMUM_CYCLE_OFFSET %" PRIu64 "\n", (uint64_t)(g_maxcycles_n0 - ((uint128_t)(task_id + 0) << task_size)));
+	printf("MAXIMUM_CYCLE_OFFSET %" PRIu64 "\n", (uint64_t)0);
 
 	printf("HALTED\n");
 }
