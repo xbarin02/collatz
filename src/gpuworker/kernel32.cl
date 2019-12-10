@@ -47,9 +47,9 @@ static int is_live_in_sieve3(uint128_t n)
 #define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
 
 #if (USE_LOCAL_SIEVE == 1)
-#	define IS_LIVE(n) ( ( local_sieve[ (n)>>3 ] >> ((n)&7) ) & 1 )
+#	define IS_LIVE(n) ( ( local_sieve[ ((n) & SIEVE_MASK)>>3 ] >> (((n) & SIEVE_MASK)&7) ) & 1 )
 #else
-#	define IS_LIVE(n) ( ( sieve[ (n)>>3 ] >> ((n)&7) ) & 1 )
+#	define IS_LIVE(n) ( ( sieve[ ((n) & SIEVE_MASK)>>3 ] >> (((n) & SIEVE_MASK)&7) ) & 1 )
 #endif
 
 __kernel void worker(
@@ -58,8 +58,7 @@ __kernel void worker(
 	ulong task_size,
 	ulong task_units,
 	__global uchar *sieve,
-	__global ulong *mxoffset,
-	__global ulong *cycleoff
+	__global ulong *mxoffset
 )
 {
 	ulong private_checksum_alpha = 0;
@@ -91,41 +90,34 @@ __kernel void worker(
 	uint128_t max_n = 0;
 	uint128_t max_n0;
 
-	ulong max_cycles = 0;
-	uint128_t max_cycles_n0;
-
 	for (uint128_t n0 = n_minimum; n0 < n_supremum; n0 += 4) {
-		uint128_t n = n0;
-		ulong cycles = 0;
-
-		if (!IS_LIVE(n0 & SIEVE_MASK)) {
-			continue;
-		}
-
+		while (!IS_LIVE(n0)
 #ifdef USE_SIEVE3
-		if (!is_live_in_sieve3(n0)) {
-			continue;
-		}
+		        || !is_live_in_sieve3(n0)
 #endif
+		) {
+			n0 += 4;
+		}
+		if (n0 >= n_supremum) {
+			break;
+		}
+
+		uint128_t n = n0;
 
 		do {
 			n++;
 
-			cycles++;
+			size_t alpha = min((size_t)ctz((uint)n), (size_t)LUT_SIZE32 - 1);
 
-			do {
-				size_t alpha = min((size_t)ctz((uint)n), (size_t)LUT_SIZE32 - 1);
+			private_checksum_alpha += alpha;
+			n >>= alpha;
 
-				private_checksum_alpha += alpha;
-				n >>= alpha;
+			if (n > UINT128_MAX >> 2*alpha) {
+				private_checksum_alpha = 0;
+				goto end;
+			}
 
-				if (n > UINT128_MAX >> 2*alpha) {
-					private_checksum_alpha = 0;
-					goto end;
-				}
-
-				n *= lut[alpha];
-			} while (!(n & 1));
+			n *= lut[alpha];
 
 			n--;
 
@@ -134,19 +126,11 @@ __kernel void worker(
 				max_n0 = n0;
 			}
 
-			do {
-				n >>= ctz((uint)n);
-			} while (!(n & 1));
+			n >>= ctz((uint)n);
 		} while (n >= n0);
-
-		if (cycles > max_cycles) {
-			max_cycles = cycles;
-			max_cycles_n0 = n0;
-		}
 	}
 
 end:
 	checksum_alpha[id] = private_checksum_alpha;
 	mxoffset[id] = (ulong)(max_n0 - ((uint128_t)(task_id + 0) << task_size));
-	cycleoff[id] = (ulong)(max_cycles_n0 - ((uint128_t)(task_id + 0) << task_size));
 }

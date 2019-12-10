@@ -33,8 +33,7 @@ __kernel void worker(
 	ulong task_size,
 	ulong task_units,
 	__global uchar *sieve,
-	__global ulong *mxoffset,
-	__global ulong *cycleoff
+	__global ulong *mxoffset
 )
 {
 	ulong private_checksum_alpha = 0;
@@ -67,9 +66,6 @@ __kernel void worker(
 	uint128_t max_n = 0;
 	uint128_t max_n0 = ((uint128_t)(task_id + 0) << task_size);
 
-	ulong max_cycles = 0;
-	uint128_t max_cycles_n0 = ((uint128_t)(task_id + 0) << task_size);
-
 	/* iterate over lowest (32 - task_units) bits */
 	for (uint128_t n0 = n_minimum + 3; n0 < n_supremum + 3; n0 += 4) {
 		if (!IS_LIVE(n0 & SIEVE_MASK)) {
@@ -82,7 +78,6 @@ __kernel void worker(
 		ulong L = (ulong)n0; /* only 32-LSbits in n0 */
 		ulong L0 = (ulong)n0; /* copy of L */
 		size_t Salpha = 0, Sbeta = 0; /* sum of alpha, beta */
-		ulong cycles = 0;
 
 		do {
 			L++;
@@ -104,7 +99,6 @@ __kernel void worker(
 				}
 			} while (!(L & 1));
 			L--;
-			cycles++;
 			if (L == 0) {
 				Sbeta += R;
 				R -= R;
@@ -134,7 +128,6 @@ lcalc:
 				uint128_t H = ((uint128_t)task_id << task_size) + (h << R);
 				uint128_t N = H >> (Salpha + Sbeta);
 				uint128_t N0 = H + L0;
-				ulong tot_cycles = cycles;
 
 				/* WARNING: this zeroes the alpha which is needed for the subsequent iterations */
 				size_t Salpha0 = Salpha;
@@ -171,7 +164,6 @@ lcalc:
 						N *= lut[alpha];
 					} while (!(N & 1));
 					N--;
-					tot_cycles++;
 even:
 					if (N > max_n) {
 						max_n = N;
@@ -187,15 +179,11 @@ even:
 					}
 				} while (1);
 next:
-				if (tot_cycles > max_cycles) {
-					max_cycles = tot_cycles;
-					max_cycles_n0 = N0;
-				}
+				;
 			} /* end for over highest 8 bits */
 		} /* end lcalc */
 	} /* end for over lowest 32 bits */
 end:
 	checksum_alpha[id] = private_checksum_alpha;
 	mxoffset[id] = (ulong)(max_n0 - ((uint128_t)(task_id + 0) << task_size));
-	cycleoff[id] = (ulong)(max_cycles_n0 - ((uint128_t)(task_id + 0) << task_size));
 }

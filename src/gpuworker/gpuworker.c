@@ -43,8 +43,6 @@ static uint64_t g_checksum_alpha = 0;
 static uint64_t g_checksum_beta = 0;
 static uint128_t g_max_n = 0;
 static uint128_t g_max_n0;
-static uint64_t g_max_cycle = 0;
-static uint128_t g_max_cycle_n0;
 
 const void *open_map(const char *path, size_t map_size)
 {
@@ -122,45 +120,6 @@ uint128_t get_max(uint128_t n0)
 
 		if (n < n0) {
 			return max_n;
-		}
-	} while (1);
-}
-
-uint64_t get_cycles(uint128_t n0)
-{
-	int alpha, beta;
-	uint64_t cycles = 0;
-	uint128_t n = n0;
-
-	assert(n0 != UINT128_MAX);
-
-	do {
-		n++;
-
-		cycles++;
-
-		do {
-			alpha = ctzu64(n);
-			if (alpha >= LUT_SIZE64) {
-				alpha = LUT_SIZE64 - 1;
-			}
-			n >>= alpha;
-			if (n > UINT128_MAX / g_lut64[alpha]){
-				printf("ABORTED_DUE_TO_OVERFLOW\n");
-			}
-			assert(n <= UINT128_MAX / g_lut64[alpha]);
-			n *= g_lut64[alpha];
-		} while (!(n & 1));
-
-		n--;
-
-		do {
-			beta = ctzu64(n);
-			n >>= beta;
-		} while (!(n & 1));
-
-		if (n < n0) {
-			return cycles;
 		}
 	} while (1);
 }
@@ -268,9 +227,6 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 	uint64_t *mxoffset;
 	cl_mem mem_obj_mxoffset;
-
-	uint64_t *cycleoff;
-	cl_mem mem_obj_cycleoff;
 
 	char options[4096];
 
@@ -581,20 +537,6 @@ next_platform:
 			return -1;
 		}
 
-		mem_obj_cycleoff = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_ulong) << task_units, NULL, &ret);
-
-		if (ret != CL_SUCCESS) {
-			printf("[ERROR] clCreateBuffer failed\n");
-			return -1;
-		}
-
-		ret = clSetKernelArg(kernel, 6, sizeof(cl_mem), (void *)&mem_obj_cycleoff);
-
-		if (ret != CL_SUCCESS) {
-			printf("[ERROR] clSetKernelArg() failed\n");
-			return -1;
-		}
-
 		ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
 
 		if (ret != CL_SUCCESS) {
@@ -633,19 +575,6 @@ next_platform:
 			return -1;
 		}
 
-		cycleoff = malloc(sizeof(uint64_t) * global_work_size);
-
-		if (cycleoff == NULL) {
-			return -1;
-		}
-
-		ret = clEnqueueReadBuffer(command_queue, mem_obj_cycleoff, CL_TRUE, 0, sizeof(uint64_t) << task_units, cycleoff, 0, NULL, NULL);
-
-		if (ret != CL_SUCCESS) {
-			printf("[ERROR] clEnqueueReadBuffer failed with %s\n", errcode_to_cstr(ret));
-			return -1;
-		}
-
 		printf("[DEBUG] buffers transferred\n");
 
 		ret = clFlush(command_queue);
@@ -678,13 +607,10 @@ next_platform:
 
 		for (i = 0; i < global_work_size; ++i) {
 			uint128_t max_n0 = mxoffset[i] + ((uint128_t)(task_id + 0) << task_size);
-			uint128_t max_cycle_n0 = cycleoff[i] + ((uint128_t)(task_id + 0) << task_size);
 
 			uint128_t max_n;
-			uint64_t max_cycle;
 
 			max_n = get_max(max_n0);
-			max_cycle = get_cycles(max_cycle_n0);
 
 			g_checksum_alpha += checksum_alpha[i];
 
@@ -692,16 +618,10 @@ next_platform:
 				g_max_n = max_n;
 				g_max_n0 = max_n0;
 			}
-
-			if (max_cycle > g_max_cycle) {
-				g_max_cycle = max_cycle;
-				g_max_cycle_n0 = max_cycle_n0;
-			}
 		}
 
 		free(checksum_alpha);
 		free(mxoffset);
-		free(cycleoff);
 
 		free(program_string);
 
@@ -792,7 +712,7 @@ int main(int argc, char *argv[])
 
 	printf("MAXIMUM_OFFSET %" PRIu64 "\n", (uint64_t)(g_max_n0 - ((uint128_t)(task_id + 0) << task_size)));
 
-	printf("MAXIMUM_CYCLE_OFFSET %" PRIu64 "\n", (uint64_t)(g_max_cycle_n0 - ((uint128_t)(task_id + 0) << task_size)));
+	printf("MAXIMUM_CYCLE_OFFSET %" PRIu64 "\n", (uint64_t)0);
 
 	printf("HALTED\n");
 
