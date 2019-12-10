@@ -592,11 +592,7 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 #ifdef USE_PRECALC
 	uint64_t n, n_min, n_sup;
 	int R = SIEVE_LOGSIZE;
-#else
-	uint128_t n, n_min, n_sup;
-#endif
 
-#ifdef USE_PRECALC
 	assert(task_size >= SIEVE_LOGSIZE);
 
 	/* n of the form 4n+3 */
@@ -605,33 +601,30 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 
 	/* iterate over lowest R-bits */
 	for (n = n_min; n < n_sup; n += 4) {
+		if (1
 #	ifdef USE_SIEVE
-		if (IS_LIVE(n)) {
-#	else
-		if (1) {
+		      && IS_LIVE(n)
 #	endif
+		) {
 			precalc(task_id, task_size, n, R);
 		}
 	}
 #else
+	uint128_t n, n_min, n_sup;
+
 	/* n of the form 4n+3 */
 	n_min = ((uint128_t)(task_id + 0) << task_size) + 3;
 	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
 
 	for (n = n_min; n < n_sup; n += 4) {
-#	ifdef USE_SIEVE
-		if (IS_LIVE(n)
-#		ifdef USE_SIEVE3
-			&& is_live_in_sieve3(n)
-#		endif
-		) {
-#	else
 		if (1
-#		ifdef USE_SIEVE3
-			&& is_live_in_sieve3(n)
-#		endif
-		) {
+#	ifdef USE_SIEVE
+		      && IS_LIVE(n)
 #	endif
+#	ifdef USE_SIEVE3
+		      && is_live_in_sieve3(n)
+#	endif
+		) {
 			check(n);
 		}
 	}
