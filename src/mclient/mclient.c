@@ -415,12 +415,10 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, u
 			assert(p_cycleoff != NULL);
 
 			*p_cycleoff = maximum_cycle_offset;
-
-			message(INFO "found maximum cycle at offset +%" PRIu64 "\n", maximum_cycle_offset);
 		} else if (c == 2 && strcmp(ln_part[0], "MAXIMUM_CYCLE") == 0) {
 			uint64_t maximum_cycle = atou64(ln_part[1]);
 
-			message(INFO "maximum cycle of the length %" PRIu64 "\n", maximum_cycle);
+			(void)maximum_cycle;
 		} else if (c > 1 && strcmp(ln_part[0], "MAXIMUM") == 0) {
 			message(INFO "maximum value found: %s", line+8); /* incl. the newline character */
 		} else if (c == 1 && strcmp(ln_part[0], "ABORTED_DUE_TO_OVERFLOW") == 0) {
