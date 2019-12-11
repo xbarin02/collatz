@@ -50,7 +50,6 @@ const unsigned char *g_map_sieve;
 uint64_t g_lut64[LUT_SIZE64];
 
 static uint64_t g_checksum_alpha = 0;
-static uint64_t g_checksum_beta = 0;
 static uint64_t g_overflow_counter = 0;
 
 #ifdef _USE_GMP
@@ -136,8 +135,6 @@ void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 
 		beta = mpz_ctz(n);
 
-		g_checksum_beta += beta;
-
 		/* n >>= ctz(n) */
 		mpz_fdiv_q_2exp(n, n, beta);
 
@@ -216,8 +213,6 @@ void check(uint128_t n)
 		do {
 			beta = ctzu64(n);
 
-			g_checksum_beta += beta;
-
 			n >>= beta;
 		} while (!(n & 1));
 
@@ -231,8 +226,6 @@ void check(uint128_t n)
 
 static void check2(uint128_t n0, uint128_t n)
 {
-	int alpha, beta;
-
 	assert(n != UINT128_MAX);
 
 	if (!(n & 1)) {
@@ -243,7 +236,7 @@ static void check2(uint128_t n0, uint128_t n)
 		n++;
 
 		do {
-			alpha = ctzu64(n);
+			int alpha = ctzu64(n);
 
 			if (alpha >= LUT_SIZE64) {
 				alpha = LUT_SIZE64 - 1;
@@ -270,9 +263,7 @@ static void check2(uint128_t n0, uint128_t n)
 		}
 
 		do {
-			beta = ctzu64(n);
-
-			g_checksum_beta += beta;
+			int beta = ctzu64(n);
 
 			n >>= beta;
 		} while (!(n & 1));
@@ -299,16 +290,13 @@ static int is_live_in_sieve3(uint128_t n)
 }
 #endif
 
-static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint64_t L, int Salpha, int Sbeta)
+static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint64_t L, int Salpha)
 {
 	uint128_t h;
 
 #ifndef USE_SIEVE3
 	g_checksum_alpha += Salpha << (task_size - R0);
-	g_checksum_beta  += Sbeta  << (task_size - R0);
 #endif
-
-	assert(R0 == Salpha + Sbeta);
 
 	for (h = 0; h < (1UL << (task_size - R0)); ++h) {
 		uint128_t H = ((uint128_t)task_id << task_size) + (h << R0);
@@ -321,12 +309,11 @@ static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint
 		}
 
 		g_checksum_alpha += Salpha;
-		g_checksum_beta  += Sbeta;
 #endif
 
 		assert(Salpha < LUT_SIZE64);
 
-		N = (H >> (Salpha + Sbeta)) * g_lut64[Salpha] + L;
+		N = (H >> R0) * g_lut64[Salpha] + L;
 
 		check2(N0, N);
 	}
@@ -338,7 +325,7 @@ static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint
 void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 {
 	uint64_t L = L0; /* only R-LSbits in n */
-	int Salpha = 0, Sbeta = 0; /* sum of alpha, beta */
+	int Salpha = 0; /* sum of alphas */
 	int R = R0; /* copy of R */
 
 	do {
@@ -366,7 +353,7 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 				L--;
 
 				/* at this point, the L can be odd or even */
-				calc(task_id, task_size, L0, R0, L, Salpha, Sbeta);
+				calc(task_id, task_size, L0, R0, L, Salpha);
 				return;
 			}
 		} while (!(L & 1));
@@ -382,8 +369,7 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 			/* WARNING: not all R bits have been exhausted */
 			int beta = R;
 			R -= beta;
-			Sbeta += beta;
-			calc(task_id, task_size, L0, R0, L, Salpha, Sbeta);
+			calc(task_id, task_size, L0, R0, L, Salpha);
 			return;
 		}
 
@@ -395,13 +381,12 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 			}
 
 			R -= beta;
-			Sbeta += beta;
 
 			L >>= beta;
 
 			if (R == 0) {
 				/* at least some (maybe all) betas were pulled out, the L can be even or odd */
-				calc(task_id, task_size, L0, R0, L, Salpha, Sbeta);
+				calc(task_id, task_size, L0, R0, L, Salpha);
 				return;
 			}
 		} while (!(L & 1));
@@ -510,7 +495,7 @@ void report_epilogue(uint64_t task_id, uint64_t task_size)
 
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 
-	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, g_checksum_beta);
+	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
 
 	report_maximum(task_id, task_size);
 
