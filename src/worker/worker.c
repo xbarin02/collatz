@@ -410,7 +410,7 @@ const void *open_map(const char *path, size_t map_size)
 		abort();
 	}
 
-	ptr = mmap(NULL, (size_t)map_size, PROT_READ, MAP_SHARED, fd, 0);
+	ptr = mmap(NULL, map_size, PROT_READ, MAP_SHARED, fd, 0);
 
 	if (ptr == MAP_FAILED) {
 		perror("mmap");
