@@ -412,9 +412,7 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, u
 		} else if (c == 2 && strcmp(ln_part[0], "MAXIMUM_CYCLE_OFFSET") == 0) {
 			uint64_t maximum_cycle_offset = atou64(ln_part[1]);
 
-			assert(p_cycleoff != NULL);
-
-			*p_cycleoff = maximum_cycle_offset;
+			(void)maximum_cycle_offset;
 		} else if (c == 2 && strcmp(ln_part[0], "MAXIMUM_CYCLE") == 0) {
 			uint64_t maximum_cycle = atou64(ln_part[1]);
 
