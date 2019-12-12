@@ -5,18 +5,10 @@
 	#include <omp.h>
 #endif
 #include <sys/types.h>
-#ifndef __WIN32__
-#	include <sys/socket.h>
-#	include <netdb.h>
-#	include <arpa/inet.h>
-#	include <netinet/tcp.h>
-#else
-#	include <winsock2.h>
-#	include <windows.h>
-#	define WIFEXITED(r) (1)
-#	define bzero(s, n) ZeroMemory((s), (n))
-#	define close(fd) closesocket(fd)
-#endif
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <netinet/tcp.h>
 #include <unistd.h>
 #include <strings.h>
 #include <string.h>
@@ -115,16 +107,6 @@ ssize_t write_(int fd, const char *buf, size_t count)
 	ssize_t written = 0;
 
 	while ((size_t)written < count) {
-#ifdef __WIN32__
-		int t = send(fd, buf + written, count - written, 0);
-
-		if (t == SOCKET_ERROR) {
-			message(ERR "send() failed\n");
-			return -1;
-		}
-
-		written += t;
-#else
 		ssize_t t = write(fd, buf + written, count - written);
 
 		if (t < 0) {
@@ -139,7 +121,6 @@ ssize_t write_(int fd, const char *buf, size_t count)
 		}
 
 		written += t;
-#endif
 	}
 
 	return written;
@@ -151,16 +132,6 @@ ssize_t read_(int fd, char *buf, size_t count)
 	ssize_t readen = 0;
 
 	while ((size_t)readen < count) {
-#ifdef __WIN32__
-		int t = recv(fd, buf + readen, count - readen, 0);
-
-		if (t == SOCKET_ERROR) {
-			message(ERR "recv() failed\n");
-			return -1;
-		}
-
-		readen += t;
-#else
 		ssize_t t = read(fd, buf + readen, count - readen);
 
 		if (t < 0) {
@@ -175,7 +146,6 @@ ssize_t read_(int fd, char *buf, size_t count)
 		}
 
 		readen += t;
-#endif
 	}
 
 	return readen;
@@ -783,15 +753,6 @@ int main(int argc, char *argv[])
 	unsigned long alarm_seconds = 0;
 	int gpu_mode = 0;
 
-#ifdef __WIN32__
-	WORD versionWanted = MAKEWORD(1, 1);
-	WSADATA wsaData;
-	if (WSAStartup(versionWanted, &wsaData)) {
-		message(ERR "WSAStartup failed\n");
-		return -1;
-	}
-#endif
-
 	if (getenv("SERVER_NAME")) {
 		servername = getenv("SERVER_NAME");
 	}
@@ -810,12 +771,10 @@ int main(int argc, char *argv[])
 			case 'a':
 				alarm_seconds = atoul(optarg);
 				break;
-#ifndef __WIN32__
 			case 'b':
 				alarm(seconds = atoul(optarg));
 				message(DBG "MCLIENT ALARM %lu\n", seconds);
 				break;
-#endif
 			case 'g':
 				gpu_mode = 1;
 				message(INFO "gpu mode activated!\n");
@@ -854,22 +813,17 @@ int main(int argc, char *argv[])
 
 	for (tid = 0; tid < threads; ++tid) {
 		clientid[tid] = 0;
-#ifndef __WIN32__
+
 		if (open_urandom_and_read_clientid(clientid+tid) < 0) {
 			message(WARN "unable to generate random client ID");
 		}
-#else
-		clientid[tid] = 42; /* chosen randomly */
-#endif
 	}
 
 	signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
-#ifndef __WIN32__
 	signal(SIGALRM, signal_handler);
 	signal(SIGUSR1, signal_handler);
 	signal(SIGUSR2, signal_handler);
-#endif
 
 	while (!quit) {
 		while (open_socket_and_request_multiple_assignments(threads, request_lowest_incomplete, task_id, task_size, clientid) < 0) {
@@ -919,10 +873,6 @@ int main(int argc, char *argv[])
 	free(cycleoff);
 
 	message(INFO "client has been halted\n");
-
-#ifdef __WIN32__
-	WSACleanup();
-#endif
 
 	return EXIT_SUCCESS;
 }

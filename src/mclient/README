@@ -2,8 +2,3 @@ Linux
 =====
 
 make CC=gcc
-
-Windows (mingw32)
-=================
-
-make CC=x86_64-w64-mingw32-gcc EXTRA_LDLIBS=-lws2_32 EXTRA_LDFLAGS=-static
