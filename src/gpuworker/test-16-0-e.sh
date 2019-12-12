@@ -27,10 +27,12 @@ function verify()
 
 	R="$(check $1)"
 
-	if test "$R" = ABORTED_DUE_TO_OVERFLOW; then
-		echo -e "\e[1m$1\e[0m: \e[31m$R\e[0m"
-	elif test "$R" = "$2"; then
-		echo -e "\e[1m$1\e[0m: \e[32mPASSED\e[0m"
+	if test "$R" = "$2"; then
+		if test "$R" = ABORTED_DUE_TO_OVERFLOW; then
+			echo -e "\e[1m$1\e[0m: \e[32mPASSED\e[0m (\e[31m$R\e[0m)"
+		else
+			echo -e "\e[1m$1\e[0m: \e[32mPASSED\e[0m"
+		fi
 	else
 		echo -e "\e[1m$1\e[0m: \e[31mFAILED ($R)\e[0m"
 	fi
@@ -70,4 +72,4 @@ build SIEVE_LOGSIZE=${SIEVE_LOGSIZE} USE_ESIEVE=${USE_ESIEVE} && verify 98999224
 
 build SIEVE_LOGSIZE=${SIEVE_LOGSIZE} USE_ESIEVE=${USE_ESIEVE} && verify 98999225 "565677546761 851511117927 0"
 
-build SIEVE_LOGSIZE=${SIEVE_LOGSIZE} USE_ESIEVE=${USE_ESIEVE} && verify 97064899 "0 0 0"
+build SIEVE_LOGSIZE=${SIEVE_LOGSIZE} USE_ESIEVE=${USE_ESIEVE} && verify 97064899 "ABORTED_DUE_TO_OVERFLOW"
