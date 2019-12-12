@@ -6,8 +6,3 @@ make CC=gcc
 or
 
 make CC=clang
-
-Windows (mingw32)
-=================
-
-make CC=x86_64-w64-mingw32-gcc USE_LIBGMP=0
