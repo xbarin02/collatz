@@ -228,30 +228,10 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-#if 1
-	/* find records that have incomplete mxoffset */
-	if (1) {
-		uint64_t n;
-		int c = 0;
-
-		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
-			uint64_t checksum = g_checksums[n];
-			uint64_t mxoffset = g_mxoffsets[n];
-
-			if (checksum) {
-				if (!mxoffset) {
-					c++;
-				}
-			}
-		}
-
-		printf("*** found %i incomplete records ***\n", c);
-		printf("\n");
-	}
-#endif
-
 	/* checksums */
 	if (show_checksums) {
+		printf("analyzing checksums...\n");
+
 		printf("sieve-2^2 checksums:\n");
 		print_checksum_stats(0x17f0f);
 
@@ -312,6 +292,8 @@ int main(int argc, char *argv[])
 		struct timerec tr_mod_2_32 = timerec_create();
 		struct timerec tr_mod_2_32_3_1 = timerec_create();
 		struct timerec tr_mod_2_32_3_1_e = timerec_create();
+
+		printf("analyzing time records...\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t usertime = g_usertimes[n];
@@ -402,27 +384,31 @@ int main(int argc, char *argv[])
 	/* overflows */
 	if (show_overflows) {
 		uint64_t n;
-		int overflow_found = 0;
 		uint64_t overflow_count = 0;
 		uint64_t overflow_sum = 0;
+#if 0
 		int c = 0;
+#endif
+
+		printf("analyzing overflows...\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t overflow = g_overflows[n];
 
 			if (overflow != 0) {
-				overflow_found = 1;
 				overflow_count++;
 				overflow_sum += overflow;
 
+#if 0
 				if (++c < 48) {
 					printf("- #%2i: found %" PRIu64 " overflows on the assignment %9" PRIu64 " (below %3" PRIu64 " x 2^60)\n", c, overflow, n, (n >> 20) + 1);
 				}
+#endif
 			}
 		}
 		printf("\n");
 
-		printf("overflow found: %s (%" PRIu64 " assignments, %" PRIu64 " overflows)\n", overflow_found ? "yes" : "no", overflow_count, overflow_sum);
+		printf("overflows found: %" PRIu64 " assignments, %" PRIu64 " overflows\n", overflow_count, overflow_sum);
 		printf("\n");
 	}
 
@@ -446,7 +432,23 @@ int main(int argc, char *argv[])
 	/* mxoffsets */
 	if (show_mxoffsets) {
 		uint64_t n;
+		int c = 0;
 		uint64_t mxoffset_count = 0;
+
+		/* find records that have incomplete mxoffset */
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			uint64_t checksum = g_checksums[n];
+			uint64_t mxoffset = g_mxoffsets[n];
+
+			if (checksum) {
+				if (!mxoffset) {
+					c++;
+				}
+			}
+		}
+
+		printf("*** found %i incomplete records ***\n", c);
+		printf("\n");
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t mxoffset = g_mxoffsets[n];
