@@ -364,22 +364,6 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 
 		/* the 3n/2 sequence is complete */
 
-		/* actually, the following block is unnecessary since this situation (L == 0) is correctly handled by the next do-while loop */
-#if 0
-		if (L == 0) {
-			/* WARNING
-			 * No beta has been pulled out yet, the L is even.
-			 * Not all R bits have been exhausted.
-			 * However, L is zero, so L /= beta is still zero, so this step can be avoided.
-			 * Moreover, the folowing two lines are also unnecessary since the R is no further used.
-			 * int beta = R;
-			 * R -= beta;
-			 */
-			calc(task_id, task_size, L0, R0, L, Salpha);
-			return;
-		}
-#endif
-
 		do {
 			int beta = ctzu64(L);
 
