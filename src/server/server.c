@@ -449,7 +449,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		}
 
 		if (g_clientids[n] != clid) {
-			message(WARN "assignment %" PRIu64 " was assigned to another client, ignoring the result!\n", n);
+			message(WARN "assignment %" PRIu64 " was assigned to another client, ignoring the result! (done in %" PRIu64 " secs)\n", n, user_time);
 			/* this can however be part of MUL request, so do not return -1 */
 			return 0;
 		}
