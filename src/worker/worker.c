@@ -174,57 +174,7 @@ void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 uint128_t g_max_n = 0;
 uint128_t g_max_n0;
 
-void check(uint128_t n)
-{
-	const uint128_t n0 = n;
-	int alpha, beta;
-
-	assert(n != UINT128_MAX);
-
-	do {
-		n++;
-
-		do {
-			alpha = ctzu64(n);
-
-			if (alpha >= LUT_SIZE64) {
-				alpha = LUT_SIZE64 - 1;
-			}
-
-			g_checksum_alpha += alpha;
-
-			n >>= alpha;
-
-			if (n > UINT128_MAX >> 2*alpha) {
-				mpz_check2(n0, n, alpha);
-				return;
-			}
-
-			n *= g_lut64[alpha];
-		} while (!(n & 1));
-
-		n--;
-
-		if (n > g_max_n) {
-			g_max_n = n;
-			g_max_n0 = n0;
-		}
-
-		do {
-			beta = ctzu64(n);
-
-			n >>= beta;
-		} while (!(n & 1));
-
-		/* all betas were factored out */
-
-		if (n < n0) {
-			return;
-		}
-	} while (1);
-}
-
-static void check2(uint128_t n0, uint128_t n)
+void check(uint128_t n, uint128_t n0)
 {
 	assert(n != UINT128_MAX);
 
@@ -315,7 +265,7 @@ static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint
 
 		N = (H >> R0) * g_lut64[Salpha] + L;
 
-		check2(N0, N);
+		check(N, N0);
 	}
 }
 
@@ -583,7 +533,7 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 		      && is_live_in_sieve3(n)
 #	endif
 		) {
-			check(n);
+			check(n, n);
 		}
 	}
 #endif
