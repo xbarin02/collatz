@@ -2,6 +2,61 @@ typedef unsigned __int128 uint128_t;
 
 #define UINT128_MAX (~(uint128_t)0)
 
+#ifdef USE_LUT50
+__constant static const ulong dict[] = {
+	0x0000000000000000,
+	0x0000000000000080,
+	0x0000000008000000,
+	0x0000000008000080,
+	0x0000000080000000,
+	0x0000000088000000,
+	0x0000008000000000,
+	0x0000008000000080,
+	0x0000008008000000,
+	0x0000008008000080,
+	0x0000008080000000,
+	0x0000008088000000,
+	0x0000800000000000,
+	0x0000800000000080,
+	0x0000800008000000,
+	0x0000800008000080,
+	0x0000800080000000,
+	0x0000800088000000,
+	0x0000808000000000,
+	0x0000808000000080,
+	0x0000808008000000,
+	0x0000808008000080,
+	0x0800000000000000,
+	0x0800008000000000,
+	0x0800800000000000,
+	0x0800808000000000,
+	0x8000000000000000,
+	0x8000000000000080,
+	0x8000000008000000,
+	0x8000000008000080,
+	0x8000000080000000,
+	0x8000000088000000,
+	0x8000008000000000,
+	0x8000008000000080,
+	0x8000008008000000,
+	0x8000008008000080,
+	0x8000008080000000,
+	0x8000008088000000,
+	0x8000800000000000,
+	0x8000800000000080,
+	0x8000800008000000,
+	0x8000800008000080,
+	0x8000808000000000,
+	0x8000808000000080,
+	0x8000808008000000,
+	0x8000808008000080,
+	0x8800000000000000,
+	0x8800008000000000,
+	0x8800800000000000,
+	0x8800808000000000
+};
+#endif
+
 uint pow3(size_t n)
 {
 	uint r = 1;
@@ -43,13 +98,25 @@ static int is_live_in_sieve3(uint128_t n)
 #	define SIEVE_LOGSIZE 16
 #endif
 
-#define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8)
+#ifdef USE_LUT50
+#	define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8 / 8)
+#else
+#	define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8)
+#endif
+
 #define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
 
 #if (USE_LOCAL_SIEVE == 1)
-#	define IS_LIVE(n) ( ( local_sieve[ ((n) & SIEVE_MASK)>>3 ] >> (((n) & SIEVE_MASK)&7) ) & 1 )
+#	define SIEVE_NAME local_sieve
 #else
-#	define IS_LIVE(n) ( ( sieve[ ((n) & SIEVE_MASK)>>3 ] >> (((n) & SIEVE_MASK)&7) ) & 1 )
+#	define SIEVE_NAME sieve
+#endif
+
+#ifdef USE_LUT50
+#	define GET_INDEX(n) (SIEVE_NAME[((n) & SIEVE_MASK) >> (3+3)])
+#	define IS_LIVE(n) ((l_dict[GET_INDEX(n)] >> ((n) & 63)) & 1)
+#else
+#	define IS_LIVE(n) ((SIEVE_NAME[((n) & SIEVE_MASK) >> 3] >> (((n) & SIEVE_MASK) & 7)) & 1)
 #endif
 
 __kernel void worker(
@@ -68,6 +135,18 @@ __kernel void worker(
 
 #if (USE_LOCAL_SIEVE == 1)
 	__local uchar local_sieve[SIEVE_SIZE];
+#endif
+
+#ifdef USE_LUT50
+	__local ulong l_dict[50];
+#endif
+
+#ifdef USE_LUT50
+	if (get_local_id(0) == 0) {
+		for (size_t i = 0; i < 50; ++i) {
+			l_dict[i] = dict[i];
+		}
+	}
 #endif
 
 	if (get_local_id(0) == 0) {

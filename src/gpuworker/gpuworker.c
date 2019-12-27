@@ -20,6 +20,10 @@
 #include "wideint.h"
 #include "compat.h"
 
+#if defined(USE_LUT50) && !defined(USE_ESIEVE)
+#       error Unsupported configuration
+#endif
+
 /* in log2 */
 #define TASK_SIZE 40
 
@@ -33,9 +37,11 @@
 #	define SIEVE_LOGSIZE 16
 #endif
 
-#define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
-#define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8) /* in bytes */
-#define IS_LIVE(n) ( ( g_map_sieve[ (n)>>3 ] >> ((n)&7) ) & 1 )
+#ifdef USE_LUT50
+#	define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8 / 8)
+#else
+#	define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8)
+#endif
 
 const unsigned char *g_map_sieve;
 
@@ -374,12 +380,17 @@ next_platform:
 			return -1;
 		}
 
-		sprintf(options, "%s -D SIEVE_LOGSIZE=%i -D USE_LOCAL_SIEVE=%i %s",
+		sprintf(options, "%s -D SIEVE_LOGSIZE=%i -D USE_LOCAL_SIEVE=%i %s %s",
 			g_ocl_ver1 ? "" : "-cl-std=CL2.0",
 			SIEVE_LOGSIZE,
 			SIEVE_LOGSIZE > 16 ? 0 : 1,
 #ifdef USE_SIEVE3
-			"-D USE_SIEVE3"
+			"-D USE_SIEVE3",
+#else
+			"",
+#endif
+#ifdef USE_LUT50
+			"-D USE_LUT50"
 #else
 			""
 #endif
@@ -489,7 +500,11 @@ next_platform:
 		assert(task_units + 2 <= task_size);
 
 #ifdef USE_ESIEVE
+#	ifdef USE_LUT50
+		sprintf(path, "esieve-%lu.lut50.map", (unsigned long)k);
+#	else
 		sprintf(path, "esieve-%lu.map", (unsigned long)k);
+#	endif
 #else
 		sprintf(path, "sieve-%lu.map", (unsigned long)k);
 #endif
