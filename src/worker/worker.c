@@ -32,11 +32,76 @@
 #	error Unsupported configuration
 #endif
 
+#if defined(USE_LUT50) && !defined(USE_ESIEVE)
+#	error Unsupported configuration
+#endif
+
+#ifdef USE_LUT50
+static const uint64_t dict[] = {
+	0x0000000000000000,
+	0x0000000000000080,
+	0x0000000008000000,
+	0x0000000008000080,
+	0x0000000080000000,
+	0x0000000088000000,
+	0x0000008000000000,
+	0x0000008000000080,
+	0x0000008008000000,
+	0x0000008008000080,
+	0x0000008080000000,
+	0x0000008088000000,
+	0x0000800000000000,
+	0x0000800000000080,
+	0x0000800008000000,
+	0x0000800008000080,
+	0x0000800080000000,
+	0x0000800088000000,
+	0x0000808000000000,
+	0x0000808000000080,
+	0x0000808008000000,
+	0x0000808008000080,
+	0x0800000000000000,
+	0x0800008000000000,
+	0x0800800000000000,
+	0x0800808000000000,
+	0x8000000000000000,
+	0x8000000000000080,
+	0x8000000008000000,
+	0x8000000008000080,
+	0x8000000080000000,
+	0x8000000088000000,
+	0x8000008000000000,
+	0x8000008000000080,
+	0x8000008008000000,
+	0x8000008008000080,
+	0x8000008080000000,
+	0x8000008088000000,
+	0x8000800000000000,
+	0x8000800000000080,
+	0x8000800008000000,
+	0x8000800008000080,
+	0x8000808000000000,
+	0x8000808000000080,
+	0x8000808008000000,
+	0x8000808008000080,
+	0x8800000000000000,
+	0x8800008000000000,
+	0x8800800000000000,
+	0x8800808000000000
+};
+#endif
+
 #ifdef USE_SIEVE
 #	define SIEVE_LOGSIZE 32
 #	define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
-#	define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8) /* 2^k bits */
-#	define IS_LIVE(n) ( ( g_map_sieve[ ((n) & SIEVE_MASK)>>3 ] >> (((n) & SIEVE_MASK)&7) ) & 1 )
+#	ifdef USE_LUT50
+#		define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8 / 8)
+#		define GET_INDEX(n) (g_map_sieve[((n) & SIEVE_MASK) >> (3+3)])
+#		define IS_LIVE(n) ((dict[GET_INDEX(n)] >> ((n)&63)) & 1)
+#	else
+#		define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8)
+#		define IS_LIVE(n) ((g_map_sieve[ ((n) & SIEVE_MASK)>>3 ] >> (((n) & SIEVE_MASK)&7)) & 1)
+#	endif
 #endif
 
 #define TASK_SIZE 40
@@ -415,10 +480,6 @@ void report_maximum(uint64_t task_id, uint64_t task_size)
 
 void report_prologue(uint64_t task_id, uint64_t task_size)
 {
-#ifdef USE_SIEVE
-	printf("SIEVE_LOGSIZE %lu\n", (unsigned long)SIEVE_LOGSIZE);
-#endif
-
 	printf("TASK_SIZE %" PRIu64 "\n", task_size);
 	printf("TASK_ID %" PRIu64 "\n", task_id);
 
@@ -453,7 +514,11 @@ void init()
 	size_t map_size = SIEVE_SIZE;
 
 #ifdef USE_ESIEVE
+#	ifdef USE_LUT50
+	sprintf(path, "esieve-%lu.lut50.map", (unsigned long)k);
+#	else
 	sprintf(path, "esieve-%lu.map", (unsigned long)k);
+#	endif
 #else
 	sprintf(path, "sieve-%lu.map", (unsigned long)k);
 #endif
