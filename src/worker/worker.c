@@ -358,7 +358,7 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 
 			L >>= alpha;
 
-			assert(L <= UINT64_MAX >> 2*alpha);
+			assert(L <= UINT64_MAX >> 2*alpha || L <= UINT64_MAX / g_lut64[alpha]);
 
 			L *= g_lut64[alpha];
 
