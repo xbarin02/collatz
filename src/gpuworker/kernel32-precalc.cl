@@ -95,6 +95,20 @@ uint pow3(size_t n)
 #	define IS_LIVE(n) ((SIEVE_NAME[((n) & SIEVE_MASK) >> 3] >> (((n) & SIEVE_MASK) & 7)) & 1)
 #endif
 
+#ifdef USE_SIEVE3
+static int is_live_in_sieve3(uint128_t n)
+{
+	ulong r = 0;
+
+	r += (uint)(n);
+	r += (uint)(n >> 32);
+	r += (uint)(n >> 64);
+	r += (uint)(n >> 96);
+
+	return r % 3 != 2;
+}
+#endif
+
 __kernel void worker(
 	__global ulong *checksum_alpha,
 	ulong task_id,
@@ -201,13 +215,23 @@ lcalc:
 		{
 			R = Salpha + Sbeta; /* R-LSbits have been precalculated above */
 
+#ifndef USE_SIEVE3
 			private_checksum_alpha += Salpha << (task_size - R);
+#endif
 
 			/* iterate over highest 40 - 32 = 8 bits */
 			for (uint128_t h = 0; h < (1UL << (task_size - R)); ++h) {
 				uint128_t H = ((uint128_t)task_id << task_size) + (h << R);
 				uint128_t N = H >> (Salpha + Sbeta);
 				uint128_t N0 = H + L0;
+
+#ifdef USE_SIEVE3
+				if (!is_live_in_sieve3(N0)) {
+					continue;
+				}
+
+				private_checksum_alpha += Salpha;
+#endif
 
 				/* WARNING: this zeroes the alpha which is needed for the subsequent iterations */
 				size_t Salpha0 = Salpha;
