@@ -92,7 +92,9 @@ static const uint64_t dict[] = {
 #endif
 
 #ifdef USE_SIEVE
-#	define SIEVE_LOGSIZE 32
+#	ifndef SIEVE_LOGSIZE
+#		define SIEVE_LOGSIZE 32
+#	endif
 #	define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
 #	ifdef USE_LUT50
 #		define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8 / 8)
