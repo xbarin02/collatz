@@ -1,6 +1,6 @@
 #!/bin/bash
 
-KERNEL=kernel32.cl
+KERNEL=kernel32-precalc.cl
 SIEVE_LOGSIZE=32
 USE_ESIEVE=0
 USE_SIEVE3=0
