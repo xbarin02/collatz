@@ -76,7 +76,9 @@ uint pow3(size_t n)
 #define LUT_SIZE32 21
 
 /* in log2 */
-#define SIEVE_LOGSIZE 32
+#ifndef SIEVE_LOGSIZE
+#	define SIEVE_LOGSIZE 32
+#endif
 
 #ifdef USE_LUT50
 #	define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8 / 8)
