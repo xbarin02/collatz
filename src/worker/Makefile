@@ -1,4 +1,4 @@
-CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -D_XOPEN_SOURCE -flto
+CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -D_XOPEN_SOURCE
 LDFLAGS=-Wl,--as-needed
 LDLIBS+=
 BINS=worker
