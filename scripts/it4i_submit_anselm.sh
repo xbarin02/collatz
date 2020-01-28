@@ -10,6 +10,7 @@
 HOME=$HOME
 
 TMPDIR=/scratch/barina
+mkdir -p -- "$TMPDIR"
 
 export LANG=C
 
