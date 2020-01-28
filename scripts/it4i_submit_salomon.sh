@@ -9,6 +9,9 @@
 
 HOME=$HOME
 
+TMPDIR=/scratch/temp/barina
+mkdir -p -- "$TMPDIR"
+
 export LANG=C
 
 # tunel from login1 to pcbarina must already exist
@@ -48,6 +51,7 @@ fi
 
 # don't forget git clone git@github.com:xbarin02/collatz.git into $HOME
 SRCDIR=$HOME/collatz/
+MAPDIR=$HOME/collatz-sieve/
 TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
 
 echo "SRCDIR=$SRCDIR"
@@ -61,13 +65,17 @@ cp -r "${SRCDIR}" .
 cd collatz/src
 
 # build mclient & worker
-make -C worker clean all USE_LIBGMP=1 CC=gcc
+make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 SIEVE_LOGSIZE=34 USE_PRECALC=1 USE_SIEVE3=1 USE_ESIEVE=1 USE_LUT50=1
 make -C mclient clean all
+
+pushd $MAPDIR
+./unpack.sh esieve-34.lut50 "$TMP"/collatz/src/worker
+popd
 
 cd mclient
 
-# no limit for mclient; 4 hours minus 100 secs for the worker
-stdbuf -o0 -e0 ./mclient -a 14300 -1 24
+# limit 2 hours for the mclient; 3 hours for worker
+stdbuf -o0 -e0 ./mclient -a 10800 -b 7200 24
 
 popd
 rm -rf -- "$TMP"
