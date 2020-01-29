@@ -5,6 +5,7 @@
 #PBS -m a
 #PBS -q qprod
 #PBS -l select=1:ncpus=16:ompthreads=16,walltime=04:00:00
+#PBS -R eo
 #PBS -A OPEN-16-1
 
 HOME=$HOME
@@ -34,12 +35,6 @@ ml GMP
 
 set -u
 set -e
-
-# check the connection
-if ! ping -c1 -q "${SERVER_NAME}"; then
-	echo "No connection!"
-	exit
-fi
 
 umask 077
 
