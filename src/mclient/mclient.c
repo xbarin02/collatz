@@ -252,17 +252,6 @@ int run_assignment(int tid, uint64_t task_id, uint64_t task_size, uint64_t *p_ov
 	char *basec = strdup(path);
 	char *dname;
 
-#if 0
-	if (alarm_seconds) {
-		if (sprintf(buffer, "./%s -a %lu %" PRIu64, basename(basec), alarm_seconds, task_id) < 0) {
-			return -1;
-		}
-	} else {
-		if (sprintf(buffer, "./%s %" PRIu64, basename(basec), task_id) < 0) {
-			return -1;
-		}
-	}
-#else
 	buffer[0] = 0;
 
 	/* basename */
@@ -291,7 +280,6 @@ int run_assignment(int tid, uint64_t task_id, uint64_t task_size, uint64_t *p_ov
 		}
 		strcat(buffer, temp);
 	}
-#endif
 
 	dname = dirname(dirc);
 
