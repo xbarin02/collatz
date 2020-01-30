@@ -239,7 +239,7 @@ const char *get_task_path(int gpu_mode)
 	return gpu_mode ? taskpath_gpu : taskpath_cpu;
 }
 
-int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, uint64_t *p_usertime, uint64_t *p_checksum, uint64_t *p_mxoffset, uint64_t *p_cycleoff, unsigned long alarm_seconds, int gpu_mode)
+int run_assignment(int tid, uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, uint64_t *p_usertime, uint64_t *p_checksum, uint64_t *p_mxoffset, uint64_t *p_cycleoff, unsigned long alarm_seconds, int gpu_mode)
 {
 	int r;
 	char buffer[4096];
@@ -252,6 +252,7 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, u
 	char *basec = strdup(path);
 	char *dname;
 
+#if 0
 	if (alarm_seconds) {
 		if (sprintf(buffer, "./%s -a %lu %" PRIu64, basename(basec), alarm_seconds, task_id) < 0) {
 			return -1;
@@ -261,6 +262,36 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, u
 			return -1;
 		}
 	}
+#else
+	buffer[0] = 0;
+
+	/* basename */
+	if (1) {
+		char temp[4096];
+		if (sprintf(temp, "./%s", basename(basec)) < 0) {
+			return -1;
+		}
+		strcat(buffer, temp);
+	}
+
+	/* alarm */
+	if (alarm_seconds) {
+		char temp[4096];
+		if (sprintf(temp, " -a %lu", alarm_seconds) < 0) {
+			return -1;
+		}
+		strcat(buffer, temp);
+	}
+
+	/* task_id */
+	if (1) {
+		char temp[4096];
+		if (sprintf(temp, " %" PRIu64, task_id) < 0) {
+			return -1;
+		}
+		strcat(buffer, temp);
+	}
+#endif
 
 	dname = dirname(dirc);
 
@@ -393,7 +424,7 @@ int run_assignment(uint64_t task_id, uint64_t task_size, uint64_t *p_overflow, u
 			message(ERR "overflow occurred!\n");
 			if (gpu_mode == 1) {
 				message(WARN "trying to run on the CPU...\n");
-				if (run_assignment(task_id, task_size, p_overflow, p_usertime, p_checksum, p_mxoffset, p_cycleoff, alarm_seconds, 0) < 0) {
+				if (run_assignment(tid, task_id, task_size, p_overflow, p_usertime, p_checksum, p_mxoffset, p_cycleoff, alarm_seconds, 0) < 0) {
 					message(ERR "even the CPU worker failed!\n");
 					return -1;
 				}
@@ -716,7 +747,7 @@ int run_assignments_in_parallel(int threads, const uint64_t task_id[], const uin
 		mxoffset[tid] = 0;
 		cycleoff[tid] = 0;
 
-		success[tid] = run_assignment(task_id[tid], task_size[tid], overflow+tid, usertime+tid, checksum+tid, mxoffset+tid, cycleoff+tid, alarm_seconds, gpu_mode);
+		success[tid] = run_assignment(tid, task_id[tid], task_size[tid], overflow+tid, usertime+tid, checksum+tid, mxoffset+tid, cycleoff+tid, alarm_seconds, gpu_mode);
 
 		if (success[tid] < 0) {
 			message(ERR "thread %i: run_assignment failed\n", tid);
