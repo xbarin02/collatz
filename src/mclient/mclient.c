@@ -34,6 +34,8 @@ const char *taskpath_gpu = "../gpuworker/gpuworker";
 
 static volatile sig_atomic_t quit = 0;
 
+static int g_force_device_index = 0;
+
 void signal_handler(int i)
 {
 	(void)i;
@@ -267,6 +269,14 @@ int run_assignment(int tid, uint64_t task_id, uint64_t task_size, uint64_t *p_ov
 	if (alarm_seconds) {
 		char temp[4096];
 		if (sprintf(temp, " -a %lu", alarm_seconds) < 0) {
+			return -1;
+		}
+		strcat(buffer, temp);
+	}
+
+	if (gpu_mode && g_force_device_index) {
+		char temp[4096];
+		if (sprintf(temp, " -d %i", tid) < 0) {
 			return -1;
 		}
 		strcat(buffer, temp);
@@ -778,7 +788,7 @@ int main(int argc, char *argv[])
 
 	message(INFO "server to be used: %s\n", servername);
 
-	while ((opt = getopt(argc, argv, "1la:b:g")) != -1) {
+	while ((opt = getopt(argc, argv, "1la:b:gd")) != -1) {
 		switch (opt) {
 			unsigned long seconds;
 			case '1':
@@ -797,6 +807,10 @@ int main(int argc, char *argv[])
 			case 'g':
 				gpu_mode = 1;
 				message(INFO "gpu mode activated!\n");
+				break;
+			case 'd':
+				g_force_device_index = 1;
+				message(INFO "force device index!\n");
 				break;
 			default:
 				message(ERR "Usage: %s [-1] num_threads\n", argv[0]);
