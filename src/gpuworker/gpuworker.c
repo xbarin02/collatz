@@ -191,6 +191,7 @@ const char *errcode_to_cstr(cl_int errcode)
 }
 
 static int g_ocl_ver1 = 0;
+static int g_device_index = 0;
 
 int solve(uint64_t task_id, uint64_t task_size)
 {
@@ -223,7 +224,7 @@ int solve(uint64_t task_id, uint64_t task_size)
 	size_t i;
 
 	int platform_index = 0;
-	int device_index = 0;
+	int device_index = g_device_index;
 
 	/* used by sieve */
 	char path[4096];
@@ -662,7 +663,7 @@ int main(int argc, char *argv[])
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
-	while ((opt = getopt(argc, argv, "t:a:k:1")) != -1) {
+	while ((opt = getopt(argc, argv, "t:a:k:1d:")) != -1) {
 		switch (opt) {
 			unsigned long seconds;
 			case 't':
@@ -677,6 +678,10 @@ int main(int argc, char *argv[])
 				break;
 			case '1':
 				g_ocl_ver1 = 1;
+				break;
+			case 'd':
+				g_device_index = atoi(optarg);
+				printf("[DEBUG] forcing device index = %i\n", g_device_index);
 				break;
 			default:
 				fprintf(stderr, "Usage: %s [-t task_size] task_id\n", argv[0]);
