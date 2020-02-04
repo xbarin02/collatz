@@ -20,7 +20,7 @@ where the `ctz(n)` is the number of trailing zero bits in binary
 representation of `n`.
 
 The sieves can be of two kinds: the power of two and the power of three
-sieves. The sieves *2<sup>32</sup>* and *3<sup>1</sup>* are used in the CPU
+sieves. The sieves *2<sup>34</sup>* and *3<sup>1</sup>* are used in the CPU
 implementation, and the sieves *2<sup>24</sup>* and *3<sup>1</sup>* on the
 GPU.
 
