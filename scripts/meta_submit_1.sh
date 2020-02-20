@@ -4,7 +4,7 @@
 #PBS -M ibarina@fit.vutbr.cz
 #PBS -m a
 #
-#PBS -l select=1:ncpus=1:mem=2gb:scratch_local=1gb:vnode=^zelda3,walltime=4:00:00
+#PBS -l select=1:ncpus=1:mem=2gb:scratch_local=1gb,walltime=4:00:00
 #PBS -R eo
 
 HOME=/storage/brno11-elixir/home/ibarina
@@ -26,8 +26,7 @@ echo "PBS_JOBID=${PBS_JOBID}"
 echo "PBS_O_WORKDIR=${PBS_O_WORKDIR}"
 echo "SCRATCHDIR=$SCRATCHDIR"
 
-type 'clean_scratch' || :
-trap 'clean_scratch' TERM EXIT
+type 'clean_scratch' && trap 'clean_scratch' TERM EXIT || :
 
 module load clang-9.0
 module load gmp
@@ -36,10 +35,10 @@ set -u
 set -e
 
 # check the connection
-if ! ping -c1 -q "${SERVER_NAME}"; then
-	echo "No connection!"
-	exit
-fi
+#if ! ping -c1 -q "${SERVER_NAME}"; then
+#	echo "No connection!"
+#	exit
+#fi
 
 umask 077
 
@@ -80,4 +79,4 @@ stdbuf -o0 -e0 ./mclient -a 10800 -b 7200 1
 popd
 rm -rf -- "$TMP"
 
-clean_scratch
+type clean_scratch && clean_scratch || :

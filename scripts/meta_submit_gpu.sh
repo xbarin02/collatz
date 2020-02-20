@@ -31,8 +31,7 @@ echo "PBS_JOBID=${PBS_JOBID}"
 echo "PBS_O_WORKDIR=${PBS_O_WORKDIR}"
 echo "SCRATCHDIR=$SCRATCHDIR"
 
-type 'clean_scratch' || :
-trap 'clean_scratch' TERM EXIT
+type 'clean_scratch' && trap 'clean_scratch' TERM EXIT || :
 
 module load clang-9.0
 module load gmp
@@ -46,10 +45,10 @@ set -u
 set -e
 
 # check the connection
-if ! ping -c1 -q "${SERVER_NAME}"; then
-	echo "No connection!"
-	exit
-fi
+#if ! ping -c1 -q "${SERVER_NAME}"; then
+#	echo "No connection!"
+#	exit
+#fi
 
 umask 077
 
@@ -91,4 +90,4 @@ popd
 rm -rf -- "$TMP"
 rm -rf -- "${POCL_CACHE_DIR}"
 
-clean_scratch
+type clean_scratch && clean_scratch || :
