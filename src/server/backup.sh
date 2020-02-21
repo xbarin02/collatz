@@ -15,6 +15,6 @@ MAPS=( assigned.map complete.map )
 
 for F in ${MAPS[@]}; do backup $F; done
 
-DATS=( clientids.dat cycleoffs.dat checksums.dat mxoffsets.dat overflows.dat usertimes.dat )
+DATS=( clientids.dat checksums.dat mxoffsets.dat overflows.dat usertimes.dat )
 
 for F in ${DATS[@]}; do backup $F; done
