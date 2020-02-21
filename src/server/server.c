@@ -690,6 +690,7 @@ int main(int argc, char *argv[])
 
 		message(WARN "Invalidating new/buggy/outdated/incomplete/obsolete checksums...\n");
 
+#if 0
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
 
@@ -700,6 +701,7 @@ int main(int argc, char *argv[])
 				SET_INCOMPLETE(n);
 			}
 		}
+#endif
 
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
