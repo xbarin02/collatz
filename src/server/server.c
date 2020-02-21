@@ -198,7 +198,6 @@ uint64_t *g_usertimes;
 uint64_t *g_overflows;
 uint64_t *g_clientids;
 uint64_t *g_mxoffsets;
-uint64_t *g_cycleoffs;
 
 int set_complete(uint64_t n)
 {
@@ -508,8 +507,6 @@ int read_message(int fd, int thread_id, const char *ipv4)
 
 		g_mxoffsets[n] = mxoffset;
 
-		/*g_cycleoffs[n] = cycleoff;*/ /* FIXME to be removed */
-
 		g_clientids[n] = 0;
 	} else if (strcmp(msg, "req") == 0) {
 		/* requested lowest incomplete assignment */
@@ -623,11 +620,10 @@ int main(int argc, char *argv[])
 	int fix_records = 0;
 	int invalidate_overflows = 0;
 	int invalidate_new = 0;
-	int reset_cycles = 0;
 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 
-	while ((opt = getopt(argc, argv, "cfizC")) != -1) {
+	while ((opt = getopt(argc, argv, "cfiz")) != -1) {
 		switch (opt) {
 			case 'c':
 				clear_incomplete_assigned = 1;
@@ -640,9 +636,6 @@ int main(int argc, char *argv[])
 				break;
 			case 'z':
 				invalidate_new = 1;
-				break;
-			case 'C':
-				reset_cycles = 1;
 				break;
 			default:
 				message(ERR "Usage: %s [-c]\n", argv[0]);
@@ -668,7 +661,6 @@ int main(int argc, char *argv[])
 	g_overflows = open_records("overflows.dat");
 	g_clientids = open_records("clientids.dat");
 	g_mxoffsets = open_records("mxoffsets.dat");
-	g_cycleoffs = open_records("cycleoffs.dat");
 
 	if (!IS_COMPLETE(0)) {
 		message(INFO "initializing new search...\n");
@@ -713,10 +705,9 @@ int main(int argc, char *argv[])
 			uint64_t checksum = g_checksums[n];
 			uint64_t usertime = g_usertimes[n];
 			uint64_t mxoffset = g_mxoffsets[n];
-			/*uint64_t cycleoff = g_cycleoffs[n];*/ /* FIXME to be removed */
 
 			if (checksum && (checksum>>24) != 0x17f0f) {
-				if (!usertime || !mxoffset /*|| !cycleoff*/) {
+				if (!usertime || !mxoffset) {
 					printf("- resetting the assignment %" PRIu64 " due to incomplete record\n", n);
 
 					SET_UNASSIGNED(n);
@@ -758,24 +749,6 @@ int main(int argc, char *argv[])
 		}
 
 		message(WARN "These corrections have been made: %" PRIu64 " %" PRIu64 " %" PRIu64 "\n", c0, c1, c2);
-	}
-
-	if (reset_cycles) {
-		uint64_t n;
-		uint64_t c = 0;
-
-		message(WARN "Zeroing all maximum cycle offsets...\n");
-
-		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
-			uint64_t cycleoff = g_cycleoffs[n];
-
-			if (cycleoff != 0) {
-				g_cycleoffs[n] = 0;
-				c++;
-			}
-		}
-
-		message(WARN "All %" PRIu64 " maximum cycle offsets have been zeroed!\n", c);
 	}
 
 	for (g_lowest_unassigned = 0; IS_ASSIGNED(g_lowest_unassigned); ++g_lowest_unassigned)
@@ -874,7 +847,6 @@ int main(int argc, char *argv[])
 	msync(g_overflows, RECORDS_SIZE, MS_SYNC);
 	msync(g_clientids, RECORDS_SIZE, MS_SYNC);
 	msync(g_mxoffsets, RECORDS_SIZE, MS_SYNC);
-	msync(g_cycleoffs, RECORDS_SIZE, MS_SYNC);
 
 	munmap(g_map_assigned, MAP_SIZE);
 	munmap(g_map_complete, MAP_SIZE);
@@ -883,7 +855,6 @@ int main(int argc, char *argv[])
 	munmap(g_overflows, RECORDS_SIZE);
 	munmap(g_clientids, RECORDS_SIZE);
 	munmap(g_mxoffsets, RECORDS_SIZE);
-	munmap(g_cycleoffs, RECORDS_SIZE);
 
 	return 0;
 }
