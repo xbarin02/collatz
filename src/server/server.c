@@ -508,7 +508,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 
 		g_mxoffsets[n] = mxoffset;
 
-		g_cycleoffs[n] = cycleoff;
+		/*g_cycleoffs[n] = cycleoff;*/ /* FIXME to be removed */
 
 		g_clientids[n] = 0;
 	} else if (strcmp(msg, "req") == 0) {
@@ -713,10 +713,10 @@ int main(int argc, char *argv[])
 			uint64_t checksum = g_checksums[n];
 			uint64_t usertime = g_usertimes[n];
 			uint64_t mxoffset = g_mxoffsets[n];
-			uint64_t cycleoff = g_cycleoffs[n];
+			/*uint64_t cycleoff = g_cycleoffs[n];*/ /* FIXME to be removed */
 
 			if (checksum && (checksum>>24) != 0x17f0f) {
-				if (!usertime || !mxoffset || !cycleoff) {
+				if (!usertime || !mxoffset /*|| !cycleoff*/) {
 					printf("- resetting the assignment %" PRIu64 " due to incomplete record\n", n);
 
 					SET_UNASSIGNED(n);
