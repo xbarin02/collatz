@@ -708,7 +708,7 @@ int main(int argc, char *argv[])
 			uint64_t usertime = g_usertimes[n];
 			uint64_t mxoffset = g_mxoffsets[n];
 
-			if (checksum && (checksum>>24) != 0x17f0f) {
+			if (checksum) {
 				if (!usertime || !mxoffset) {
 					printf("- resetting the assignment %" PRIu64 " due to incomplete record\n", n);
 
@@ -720,7 +720,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		message(WARN "invalidated %" PRIu64 " new results without mxoffset\n", c);
+		message(WARN "invalidated %" PRIu64 " results\n", c);
 	}
 
 	/* fix records the *.map and *.dat */
