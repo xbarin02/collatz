@@ -286,8 +286,7 @@ int main(int argc, char *argv[])
 		uint64_t n;
 
 		struct timerec tr_all = timerec_create();
-		struct timerec tr_mod_2_2_short = timerec_create();
-		struct timerec tr_mod_2_2_long = timerec_create();
+		struct timerec tr_mod_2_2 = timerec_create();
 		struct timerec tr_mod_2_16 = timerec_create();
 		struct timerec tr_mod_2_16_e = timerec_create();
 		struct timerec tr_mod_2_24_e = timerec_create();
@@ -307,13 +306,8 @@ int main(int argc, char *argv[])
 				ADD_TIME(tr_all, usertime);
 			}
 
-			/* classical sieve-4 results for both CPU & GPU */
-			if (usertime != 0 && (checksum>>24) == 0x17f0f && usertime < 30*60) {
-				ADD_TIME(tr_mod_2_2_short, usertime);
-			}
-
-			if (usertime != 0 && (checksum>>24) == 0x17f0f && usertime >= 30*60) {
-				ADD_TIME(tr_mod_2_2_long, usertime);
+			if (usertime != 0 && (checksum>>24) == 0x17f0f) {
+				ADD_TIME(tr_mod_2_2, usertime);
 			}
 
 			if (usertime != 0 && (checksum>>24) == 0xa0ed) {
@@ -356,11 +350,8 @@ int main(int argc, char *argv[])
 		printf("all user time records:\n");
 		avg_and_print_usertime(tr_all.total, tr_all.count);
 
-		printf("sieve-2^2 short user time records:\n");
-		tr_mod_2_2_short.avg = avg_and_print_usertime(tr_mod_2_2_short.total, tr_mod_2_2_short.count);
-
-		printf("sieve-2^2 long user time records:\n");
-		tr_mod_2_2_long.avg = avg_and_print_usertime(tr_mod_2_2_long.total, tr_mod_2_2_long.count);
+		printf("sieve-2^2 user time records:\n");
+		tr_mod_2_2.avg = avg_and_print_usertime(tr_mod_2_2.total, tr_mod_2_2.count);
 
 		printf("sieve-2^16 user time records:\n");
 		avg_and_print_usertime(tr_mod_2_16.total, tr_mod_2_16.count);
@@ -385,9 +376,6 @@ int main(int argc, char *argv[])
 
 		printf("esieve-2^34 sieve-3^1 user time records:\n");
 		avg_and_print_usertime(tr_mod_2_34_3_1_e.total, tr_mod_2_34_3_1_e.count);
-
-		printf("speedup (sieve-2^2 long/short) = %" PRIu64 "\n", round_div_ul(tr_mod_2_2_long.avg, tr_mod_2_2_short.avg));
-		printf("\n");
 
 #		undef ADD_TIME
 	}
