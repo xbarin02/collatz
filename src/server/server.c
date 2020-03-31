@@ -797,6 +797,20 @@ int main(int argc, char *argv[])
 		abort();
 	}
 
+	if (1) {
+		struct timeval timeout;
+		timeout.tv_sec = 10;
+		timeout.tv_usec = 0;
+
+		if (setsockopt (fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+			perror("setsockopt failed\n");
+		}
+
+		if (setsockopt (fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
+			perror("setsockopt failed\n");
+		}
+	}
+
 	init_sockaddr(&server_addr, serverport);
 
 	if (bind(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
