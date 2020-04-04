@@ -615,6 +615,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in server_addr;
 	int reuse = 1;
 	struct rlimit rlim;
+	struct timeval timeout;
 	int opt;
 	int clear_incomplete_assigned = 0;
 	int fix_records = 0;
@@ -786,29 +787,26 @@ int main(int argc, char *argv[])
 		abort();
 	}
 
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *)&reuse, (socklen_t)sizeof(reuse)) < 0) {
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&reuse, (socklen_t)sizeof(reuse)) < 0) {
 		perror("setsockopt");
 		abort();
 	}
 
 	/* TCP_NODELAY have to be either enabled or disabled on both sides (server as well as client), not just on one side! */
-	if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (const void *)&reuse, (socklen_t)sizeof(reuse)) < 0) {
+	if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *)&reuse, (socklen_t)sizeof(reuse)) < 0) {
 		perror("setsockopt");
 		abort();
 	}
 
-	if (1) {
-		struct timeval timeout;
-		timeout.tv_sec = 10;
-		timeout.tv_usec = 0;
+	timeout.tv_sec = 10;
+	timeout.tv_usec = 0;
 
-		if (setsockopt (fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
-			perror("setsockopt failed\n");
-		}
+	if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (void *)&timeout, sizeof(timeout)) < 0) {
+		perror("setsockopt failed\n");
+	}
 
-		if (setsockopt (fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0) {
-			perror("setsockopt failed\n");
-		}
+	if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (void *)&timeout, sizeof(timeout)) < 0) {
+		perror("setsockopt failed\n");
 	}
 
 	init_sockaddr(&server_addr, serverport);
