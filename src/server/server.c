@@ -22,6 +22,7 @@
 #include <netinet/tcp.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include "compat.h"
 
 const uint16_t serverport = 5006;
 
@@ -610,6 +611,31 @@ void set_complete_range_from_hercher()
 	}
 }
 
+void set_incomplete_superblock(uint64_t sb)
+{
+	uint64_t n;
+	uint64_t c = 0;
+
+	for (n = (sb + 0) << 20; n < (sb + 1) << 20; ++n) {
+		uint64_t checksum;
+
+		assert(n < ASSIGNMENTS_NO);
+
+		checksum = g_checksums[n];
+
+		if (!checksum) {
+			printf("- resetting the assignment %" PRIu64 " due to user request\n", n);
+#if 1
+			SET_UNASSIGNED(n);
+			SET_INCOMPLETE(n);
+#endif
+			c++;
+		}
+	}
+
+	message(WARN "reset %" PRIu64 " assignments (superblock %" PRIu64 ")\n", c, sb);
+}
+
 int main(int argc, char *argv[])
 {
 	struct sockaddr_in server_addr;
@@ -621,10 +647,12 @@ int main(int argc, char *argv[])
 	int fix_records = 0;
 	int invalidate_overflows = 0;
 	int invalidate_new = 0;
+	int reset_sb = 0;
+	uint64_t sb;
 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 
-	while ((opt = getopt(argc, argv, "cfiz")) != -1) {
+	while ((opt = getopt(argc, argv, "cfizr:")) != -1) {
 		switch (opt) {
 			case 'c':
 				clear_incomplete_assigned = 1;
@@ -637,6 +665,10 @@ int main(int argc, char *argv[])
 				break;
 			case 'z':
 				invalidate_new = 1;
+				break;
+			case 'r':
+				reset_sb = 1;
+				sb = atou64(optarg);
 				break;
 			default:
 				message(ERR "Usage: %s [-c]\n", argv[0]);
@@ -752,6 +784,10 @@ int main(int argc, char *argv[])
 		}
 
 		message(WARN "These corrections have been made: %" PRIu64 " %" PRIu64 " %" PRIu64 "\n", c0, c1, c2);
+	}
+
+	if (reset_sb) {
+		set_incomplete_superblock(sb);
 	}
 
 	for (g_lowest_unassigned = 0; IS_ASSIGNED(g_lowest_unassigned); ++g_lowest_unassigned)
