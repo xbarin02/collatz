@@ -126,7 +126,8 @@ int main()
 
 				mpz_init_set_u128(t_n0, g_max_n0);
 
-				gmp_printf("new maximum: assignment = %" PRIu64 " n0 = %Zi max = %Zi (bitsize %lu)\n", n, t_n0, g_max, (unsigned long)mpz_sizeinbase(g_max, 2));
+				gmp_printf("new maximum: superblock %3" PRIu64 ", assignment %9" PRIu64 ", n0 = %21Zi, max = %Zi (bitsize %lu)\n",
+					n >> 20, n, t_n0, g_max, (unsigned long)mpz_sizeinbase(g_max, 2));
 
 				mpz_clear(t_n0);
 			}
