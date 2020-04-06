@@ -634,10 +634,6 @@ void set_incomplete_superblock(uint64_t sb)
 	}
 
 	message(WARN "reset %" PRIu64 " assignments (superblock %" PRIu64 ")\n", c, sb);
-
-	/* 0 * 2^40 cannot be verified using a sieve */
-	SET_ASSIGNED(0);
-	SET_COMPLETE(0);
 }
 
 int main(int argc, char *argv[])
