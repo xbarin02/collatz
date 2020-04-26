@@ -8,3 +8,4 @@ find-maxima
 *.map
 *.log
 *.dat
+max-report
