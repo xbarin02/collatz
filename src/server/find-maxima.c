@@ -101,8 +101,16 @@ int main()
 #ifdef _USE_GMP
 	mpz_t max;
 #endif
+	FILE *stream;
 
 	init();
+
+	stream = fopen("max-assignments.txt", "w");
+
+	if (stream == NULL) {
+		fprintf(stderr, "Unable to open output file!\n");
+		return 1;
+	}
 
 #ifdef _USE_GMP
 	mpz_init_set_ui(g_max, 0);
@@ -112,7 +120,7 @@ int main()
 	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 		uint64_t mxoffset = g_mxoffsets[n];
 
-		if (mxoffset) {
+		if (mxoffset != 0) {
 			uint128_t n0 = mxoffset + ((uint128_t)n << TASK_SIZE);
 
 #ifdef _USE_GMP
@@ -130,6 +138,8 @@ int main()
 					n >> 20, n, t_n0, g_max, (unsigned long)mpz_sizeinbase(g_max, 2));
 
 				mpz_clear(t_n0);
+
+				fprintf(stream, "%" PRIu64 "\n", n);
 			}
 #else
 			(void)n0;
@@ -137,6 +147,8 @@ int main()
 #endif
 		}
 	}
+
+	fclose(stream);
 
 	return 0;
 }
