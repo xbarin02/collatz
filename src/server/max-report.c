@@ -318,7 +318,7 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
 
 	for (n = n_min; n < n_sup; n += 4) {
-		if (n == 0 || is_live(n)) {
+		if (task_id == 0 || is_live(n)) {
 			check(n, n);
 		}
 	}
