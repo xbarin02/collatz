@@ -9,12 +9,99 @@
 #include <limits.h>
 #include <inttypes.h>
 
+#define USE_SIEVE 1
+#define USE_ESIEVE 1
+#define USE_LUT50 1
+#define SIEVE_LOGSIZE 34
+
+#ifdef USE_SIEVE
+#	include <sys/types.h>
+#	include <sys/stat.h>
+#	include <fcntl.h>
+#	include <sys/mman.h>
+#	include <unistd.h>
+#endif
+
 #include "wideint.h"
 #include "compat.h"
 
 #define TASK_SIZE 40
 
 #define LUT_SIZE64 41
+
+#ifdef USE_LUT50
+static const uint64_t dict[] = {
+	0x0000000000000000,
+	0x0000000000000080,
+	0x0000000008000000,
+	0x0000000008000080,
+	0x0000000080000000,
+	0x0000000088000000,
+	0x0000008000000000,
+	0x0000008000000080,
+	0x0000008008000000,
+	0x0000008008000080,
+	0x0000008080000000,
+	0x0000008088000000,
+	0x0000800000000000,
+	0x0000800000000080,
+	0x0000800008000000,
+	0x0000800008000080,
+	0x0000800080000000,
+	0x0000800088000000,
+	0x0000808000000000,
+	0x0000808000000080,
+	0x0000808008000000,
+	0x0000808008000080,
+	0x0800000000000000,
+	0x0800008000000000,
+	0x0800800000000000,
+	0x0800808000000000,
+	0x8000000000000000,
+	0x8000000000000080,
+	0x8000000008000000,
+	0x8000000008000080,
+	0x8000000080000000,
+	0x8000000088000000,
+	0x8000008000000000,
+	0x8000008000000080,
+	0x8000008008000000,
+	0x8000008008000080,
+	0x8000008080000000,
+	0x8000008088000000,
+	0x8000800000000000,
+	0x8000800000000080,
+	0x8000800008000000,
+	0x8000800008000080,
+	0x8000808000000000,
+	0x8000808000000080,
+	0x8000808008000000,
+	0x8000808008000080,
+	0x8800000000000000,
+	0x8800008000000000,
+	0x8800800000000000,
+	0x8800808000000000
+};
+#endif
+
+#ifdef USE_SIEVE
+#	ifndef SIEVE_LOGSIZE
+#		define SIEVE_LOGSIZE 32
+#	endif
+#	define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
+#	ifdef USE_LUT50
+#		define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8 / 8)
+#		define GET_INDEX(n) (g_map_sieve[((n) & SIEVE_MASK) >> (3+3)])
+#		define IS_LIVE(n) ((dict[GET_INDEX(n)] >> ((n)&63)) & 1)
+#	else
+#		define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8)
+#		define IS_LIVE(n) ((g_map_sieve[ ((n) & SIEVE_MASK)>>3 ] >> (((n) & SIEVE_MASK)&7)) & 1)
+#	endif
+#endif
+
+#ifdef USE_SIEVE
+const unsigned char *g_map_sieve;
+#endif
 
 uint64_t g_lut64[LUT_SIZE64];
 
@@ -213,6 +300,15 @@ void check(uint128_t n, uint128_t n0)
 	} while (1);
 }
 
+int is_live(uint128_t n)
+{
+#ifdef USE_SIEVE
+	return IS_LIVE(n);
+#else
+	return 1;
+#endif
+}
+
 void solve_task(uint64_t task_id, uint64_t task_size)
 {
 	uint128_t n, n_min, n_sup;
@@ -222,8 +318,63 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 	n_sup = ((uint128_t)(task_id + 1) << task_size) + 3;
 
 	for (n = n_min; n < n_sup; n += 4) {
-		check(n, n);
+		if (n == 0 || is_live(n)) {
+			check(n, n);
+		}
 	}
+}
+
+#ifdef USE_SIEVE
+const void *open_map(const char *path, size_t map_size)
+{
+	int fd = open(path, O_RDONLY, 0600);
+	void *ptr;
+
+	if (map_size == 0) {
+		map_size = 1;
+	}
+
+	if (fd < 0) {
+		perror("open");
+		abort();
+	}
+
+	ptr = mmap(NULL, map_size, PROT_READ, MAP_SHARED, fd, 0);
+
+	if (ptr == MAP_FAILED) {
+		perror("mmap");
+		abort();
+	}
+
+	close(fd);
+
+	return ptr;
+}
+#endif
+
+void init()
+{
+#ifdef USE_SIEVE
+	char path[4096];
+	size_t k = SIEVE_LOGSIZE;
+	size_t map_size = SIEVE_SIZE;
+
+#ifdef USE_ESIEVE
+#	ifdef USE_LUT50
+	sprintf(path, "esieve-%lu.lut50.map", (unsigned long)k);
+#	else
+	sprintf(path, "esieve-%lu.map", (unsigned long)k);
+#	endif
+#else
+#	error "Unsupported"
+#endif
+
+	g_map_sieve = open_map(path, map_size);
+#endif
+
+	mpz_init_set_ui(Mx, 0UL);
+
+	init_lut();
 }
 
 int main()
@@ -233,15 +384,13 @@ int main()
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
-	init_lut();
+	init();
 
 	stream = fopen("max-assignments.txt", "r");
 
 	if (stream == NULL) {
 		abort();
 	}
-
-	mpz_init_set_ui(Mx, 0UL);
 
 	printf("<tr><th>#</th><th>N</th><th>Mx(N)</th><th>X<sub>2</sub>(N)</th><th>B(N)</th><th>B(Mx(N))</th></tr>\n");
 
