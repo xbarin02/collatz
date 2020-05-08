@@ -140,6 +140,8 @@ void init_lut()
 
 mpz_t Mx;
 uint128_t g_n0;
+uint128_t g_prev_n0 = 0;
+int g_no = 1;
 
 void Expansion(mpf_t x2, mpz_t N, mpz_t Mx)
 {
@@ -179,6 +181,11 @@ void report()
 	mpf_t x2;
 	mpz_t Mx2; /* 2 * Mx */
 
+	if (g_prev_n0 != g_n0) {
+		g_no++;
+		g_prev_n0 = g_n0;
+	}
+
 	mpz_init_set_u128(N, g_n0);
 	mpf_init(x2);
 	mpz_init(Mx2);
@@ -187,7 +194,7 @@ void report()
 
 	Expansion(x2, N, Mx2);
 
-	gmp_printf("<tr><td></td><td>%Zi</td><td>%Zi</td>", N, Mx2);
+	gmp_printf("<tr><td>%i</td><td>%Zi</td><td>%Zi</td>", g_no, N, Mx2);
 	gmp_printf("<td>%Ff</td>", x2);
 	gmp_printf("<td>%lu</td><td>%lu</td><td>%f</td></tr>\n", (unsigned long)mpz_sizeinbase(N, 2), (unsigned long)mpz_sizeinbase(Mx2, 2), mpz_log2(Mx2) / mpz_log2(N));
 
