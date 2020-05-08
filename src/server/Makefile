@@ -8,6 +8,10 @@ ifeq ($(USE_LIBGMP), 1)
 	LDLIBS+=-lgmp
 endif
 
+ifeq ($(USE_LIBM), 1)
+	LDLIBS+=-lm
+endif
+
 CFLAGS+=$(EXTRA_CFLAGS)
 LDFLAGS+=$(EXTRA_LDFLAGS)
 LDLIBS+=$(EXTRA_LDLIBS)

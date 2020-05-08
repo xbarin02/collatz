@@ -22,6 +22,8 @@
 #	include <unistd.h>
 #endif
 
+#include <math.h>
+
 #include "wideint.h"
 #include "compat.h"
 
@@ -163,6 +165,14 @@ void Expansion(mpf_t x2, mpz_t N, mpz_t Mx)
 	mpz_clear(N_square);
 }
 
+double mpz_log2(const mpz_t op)
+{
+	signed long int exp;
+	double d = mpz_get_d_2exp(&exp, op);
+
+	return log2((double)d) + (double)exp;
+}
+
 void report()
 {
 	mpz_t N;
@@ -177,9 +187,9 @@ void report()
 
 	Expansion(x2, N, Mx2);
 
-	gmp_printf("<tr><td>%Zi</td><td>%Zi</td>", N, Mx2);
+	gmp_printf("<tr><td></td><td>%Zi</td><td>%Zi</td>", N, Mx2);
 	gmp_printf("<td>%Ff</td>", x2);
-	gmp_printf("<td>%lu</td><td>%lu</td></tr>\n", (unsigned long)mpz_sizeinbase(N, 2), (unsigned long)mpz_sizeinbase(Mx2, 2));
+	gmp_printf("<td>%lu</td><td>%lu</td><td>%f</td></tr>\n", (unsigned long)mpz_sizeinbase(N, 2), (unsigned long)mpz_sizeinbase(Mx2, 2), mpz_log2(Mx2) / mpz_log2(N));
 
 	mpz_clear(N);
 	mpf_clear(x2);
@@ -392,7 +402,7 @@ int main()
 		abort();
 	}
 
-	printf("<tr><th>#</th><th>N</th><th>Mx(N)</th><th>X<sub>2</sub>(N)</th><th>B(N)</th><th>B(Mx(N))</th></tr>\n");
+	printf("<tr><th>#</th><th>N</th><th>Mx(N)</th><th>X<sub>2</sub>(N)</th><th>B(N)</th><th>B(Mx(N))</th><th>r</th></tr>\n");
 
 	/* for each assignment in the text file */
 	while (fscanf(stream, "%" SCNu64, &n) == 1) {
