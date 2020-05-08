@@ -624,7 +624,9 @@ void set_incomplete_superblock(uint64_t sb)
 		checksum = g_checksums[n];
 
 		if (!checksum) {
+#if 0
 			printf("- resetting the assignment %" PRIu64 " due to user request\n", n);
+#endif
 #if 1
 			SET_UNASSIGNED(n);
 			SET_INCOMPLETE(n);
