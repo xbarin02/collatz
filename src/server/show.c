@@ -23,7 +23,7 @@ void report(mpz_t n)
 	mpz_init(a);
 
 	printf("<table>\n");
-	printf("<tr><th>#</th><th>$n$</th></tr>\n");
+	printf("<tr><th>#</th><th>$n$</th><th>$(\\alpha, \\beta)$</th></tr>\n");
 
 	do {
 		mp_bitcnt_t alpha, beta;
@@ -39,7 +39,8 @@ void report(mpz_t n)
 		beta = mpz_ctz(n);
 		mpz_fdiv_q_2exp(n, n, beta);
 
-		gmp_printf("<tr><td>%i</td><td>%Zi</td></tr>\n", ++i, n);
+		assert(beta <= ULONG_MAX);
+		gmp_printf("<tr><td>%i</td><td>%Zi</td><td>$(%lu, %lu)$</td></tr>\n", ++i, n, alpha, beta);
 	} while (mpz_cmp_ui(n, 1UL) != 0);
 
 	printf("</table>\n");
