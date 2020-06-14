@@ -27,6 +27,7 @@ void mpz_get_maximum(mpz_t max, const mpz_t n0)
 			/* odd step */
 			mpz_mul_ui(n, n, 3UL);
 			mpz_add_ui(n, n, 1UL);
+			mpz_fdiv_q_ui(n, n, 2UL);
 		} else {
 			/* even step */
 			mpz_fdiv_q_ui(n, n, 2UL);
