@@ -19,6 +19,7 @@ void report(mpz_t n)
 {
 	int i = 0;
 	mpz_t a;
+	mp_bitcnt_t Salpha = 0, Sbeta = 0;
 
 	mpz_init(a);
 
@@ -30,6 +31,7 @@ void report(mpz_t n)
 
 		mpz_add_ui(n, n, 1UL);
 		alpha = mpz_ctz(n);
+		Salpha += alpha;
 		mpz_fdiv_q_2exp(n, n, alpha);
 		assert(alpha <= ULONG_MAX);
 		mpz_pow3(a, (unsigned long)alpha);
@@ -37,13 +39,21 @@ void report(mpz_t n)
 
 		mpz_sub_ui(n, n, 1UL);
 		beta = mpz_ctz(n);
+		Sbeta += beta;
 		mpz_fdiv_q_2exp(n, n, beta);
 
 		assert(beta <= ULONG_MAX);
-		gmp_printf("<tr><td>%i</td><td>%Zi</td><td>$(%lu, %lu)$</td></tr>\n", ++i, n, alpha, beta);
+		gmp_printf("<tr><td>%i</td><td>%Zi</td><td>$(%lu, %lu)$</td></tr>\n", ++i, n, (unsigned long)alpha, (unsigned long)beta);
 	} while (mpz_cmp_ui(n, 1UL) != 0);
 
 	printf("</table>\n");
+
+	printf("<ul>\n");
+	printf("<li>Cycles: %i\n", i);
+	printf("<li>Steps: %lu\n", (unsigned long)(Salpha + Sbeta));
+	printf("<li>Odd steps: %lu\n", (unsigned long)Salpha);
+	printf("<li>Even steps: %lu\n", (unsigned long)Sbeta);
+	printf("</ul>\n");
 
 	mpz_clear(a);
 }
