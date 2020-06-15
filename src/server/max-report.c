@@ -190,12 +190,18 @@ void report()
 	mpf_init(x2);
 	mpz_init(Mx2);
 
+#if 0
 	mpz_mul_ui(Mx2, Mx, 2UL);
+#else
+	mpz_mul_ui(Mx2, Mx, 1UL);
+#endif
 
 	Expansion(x2, N, Mx2);
 
 	gmp_printf("<tr><td>%i</td><td>%Zi</td><td>%Zi</td>", g_no, N, Mx2);
+#if 0
 	gmp_printf("<td>%Ff</td>", x2);
+#endif
 	gmp_printf("<td>%lu</td><td>%lu</td><td>%f</td></tr>\n", (unsigned long)mpz_sizeinbase(N, 2), (unsigned long)mpz_sizeinbase(Mx2, 2), mpz_log2(Mx2) / mpz_log2(N));
 
 	mpz_clear(N);
@@ -409,7 +415,11 @@ int main()
 		abort();
 	}
 
-	printf("<tr><th>#</th><th>N</th><th>Mx(N)</th><th>X<sub>2</sub>(N)</th><th>B(N)</th><th>B(Mx(N))</th><th>r</th></tr>\n");
+	printf("<tr><th>#</th><th>N</th><th>Mx(N)</th>");
+#if 0
+	printf("<th>X<sub>2</sub>(N)</th>");
+#endif
+	printf("<th>B(N)</th><th>B(Mx(N))</th><th>r</th></tr>\n");
 
 	/* for each assignment in the text file */
 	while (fscanf(stream, "%" SCNu64, &n) == 1) {
