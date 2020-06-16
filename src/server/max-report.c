@@ -181,10 +181,7 @@ void report()
 	mpf_t x2;
 	mpz_t Mx2; /* 2 * Mx */
 
-	if (g_prev_n0 != g_n0) {
-		g_no++;
-		g_prev_n0 = g_n0;
-	}
+	g_no++;
 
 	mpz_init_set_u128(N, g_n0);
 	mpf_init(x2);
@@ -240,7 +237,6 @@ void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 		if (mpz_cmp(n, Mx) > 0) {
 			mpz_set(Mx, n);
 			g_n0 = n0_;
-			report();
 		}
 
 		beta = mpz_ctz(n);
@@ -307,7 +303,6 @@ void check(uint128_t n, uint128_t n0)
 		if (mpz_cmp(mpz_n, Mx) > 0) {
 			mpz_set(Mx, mpz_n);
 			g_n0 = n0;
-			report();
 		}
 		mpz_clear(mpz_n);
 
@@ -343,6 +338,11 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 	for (n = n_min; n < n_sup; n += 4) {
 		if (task_id == 0 || is_live(n)) {
 			check(n, n);
+
+			if (g_n0 != g_prev_n0) {
+				report();
+				g_prev_n0 = g_n0;
+			}
 		}
 	}
 }
