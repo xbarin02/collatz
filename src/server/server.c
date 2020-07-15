@@ -616,7 +616,7 @@ void set_incomplete_superblock(uint64_t sb)
 	uint64_t n;
 	uint64_t c = 0;
 
-	for (n = (sb + 0) << 20; n < (sb + 1) << 20; ++n) {
+	for (n = 0; n < (sb + 1) << 20; ++n) {
 		uint64_t checksum;
 
 		assert(n < ASSIGNMENTS_NO);
