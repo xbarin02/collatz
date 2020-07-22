@@ -15,3 +15,7 @@ David Barina <ibarina@fit.vutbr.cz>
 
 ## License
 This project is licensed under the terms of the [MIT license](LICENSE.md).
+
+## References
+
+- Barina, D. Convergence verification of the Collatz problem. _J Supercomput_ (2020). https://doi.org/10.1007/s11227-020-03368-x
