@@ -732,7 +732,7 @@ int main(int argc, char *argv[])
 
 	printf("MAXIMUM_OFFSET %" PRIu64 "\n", (uint64_t)(g_max_n0 - ((uint128_t)(task_id + 0) << task_size)));
 
-	printf("MAXIMUM_CYCLE_OFFSET %" PRIu64 "\n", (uint64_t)0);
+	printf("MAXIMUM_CYCLE_OFFSET %" PRIu64 "\n", UINT64_C(0));
 
 	printf("HALTED\n");
 
