@@ -1,4 +1,4 @@
-CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -D_XOPEN_SOURCE=500
+CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -D_XOPEN_SOURCE=500 -DCL_TARGET_OPENCL_VERSION=220
 LDFLAGS+=
 LDLIBS+=-lOpenCL
 BINS=gpuworker
