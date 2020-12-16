@@ -351,7 +351,7 @@ next_platform:
 		}
 #endif
 
-		command_queue = clCreateCommandQueue(context, device_id[device_index], 0, &ret);
+		command_queue = clCreateCommandQueueWithProperties(context, device_id[device_index], NULL, &ret);
 
 		if (ret != CL_SUCCESS) {
 			printf("[ERROR] clCreateCommandQueue failed\n");
