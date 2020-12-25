@@ -10,6 +10,8 @@
 #$ -t 1-100000
 #$ -p -1023
 #$ -pe smp 2
+#$ -l hostname=!PCO204-10
+#$ -l gpu=1
 
 HOME=$HOME
 
