@@ -111,6 +111,23 @@ static int is_live_in_sieve3(uint128_t n)
 }
 #endif
 
+#ifdef USE_SIEVE9
+static int is_live_in_sieve9(uint128_t n)
+{
+	ulong r = 0;
+
+	r += (uint)(n);
+	r += (uint)(n >> 32) * 4;
+	r += (uint)(n >> 64) * 7;
+	r += (uint)(n >> 96);
+
+	r = r % 9;
+
+	/* n is not {2, 4, 5, 8} (mod 9) */
+	return r != 2 && r != 4 && r != 5 && r != 8;
+}
+#endif
+
 __kernel void worker(
 	__global ulong *checksum_alpha,
 	ulong task_id,
@@ -219,7 +236,7 @@ lcalc:
 		{
 			R = Salpha + Sbeta; /* R-LSbits have been precalculated above */
 
-#ifndef USE_SIEVE3
+#if !defined(USE_SIEVE3) && !defined(USE_SIEVE9)
 			private_checksum_alpha += Salpha << (task_size - R);
 #endif
 
@@ -231,6 +248,13 @@ lcalc:
 
 #ifdef USE_SIEVE3
 				if (!is_live_in_sieve3(N0)) {
+					continue;
+				}
+
+				private_checksum_alpha += Salpha;
+#endif
+#ifdef USE_SIEVE9
+				if (!is_live_in_sieve9(N0)) {
 					continue;
 				}
 
