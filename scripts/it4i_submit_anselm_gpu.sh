@@ -6,7 +6,7 @@
 #PBS -q qnvidia
 #PBS -l walltime=04:00:00
 #PBS -R eo
-#PBS -A OPEN-16-1
+#PBS -A OPEN-18-7
 
 HOME=$HOME
 
