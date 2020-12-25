@@ -6,7 +6,7 @@
 #PBS -q qprod
 #PBS -l select=1:ncpus=24:ompthreads=24,walltime=04:00:00
 #PBS -R eo
-#PBS -A OPEN-16-1
+#PBS -A OPEN-18-7
 
 HOME=$HOME
 
