@@ -3,9 +3,10 @@ chk-tool
 verify-result
 path
 find-maxima
+max-report
+show
 *~
 *.gcda
 *.map
 *.log
 *.dat
-max-report
