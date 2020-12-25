@@ -87,6 +87,23 @@ static int is_live_in_sieve3(uint128_t n)
 }
 #endif
 
+#ifdef USE_SIEVE9
+static int is_live_in_sieve9(uint128_t n)
+{
+	ulong r = 0;
+
+	r += (uint)(n);
+	r += (uint)(n >> 32) * 4;
+	r += (uint)(n >> 64) * 7;
+	r += (uint)(n >> 96);
+
+	r = r % 9;
+
+	/* n is not {2, 4, 5, 8} (mod 9) */
+	return r != 2 && r != 4 && r != 5 && r != 8;
+}
+#endif
+
 #define LUT_SIZE32 21
 
 #ifndef USE_LOCAL_SIEVE
@@ -175,6 +192,9 @@ __kernel void worker(
 		while (!IS_LIVE(n0)
 #ifdef USE_SIEVE3
 		        || !is_live_in_sieve3(n0)
+#endif
+#ifdef USE_SIEVE9
+		        || !is_live_in_sieve9(n0)
 #endif
 		) {
 			n0 += 4;

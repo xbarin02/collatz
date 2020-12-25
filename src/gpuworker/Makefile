@@ -26,6 +26,10 @@ ifeq ($(USE_SIEVE3), 1)
 	CFLAGS+=-DUSE_SIEVE3
 endif
 
+ifeq ($(USE_SIEVE9), 1)
+	CFLAGS+=-DUSE_SIEVE9
+endif
+
 ifeq ($(USE_LUT50), 1)
         CFLAGS+=-DUSE_LUT50
 endif

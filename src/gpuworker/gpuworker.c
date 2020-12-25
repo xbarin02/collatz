@@ -387,6 +387,8 @@ next_platform:
 			SIEVE_LOGSIZE > 16 ? 0 : 1,
 #ifdef USE_SIEVE3
 			"-D USE_SIEVE3",
+#elif defined(USE_SIEVE9)
+			"-D USE_SIEVE9",
 #else
 			"",
 #endif
