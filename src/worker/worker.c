@@ -307,11 +307,29 @@ static int is_live_in_sieve3(uint128_t n)
 }
 #endif
 
+#ifdef USE_SIEVE9
+HOT
+static int is_live_in_sieve9(uint128_t n)
+{
+	uint64_t r = 0;
+
+	r += (uint32_t)(n);
+	r += (uint32_t)(n >> 32) * 4;
+	r += (uint32_t)(n >> 64) * 7;
+	r += (uint32_t)(n >> 96);
+
+	r = r % 9;
+
+	/* n is not {2, 4, 5, 8} (mod 9) */
+	return r != 2 && r != 4 && r != 5 && r != 8;
+}
+#endif
+
 static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint64_t L, int Salpha)
 {
 	uint128_t h;
 
-#ifndef USE_SIEVE3
+#if !defined(USE_SIEVE3) && !defined(USE_SIEVE9)
 	g_checksum_alpha += Salpha << (task_size - R0);
 #endif
 
@@ -322,6 +340,13 @@ static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint
 
 #ifdef USE_SIEVE3
 		if (!is_live_in_sieve3(N0)) {
+			continue;
+		}
+
+		g_checksum_alpha += Salpha;
+#endif
+#ifdef USE_SIEVE9
+		if (!is_live_in_sieve9(N0)) {
 			continue;
 		}
 
@@ -598,6 +623,9 @@ void solve_task(uint64_t task_id, uint64_t task_size)
 #	endif
 #	ifdef USE_SIEVE3
 		      && is_live_in_sieve3(n)
+#	endif
+#	ifdef USE_SIEVE9
+		      && is_live_in_sieve9(n)
 #	endif
 		) {
 			check(n, n);
