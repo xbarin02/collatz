@@ -132,6 +132,7 @@ __kernel void worker(
 	size_t id = get_global_id(0);
 
 	__local uint lut[LUT_SIZE32];
+	__local uint128_t max_ns[LUT_SIZE32];
 
 #if (USE_LOCAL_SIEVE == 1)
 	__local uchar local_sieve[SIEVE_SIZE];
@@ -152,6 +153,7 @@ __kernel void worker(
 	if (get_local_id(0) == 0) {
 		for (size_t i = 0; i < LUT_SIZE32; ++i) {
 			lut[i] = pow3(i);
+			max_ns[i] = UINT128_MAX >> 2*i;
 		}
 
 #if (USE_LOCAL_SIEVE == 1)
@@ -191,7 +193,7 @@ __kernel void worker(
 			private_checksum_alpha += alpha;
 			n >>= alpha;
 
-			if (n > UINT128_MAX >> 2*alpha) {
+			if (n > max_ns[alpha]) {
 				private_checksum_alpha = 0;
 				goto end;
 			}
