@@ -2,7 +2,7 @@
 #PBS -N collatzgpu
 #PBS -S /bin/bash
 #PBS -M ibarina@fit.vutbr.cz
-#PBS -m a
+#PBS -m n
 #
 #PBS -q gpu
 #PBS -l select=1:ncpus=1:ngpus=1:mem=2gb:scratch_local=2gb,walltime=4:00:00
