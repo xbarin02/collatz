@@ -314,8 +314,8 @@ static int is_live_in_sieve9(uint128_t n)
 	uint64_t r = 0;
 
 	r += (uint32_t)(n);
-	r += (uint32_t)(n >> 32) * 4;
-	r += (uint32_t)(n >> 64) * 7;
+	r += (uint32_t)(n >> 32) * (uint64_t)4;
+	r += (uint32_t)(n >> 64) * (uint64_t)7;
 	r += (uint32_t)(n >> 96);
 
 	r = r % 9;
