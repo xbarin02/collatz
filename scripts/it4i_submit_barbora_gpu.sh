@@ -6,11 +6,11 @@
 #PBS -q qnvidia
 #PBS -l walltime=04:00:00
 #PBS -R eo
-#PBS -A OPEN-16-1
+#PBS -A OPEN-18-7
 
 HOME=$HOME
 
-TMPDIR=/scratch/project/open-16-1
+TMPDIR=/scratch/project/open-18-7
 mkdir -p -- "$TMPDIR"
 
 export POCL_CACHE_DIR=${TMPDIR}/kcache
@@ -68,8 +68,8 @@ cp -r "${SRCDIR}" .
 cd collatz/src
 
 # build mclient & gpuworker
-make -C gpuworker clean all CC=gcc USE_ESIEVE=1 SIEVE_LOGSIZE=24 USE_SIEVE3=1
-make -C mclient clean all
+make -C gpuworker clean all CC=gcc USE_ESIEVE=1 SIEVE_LOGSIZE=24 USE_SIEVE3=1 LDFLAGS='-fuse-ld=bfd'
+make -C mclient clean all LDFLAGS='-fuse-ld=bfd'
 
 pushd $MAPDIR
 ./unpack.sh esieve-24 $TMP/collatz/src/gpuworker
