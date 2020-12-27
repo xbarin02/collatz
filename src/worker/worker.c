@@ -116,6 +116,8 @@ const unsigned char *g_map_sieve;
 
 uint64_t g_lut64[LUT_SIZE64];
 
+uint128_t g_max_ns[LUT_SIZE64];
+
 static uint64_t g_checksum_alpha = 0;
 static uint64_t g_overflow_counter = 0;
 
@@ -134,6 +136,8 @@ void init_lut()
 
 	for (a = 0; a < LUT_SIZE64; ++a) {
 		g_lut64[a] = pow3u64((uint64_t)a);
+
+		g_max_ns[a] = UINT128_MAX >> 2*a;
 	}
 }
 
@@ -263,7 +267,7 @@ void check(uint128_t n, uint128_t n0)
 
 			n >>= alpha;
 
-			if (n > UINT128_MAX >> 2*alpha) {
+			if (n > g_max_ns[alpha]) {
 				mpz_check2(n0, n, alpha);
 				return;
 			}
