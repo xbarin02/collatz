@@ -151,6 +151,7 @@ char *load_source(size_t *size)
 	str = malloc(1<<20);
 
 	if (str == NULL) {
+		fclose(fp);
 		return NULL;
 	}
 
