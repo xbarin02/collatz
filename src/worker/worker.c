@@ -140,7 +140,11 @@ void init_lut()
 
 		g_max_ns[alpha] = UINT128_MAX >> 2*alpha;
 
-		g_max_ns_ul[alpha] = UINT64_MAX >> 2*alpha;
+		if (2*alpha < 64) {
+			g_max_ns_ul[alpha] = UINT64_MAX >> 2*alpha;
+		} else {
+			g_max_ns_ul[alpha] = 0;
+		}
 	}
 }
 
@@ -387,6 +391,11 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 				alpha = R;
 			}
 
+			/* The behavior is undefined if the right operand is [...] greater than or equal to the length in bits of the [...] left operand */
+			if (alpha == 64) {
+				alpha = 63;
+			}
+
 			R -= alpha;
 			Salpha += alpha;
 
@@ -418,6 +427,11 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 
 			if (beta > R) {
 				beta = R;
+			}
+
+			/* The behavior is undefined if the right operand is [...] greater than or equal to the length in bits of the [...] left operand */
+			if (beta == 64) {
+				beta = 63;
 			}
 
 			R -= beta;
