@@ -300,6 +300,7 @@ next_platform:
 	ret = clGetDeviceIDs(platform_id[platform_index], CL_DEVICE_TYPE_GPU, num_devices, &device_id[0], NULL);
 
 	if (ret != CL_SUCCESS) {
+		free(device_id);
 		return -1;
 	}
 
@@ -647,6 +648,8 @@ next_platform:
 	}
 
 	printf("NO_GPU_FOUND\n");
+
+	free(device_id);
 
 	return -1;
 
