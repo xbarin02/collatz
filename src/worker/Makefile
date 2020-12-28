@@ -37,6 +37,11 @@ ifndef $(SIEVE_LOGSIZE)
 endif
 CFLAGS+=-DSIEVE_LOGSIZE=$(SIEVE_LOGSIZE)
 
+ifeq ($(DEBUG), 1)
+        CFLAGS+=-Og -g -DDEBUG
+        LDLIBS+=-rdynamic
+endif
+
 CFLAGS+=$(EXTRA_CFLAGS)
 LDFLAGS+=$(EXTRA_LDFLAGS)
 LDLIBS+=$(EXTRA_LDLIBS)
