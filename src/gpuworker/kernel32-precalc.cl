@@ -142,6 +142,7 @@ __kernel void worker(
 
 	__local uint lut[LUT_SIZE32];
 	__local uint128_t max_ns[LUT_SIZE32];
+	__local ulong max_ns_ul[LUT_SIZE32];
 
 #ifdef USE_LUT50
 	__local ulong l_dict[50];
@@ -156,9 +157,10 @@ __kernel void worker(
 #endif
 
 	if (get_local_id(0) == 0) {
-		for (size_t i = 0; i < LUT_SIZE32; ++i) {
-			lut[i] = pow3(i);
-			max_ns[i] = UINT128_MAX >> 2*i;
+		for (size_t alpha = 0; alpha < LUT_SIZE32; ++alpha) {
+			lut[alpha] = pow3(alpha);
+			max_ns[alpha] = UINT128_MAX >> 2*alpha;
+			max_ns_ul[alpha] = ~0UL >> 2*alpha;
 		}
 	}
 
@@ -187,6 +189,8 @@ __kernel void worker(
 			continue;
 		}
 
+		barrier(CLK_LOCAL_MEM_FENCE);
+
 		/* precalc(n0) */
 
 		int R = SIEVE_LOGSIZE; /* copy since we need to decrement it */
@@ -203,7 +207,7 @@ __kernel void worker(
 				R -= alpha;
 				Salpha += alpha;
 				L >>= alpha;
-				if (L > ~0UL >> 2*alpha) {
+				if (L > max_ns_ul[alpha]) {
 					private_checksum_alpha = 0;
 					goto end;
 				}
