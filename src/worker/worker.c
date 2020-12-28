@@ -117,6 +117,7 @@ const unsigned char *g_map_sieve;
 uint64_t g_lut64[LUT_SIZE64];
 
 uint128_t g_max_ns[LUT_SIZE64];
+unsigned long g_max_ns_ul[LUT_SIZE64];
 
 static uint64_t g_checksum_alpha = 0;
 static uint64_t g_overflow_counter = 0;
@@ -132,12 +133,14 @@ static void mpz_pow3(mpz_t r, unsigned long n)
 /* init lookup table */
 void init_lut()
 {
-	int a;
+	int alpha;
 
-	for (a = 0; a < LUT_SIZE64; ++a) {
-		g_lut64[a] = pow3u64((uint64_t)a);
+	for (alpha = 0; alpha < LUT_SIZE64; ++alpha) {
+		g_lut64[alpha] = pow3u64((uint64_t)alpha);
 
-		g_max_ns[a] = UINT128_MAX >> 2*a;
+		g_max_ns[alpha] = UINT128_MAX >> 2*alpha;
+
+		g_max_ns_ul[alpha] = UINT64_MAX >> 2*alpha;
 	}
 }
 
@@ -389,7 +392,7 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 
 			L >>= alpha;
 
-			assert(L <= UINT64_MAX >> 2*alpha || L <= UINT64_MAX / g_lut64[alpha]);
+			assert(L <= g_max_ns_ul[alpha] || L <= UINT64_MAX / g_lut64[alpha]);
 
 			L *= g_lut64[alpha];
 
