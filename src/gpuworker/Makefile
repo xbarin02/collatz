@@ -18,10 +18,6 @@ ifeq ($(USE_LIBGMP), 1)
 	LDLIBS+=-lgmp
 endif
 
-ifeq ($(USE_ESIEVE), 1)
-	CFLAGS+=-DUSE_ESIEVE
-endif
-
 ifeq ($(USE_SIEVE3), 1)
 	CFLAGS+=-DUSE_SIEVE3
 endif

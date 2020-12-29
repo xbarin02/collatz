@@ -20,10 +20,6 @@
 #include "wideint.h"
 #include "compat.h"
 
-#if defined(USE_LUT50) && !defined(USE_ESIEVE)
-#       error Unsupported configuration
-#endif
-
 /* in log2 */
 #define TASK_SIZE 40
 
@@ -504,14 +500,10 @@ next_platform:
 
 		assert(task_units + 2 <= task_size);
 
-#ifdef USE_ESIEVE
-#	ifdef USE_LUT50
+#ifdef USE_LUT50
 		sprintf(path, "esieve-%lu.lut50.map", (unsigned long)k);
-#	else
-		sprintf(path, "esieve-%lu.map", (unsigned long)k);
-#	endif
 #else
-		sprintf(path, "sieve-%lu.map", (unsigned long)k);
+		sprintf(path, "esieve-%lu.map", (unsigned long)k);
 #endif
 
 		/* allocate memory for sieve & load sieve */

@@ -32,10 +32,6 @@
 #	error Unsupported configuration
 #endif
 
-#if defined(USE_LUT50) && !defined(USE_ESIEVE)
-#	error Unsupported configuration
-#endif
-
 #ifdef USE_LUT50
 static const uint64_t dict[] = {
 	0x0000000000000000,
@@ -561,14 +557,10 @@ void init()
 	size_t k = SIEVE_LOGSIZE;
 	size_t map_size = SIEVE_SIZE;
 
-#ifdef USE_ESIEVE
-#	ifdef USE_LUT50
+#ifdef USE_LUT50
 	sprintf(path, "esieve-%lu.lut50.map", (unsigned long)k);
-#	else
-	sprintf(path, "esieve-%lu.map", (unsigned long)k);
-#	endif
 #else
-	sprintf(path, "sieve-%lu.map", (unsigned long)k);
+	sprintf(path, "esieve-%lu.map", (unsigned long)k);
 #endif
 
 	g_map_sieve = open_map(path, map_size);
