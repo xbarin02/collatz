@@ -138,10 +138,10 @@ void init_lut()
 	for (alpha = 0; alpha < LUT_SIZE64; ++alpha) {
 		g_lut64[alpha] = pow3u64((uint64_t)alpha);
 
-		g_max_ns[alpha] = UINT128_MAX >> 2*alpha;
+		g_max_ns[alpha] = UINT128_MAX >> 2 * alpha;
 
-		if (2*alpha < 64) {
-			g_max_ns_ul[alpha] = UINT64_MAX >> 2*alpha;
+		if (2 * alpha < 64) {
+			g_max_ns_ul[alpha] = UINT64_MAX >> 2 * alpha;
 		} else {
 			g_max_ns_ul[alpha] = 0;
 		}
@@ -159,7 +159,7 @@ static mp_bitcnt_t mpz_ctz(const mpz_t n)
 #ifdef _USE_GMP
 void mpz_init_set_u128(mpz_t rop, uint128_t op)
 {
-	uint64_t nh = (uint64_t)(op>>64);
+	uint64_t nh = (uint64_t)(op >> 64);
 	uint64_t nl = (uint64_t)(op);
 
 	assert(sizeof(unsigned long) == sizeof(uint64_t));
@@ -532,10 +532,10 @@ void report_prologue(uint64_t task_id, uint64_t task_size)
 	printf("TASK_ID %" PRIu64 "\n", task_id);
 
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
-		(uint64_t)(((uint128_t)(task_id + 0) << task_size)>>64),
-		(uint64_t)(((uint128_t)(task_id + 0) << task_size)    ),
-		(uint64_t)(((uint128_t)(task_id + 1) << task_size)>>64),
-		(uint64_t)(((uint128_t)(task_id + 1) << task_size)    )
+		(uint64_t)(((uint128_t)(task_id + 0) << task_size) >> 64),
+		(uint64_t)(((uint128_t)(task_id + 0) << task_size)      ),
+		(uint64_t)(((uint128_t)(task_id + 1) << task_size) >> 64),
+		(uint64_t)(((uint128_t)(task_id + 1) << task_size)      )
 	);
 }
 
@@ -549,7 +549,7 @@ void report_epilogue(uint64_t task_id, uint64_t task_size)
 
 	report_maximum(task_id, task_size);
 
-	printf("MAXIMUM_CYCLE_OFFSET %" PRIu64 "\n", (uint64_t)0);
+	printf("MAXIMUM_CYCLE_OFFSET %" PRIu64 "\n", UINT64_C(0));
 
 	printf("HALTED\n");
 }

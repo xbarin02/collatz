@@ -148,14 +148,14 @@ char *load_source(size_t *size)
 		return NULL;
 	}
 
-	str = malloc(1<<20);
+	str = malloc(1 << 20);
 
 	if (str == NULL) {
 		fclose(fp);
 		return NULL;
 	}
 
-	*size = fread(str, 1, 1<<20, fp);
+	*size = fread(str, 1, 1 << 20, fp);
 
 	fclose(fp);
 
@@ -242,10 +242,10 @@ int solve(uint64_t task_id, uint64_t task_size)
 
 	/* informative */
 	printf("RANGE 0x%016" PRIx64 ":%016" PRIx64 " 0x%016" PRIx64 ":%016" PRIx64 "\n",
-		(uint64_t)(((uint128_t)(task_id + 0) << task_size)>>64),
-		(uint64_t)(((uint128_t)(task_id + 0) << task_size)    ),
-		(uint64_t)(((uint128_t)(task_id + 1) << task_size)>>64),
-		(uint64_t)(((uint128_t)(task_id + 1) << task_size)    )
+		(uint64_t)(((uint128_t)(task_id + 0) << task_size) >> 64),
+		(uint64_t)(((uint128_t)(task_id + 0) << task_size)      ),
+		(uint64_t)(((uint128_t)(task_id + 1) << task_size) >> 64),
+		(uint64_t)(((uint128_t)(task_id + 1) << task_size)      )
 	);
 
 	ret = clGetPlatformIDs(0, NULL, &num_platforms);
