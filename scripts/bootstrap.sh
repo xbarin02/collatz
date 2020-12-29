@@ -25,7 +25,7 @@ fi
 umask 077
 
 CC=gcc
-if type clang > /dev/null 2> /dev/null && clang --version | grep -q "version [89]"; then
+if type clang > /dev/null 2> /dev/null && clang --version | grep -qE "version (8|9|10|11)"; then
         echo "INFO: clang available"
         CC=clang
 fi
