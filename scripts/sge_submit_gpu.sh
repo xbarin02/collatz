@@ -61,7 +61,7 @@ cp -r "${SRCDIR}" .
 cd collatz/src
 
 # build mclient & gpuworker
-make -C gpuworker clean all CC=$CC USE_ESIEVE=1 SIEVE_LOGSIZE=24 USE_SIEVE3=1
+make -C gpuworker clean all CC=$CC SIEVE_LOGSIZE=24 USE_SIEVE3=1
 make -C mclient clean all
 
 pushd $MAPDIR
