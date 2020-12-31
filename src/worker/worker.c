@@ -318,20 +318,11 @@ static int is_live_in_sieve3(uint128_t n)
 HOT
 static int is_live_in_sieve9(uint128_t n)
 {
-#	if 0
-	uint64_t r = 0;
-
-	r += (uint32_t)(n);
-	r += (uint32_t)(n >> 32) * (uint64_t)4;
-	r += (uint32_t)(n >> 64) * (uint64_t)7;
-	r += (uint32_t)(n >> 96);
-#	else
 	uint64_t r = 0;
 
 	r += (uint64_t)(n)        & 0xfffffffffffffff;
 	r += (uint64_t)(n >>  60) & 0xfffffffffffffff;
 	r += (uint64_t)(n >> 120);
-#	endif
 
 	r = r % 9;
 
