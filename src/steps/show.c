@@ -5,16 +5,21 @@
 #endif
 #include <assert.h>
 
+#ifdef _USE_GMP
 mp_bitcnt_t mpz_ctz(const mpz_t n)
 {
 	return mpz_scan1(n, 0);
 }
+#endif
 
+#ifdef _USE_GMP
 void mpz_pow3(mpz_t r, unsigned long n)
 {
 	mpz_ui_pow_ui(r, 3UL, n);
 }
+#endif
 
+#ifdef _USE_GMP
 void mpz_get_maximum(mpz_t max, const mpz_t n0)
 {
 	mpz_t n;
@@ -40,7 +45,9 @@ void mpz_get_maximum(mpz_t max, const mpz_t n0)
 
 	mpz_clear(n);
 }
+#endif
 
+#ifdef _USE_GMP
 void report(mpz_t n)
 {
 	int i = 0;
@@ -89,9 +96,11 @@ void report(mpz_t n)
 	mpz_clear(a);
 	mpz_clear(max);
 }
+#endif
 
 int main(int argc, char *argv[])
 {
+#ifdef _USE_GMP
 	const char *str_n = argc > 1 ? argv[1] : "1";
 	mpz_t n;
 
@@ -102,6 +111,10 @@ int main(int argc, char *argv[])
 	report(n);
 
 	mpz_clear(n);
+#else
+	(void)argc;
+	(void)argv;
+#endif
 
 	return 0;
 }
