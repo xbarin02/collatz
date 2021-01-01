@@ -130,7 +130,7 @@ static int is_live_in_sieve9(uint128_t n)
 #endif
 
 #ifdef USE_LUT50
-#	define GET_INDEX(n) (SIEVE_NAME[((n) & SIEVE_MASK) >> (3+3)])
+#	define GET_INDEX(n) (SIEVE_NAME[((n) & SIEVE_MASK) >> (3 + 3)])
 #	define IS_LIVE(n) ((l_dict[GET_INDEX(n)] >> ((n) & 63)) & 1)
 #else
 #	define IS_LIVE(n) ((SIEVE_NAME[((n) & SIEVE_MASK) >> 3] >> (((n) & SIEVE_MASK) & 7)) & 1)

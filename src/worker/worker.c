@@ -94,11 +94,11 @@ static const uint64_t dict[] = {
 #	define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
 #	ifdef USE_LUT50
 #		define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8 / 8)
-#		define GET_INDEX(n) (g_map_sieve[((n) & SIEVE_MASK) >> (3+3)])
-#		define IS_LIVE(n) ((dict[GET_INDEX(n)] >> ((n)&63)) & 1)
+#		define GET_INDEX(n) (g_map_sieve[((n) & SIEVE_MASK) >> (3 + 3)])
+#		define IS_LIVE(n) ((dict[GET_INDEX(n)] >> ((n) & 63)) & 1)
 #	else
 #		define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8)
-#		define IS_LIVE(n) ((g_map_sieve[ ((n) & SIEVE_MASK)>>3 ] >> (((n) & SIEVE_MASK)&7)) & 1)
+#		define IS_LIVE(n) ((g_map_sieve[((n) & SIEVE_MASK) >> 3] >> (((n) & SIEVE_MASK) & 7)) & 1)
 #	endif
 #endif
 
