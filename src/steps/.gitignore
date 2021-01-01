@@ -5,6 +5,7 @@ max-strength
 max-completeness
 max-residue
 show
+path
 *~
 *.gcda
 *.txt

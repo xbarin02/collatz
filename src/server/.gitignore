@@ -1,7 +1,6 @@
 server
 chk-tool
 verify-result
-path
 find-maxima
 max-report
 *~
