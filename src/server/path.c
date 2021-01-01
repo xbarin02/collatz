@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 
 	mpz_init(n0);
 
-	gmp_sscanf (argv[1], "%Zd", n0);
+	gmp_sscanf(argv[1], "%Zd", n0);
 
 	mpz_init_set(n, n0); /* n = n0 */
 	mpz_init_set(max, n); /* max = n */
