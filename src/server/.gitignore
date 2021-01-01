@@ -4,7 +4,6 @@ verify-result
 path
 find-maxima
 max-report
-show
 *~
 *.gcda
 *.map
