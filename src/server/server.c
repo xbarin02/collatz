@@ -598,20 +598,6 @@ int read_message(int fd, int thread_id, const char *ipv4)
 	return 0;
 }
 
-void set_complete_range_from_hercher()
-{
-	uint64_t n;
-	uint64_t n_max = 91226112; /* = ( 87 * 2^60 ) / 2^TASK_SIZE */
-
-	for (n = 0; n < ASSIGNMENTS_NO; ++n) {
-		if (n < n_max) {
-			SET_ASSIGNED(n);
-			SET_COMPLETE(n);
-		} else
-			break;
-	}
-}
-
 void set_incomplete_superblock(uint64_t sb)
 {
 	uint64_t n;
@@ -697,11 +683,6 @@ int main(int argc, char *argv[])
 	g_overflows = open_records("overflows.dat");
 	g_clientids = open_records("clientids.dat");
 	g_mxoffsets = open_records("mxoffsets.dat");
-
-	if (!IS_COMPLETE(0)) {
-		message(INFO "initializing new search...\n");
-		set_complete_range_from_hercher();
-	}
 
 	if (invalidate_overflows) {
 		uint64_t n;
