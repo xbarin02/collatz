@@ -137,7 +137,8 @@ int main(int argc, char *argv[])
 
 	checksum = g_checksums[task_id];
 
-	printf("CHECKSUM %" PRIu64 " (recorded)\n", checksum);
+	printf("CHECKSUM %" PRIu64 "\n", checksum);
+	printf("PREFIX 0x%" PRIx64 "\n", checksum >> 24);
 
 	mxoffset = g_mxoffsets[task_id];
 
@@ -148,8 +149,8 @@ int main(int argc, char *argv[])
 		mpz_init_set_u128(mpz_max_n0, mxoffset_n0);
 		mpz_init_set_u128(mpz_maximum, maximum);
 
-		gmp_printf("GMP: maximum n0 = %Zi\n", mpz_max_n0);
-		gmp_printf("GMP: maximum n  = %Zi\n", mpz_maximum);
+		gmp_printf("MAXIMUM_N0 %Zi\n", mpz_max_n0);
+		gmp_printf("MAXIMUM %Zi\n", mpz_maximum);
 #endif
 	}
 
