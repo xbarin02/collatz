@@ -670,5 +670,9 @@ int main(int argc, char *argv[])
 
 	report_epilogue(task_id, task_size);
 
+#ifdef _USE_GMP
+	mpz_clear(g_mpz_max_n);
+#endif
+
 	return 0;
 }
