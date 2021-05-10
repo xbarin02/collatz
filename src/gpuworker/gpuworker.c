@@ -302,6 +302,10 @@ next_platform:
 	}
 
 	for (; (cl_uint)device_index < num_devices; ++device_index) {
+#ifdef USE_ASYNC_CALL
+		cl_event finished;
+		cl_int info = CL_QUEUED;
+#endif
 		printf("[DEBUG] device_index = %i...\n", device_index);
 
 		context = clCreateContext(NULL, 1, &device_id[device_index], NULL, NULL, &ret);
@@ -548,7 +552,7 @@ next_platform:
 			printf("[ERROR] clSetKernelArg() failed\n");
 			return -1;
 		}
-
+#ifndef USE_ASYNC_CALL
 		ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
 
 		if (ret != CL_SUCCESS) {
@@ -557,7 +561,31 @@ next_platform:
 		}
 
 		printf("[DEBUG] kernel enqueued\n");
+#else
+		ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_work_size, NULL, 0, NULL, &finished);
 
+		if (ret != CL_SUCCESS) {
+			printf("[ERROR] clEnqueueNDRangeKernel() failed\n");
+			return -1;
+		}
+
+		printf("[DEBUG] kernel enqueued\n");
+
+		clFlush(command_queue);
+
+		while (info != CL_COMPLETE) {
+			/* sleep for 1/100 of a second */
+			usleep(10000);
+
+			ret = clGetEventInfo(finished, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &info, NULL);
+			if (ret != CL_SUCCESS) {
+				printf("[ERROR] clGetEventInfo() failed\n");
+				return -1;
+			}
+		}
+
+		clReleaseEvent(finished);
+#endif
 		/* allocate arrays */
 		checksum_alpha = malloc(sizeof(uint64_t) << task_units);
 
