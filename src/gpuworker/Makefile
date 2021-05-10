@@ -30,6 +30,10 @@ ifeq ($(USE_LUT50), 1)
         CFLAGS+=-DUSE_LUT50
 endif
 
+ifeq ($(USE_ASYNC_CALL), 1)
+	CFLAGS+=-DUSE_ASYNC_CALL
+endif
+
 ifeq ($(DEBUG), 1)
         CFLAGS+=-Og -g -DDEBUG
         LDLIBS+=-rdynamic
