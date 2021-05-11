@@ -365,6 +365,12 @@ int run_assignment(int tid, uint64_t task_id, uint64_t task_size, uint64_t *p_ov
 			assert(p_usertime != NULL);
 
 			*p_usertime = usertime;
+		} else if (c == 3 && strcmp(ln_part[0], "REALTIME") == 0) {
+			uint64_t usertime = atou64(ln_part[1]);
+
+			assert(p_usertime != NULL);
+
+			*p_usertime = usertime;
 		} else if (c == 3 && strcmp(ln_part[0], "CHECKSUM") == 0) {
 			uint64_t checksum_alpha = atou64(ln_part[1]);
 			uint64_t checksum_beta = atou64(ln_part[2]);
