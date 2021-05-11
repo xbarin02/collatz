@@ -25,6 +25,8 @@
 #	include <unistd.h>
 #endif
 
+#include <time.h>
+
 #include "wideint.h"
 #include "compat.h"
 
@@ -651,8 +653,17 @@ int main(int argc, char *argv[])
 	uint64_t task_id = 0;
 	uint64_t task_size = TASK_SIZE;
 	int err;
+	struct timespec ts;
+	uint64_t start_time, stop_time;
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+	if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
+		printf("[ERROR] clock_gettime\n");
+		abort();
+	}
+
+	start_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
 
 	err = parse_args(argc, argv, &task_id, &task_size);
 
@@ -667,6 +678,15 @@ int main(int argc, char *argv[])
 	init();
 
 	solve_task(task_id, task_size);
+
+	if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
+		printf("[ERROR] clock_gettime\n");
+		abort();
+	}
+
+	stop_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
+
+	printf("REALTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time) / 1000000000, (stop_time - start_time) / 1000);
 
 	report_epilogue(task_id, task_size);
 
