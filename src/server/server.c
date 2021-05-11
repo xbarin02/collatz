@@ -660,7 +660,7 @@ int main(int argc, char *argv[])
 				sb = atou64(optarg);
 				break;
 			default:
-				message(ERR "Usage: %s [-c]\n", argv[0]);
+				message(ERR "Usage: %s [-c] [-f] [-i] [-z] [-r]\n", argv[0]);
 				return EXIT_FAILURE;
 		}
 	}
