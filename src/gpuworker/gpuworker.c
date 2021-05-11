@@ -17,6 +17,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include <time.h>
+
 #include "wideint.h"
 #include "compat.h"
 
@@ -686,8 +688,17 @@ int main(int argc, char *argv[])
 	uint64_t task_size = TASK_SIZE;
 	int opt;
 	struct rusage usage;
+	struct timespec ts;
+	uint64_t start_time, stop_time;
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+	if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
+		printf("[ERROR] clock_gettime\n");
+		abort();
+	}
+
+	start_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
 
 	while ((opt = getopt(argc, argv, "t:a:k:1d:")) != -1) {
 		switch (opt) {
@@ -751,6 +762,15 @@ int main(int argc, char *argv[])
 
 		printf("TIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
 	}
+
+	if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
+		printf("[ERROR] clock_gettime\n");
+		abort();
+	}
+
+	stop_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
+
+	printf("RTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time) / 1000000000, (stop_time - start_time) / 1000);
 
 	printf("OVERFLOW 128 %" PRIu64 "\n", UINT64_C(0));
 
