@@ -3,6 +3,8 @@ LDFLAGS+=
 LDLIBS+=-lOpenCL
 BINS=gpuworker
 
+USE_ASYNC_CALL=1
+
 ifndef $(SIEVE_LOGSIZE)
 	SIEVE_LOGSIZE=16
 endif
