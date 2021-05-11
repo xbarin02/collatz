@@ -770,7 +770,7 @@ int main(int argc, char *argv[])
 
 	stop_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
 
-	printf("RTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time) / 1000000000, (stop_time - start_time) / 1000);
+	printf("REALTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time) / 1000000000, (stop_time - start_time) / 1000);
 
 	printf("OVERFLOW 128 %" PRIu64 "\n", UINT64_C(0));
 
