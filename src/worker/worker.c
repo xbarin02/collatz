@@ -679,6 +679,8 @@ int main(int argc, char *argv[])
 
 	solve_task(task_id, task_size);
 
+	report_epilogue(task_id, task_size);
+
 	if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
 		printf("[ERROR] clock_gettime\n");
 		abort();
@@ -687,8 +689,6 @@ int main(int argc, char *argv[])
 	stop_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
 
 	printf("REALTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time) / 1000000000, (stop_time - start_time) / 1000);
-
-	report_epilogue(task_id, task_size);
 
 #ifdef _USE_GMP
 	mpz_clear(g_mpz_max_n);
