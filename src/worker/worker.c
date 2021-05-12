@@ -474,10 +474,14 @@ const void *open_map(const char *path, size_t map_size)
 }
 #endif
 
+uint64_t start_time;
+
 void report_usertime()
 {
 	struct rusage usage;
 	uint64_t usecs, secs;
+	struct timespec ts;
+	uint64_t stop_time;
 
 	assert(sizeof(uint64_t) >= sizeof(time_t));
 	assert(sizeof(uint64_t) >= sizeof(suseconds_t));
@@ -496,6 +500,15 @@ void report_usertime()
 	secs = (usecs + 500000) / 1000000;
 
 	printf("TIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
+
+	if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
+		printf("[ERROR] clock_gettime\n");
+		abort();
+	}
+
+	stop_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
+
+	printf("REALTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time + 500000000) / 1000000000, (stop_time - start_time + 500) / 1000);
 }
 
 void report_maximum(uint64_t task_id, uint64_t task_size)
@@ -654,7 +667,6 @@ int main(int argc, char *argv[])
 	uint64_t task_size = TASK_SIZE;
 	int err;
 	struct timespec ts;
-	uint64_t start_time, stop_time;
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
@@ -680,15 +692,6 @@ int main(int argc, char *argv[])
 	solve_task(task_id, task_size);
 
 	report_epilogue(task_id, task_size);
-
-	if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
-		printf("[ERROR] clock_gettime\n");
-		abort();
-	}
-
-	stop_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
-
-	printf("REALTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time) / 1000000000, (stop_time - start_time) / 1000);
 
 #ifdef _USE_GMP
 	mpz_clear(g_mpz_max_n);
