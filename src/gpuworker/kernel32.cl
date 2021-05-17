@@ -92,10 +92,9 @@ static int is_live_in_sieve9(uint128_t n)
 {
 	ulong r = 0;
 
-	r += (uint)(n);
-	r += (uint)(n >> 32) * (ulong)4;
-	r += (uint)(n >> 64) * (ulong)7;
-	r += (uint)(n >> 96);
+	r += (ulong)(n)        & 0xfffffffffffffff;
+	r += (ulong)(n >>  60) & 0xfffffffffffffff;
+	r += (ulong)(n >> 120);
 
 	r = r % 9;
 
