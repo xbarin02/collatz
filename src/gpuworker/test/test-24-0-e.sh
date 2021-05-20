@@ -78,3 +78,5 @@ build_wrapper && verify 98999224 "390339733038 463055201307 0"
 build_wrapper && verify 98999225 "390339002599 851511117927 0"
 
 build_wrapper && verify 97064899 "ABORTED_DUE_TO_OVERFLOW"
+
+build_wrapper && verify 100982316 "390340316241 169129507999 0"
