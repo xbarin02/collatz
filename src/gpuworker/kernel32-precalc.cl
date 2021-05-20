@@ -281,11 +281,11 @@ lcalc:
 					goto end;
 				}
 				N += L;
-
+#if 0
 				if (!(N & 1)) {
 					goto even;
 				}
-
+#endif
 				do {
 					N++;
 					do {
