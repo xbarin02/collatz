@@ -46,6 +46,7 @@ const uint64_t *open_records(const char *path)
 
 const uint64_t *g_checksums = 0;
 const uint64_t *g_mxoffsets = 0;
+const uint64_t *g_usertimes = 0;
 
 #define LUT_SIZE64 41
 
@@ -120,6 +121,7 @@ int main(int argc, char *argv[])
 	uint64_t task_size = TASK_SIZE;
 	uint64_t checksum;
 	uint64_t mxoffset;
+	uint64_t usertime;
 #ifdef _USE_GMP
 	uint128_t mxoffset_n0;
 	uint128_t maximum;
@@ -134,6 +136,7 @@ int main(int argc, char *argv[])
 
 	g_checksums = open_records("checksums.dat");
 	g_mxoffsets = open_records("mxoffsets.dat");
+	g_usertimes = open_records("usertimes.dat");
 
 	checksum = g_checksums[task_id];
 
@@ -162,6 +165,10 @@ int main(int argc, char *argv[])
 		(uint64_t)(((uint128_t)(task_id + 1) << task_size)>>64),
 		(uint64_t)(((uint128_t)(task_id + 1) << task_size)    )
 	);
+
+	usertime = g_usertimes[task_id];
+
+	printf("TIME %" PRIu64 "\n", usertime);
 
 	return 0;
 }
