@@ -307,7 +307,7 @@ int main(int argc, char *argv[])
 			uint64_t checksum = g_checksums[n];
 
 			/* FIXME BUG */
-			if ((checksum >> 24) == 0x2134 && usertime > 10000) {
+			if (usertime > 100000) {
 				continue;
 			}
 
