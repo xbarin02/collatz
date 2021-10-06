@@ -168,7 +168,9 @@ int main(int argc, char *argv[])
 
 	usertime = g_usertimes[task_id];
 
-	printf("TIME %" PRIu64 "\n", usertime);
+	printf("TIME %" PRIu64 " (%" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")\n",
+			usertime,
+			usertime/60/60, usertime/60%60, usertime%60);
 
 	return 0;
 }
