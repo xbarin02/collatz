@@ -508,6 +508,8 @@ void report_usertime()
 
 	stop_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
 
+	assert(stop_time > start_time);
+
 	printf("REALTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time + 500000000) / 1000000000, (stop_time - start_time + 500) / 1000);
 }
 
