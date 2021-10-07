@@ -506,7 +506,7 @@ void report_usertime()
 		abort();
 	}
 
-	stop_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
+	stop_time = ts.tv_sec * UINT64_C(1000000000) + ts.tv_nsec;
 
 	assert(stop_time > start_time);
 
@@ -677,7 +677,7 @@ int main(int argc, char *argv[])
 		abort();
 	}
 
-	start_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
+	start_time = ts.tv_sec * UINT64_C(1000000000) + ts.tv_nsec;
 
 	err = parse_args(argc, argv, &task_id, &task_size);
 
