@@ -308,6 +308,9 @@ int main(int argc, char *argv[])
 
 			/* FIXME BUG */
 			if (usertime > 100000) {
+#if 0
+				printf("%" PRIu64 ": %" PRIu64 " (0x%" PRIx64 ")\n", n, usertime, checksum >> 24);
+#endif
 				continue;
 			}
 
