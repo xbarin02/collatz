@@ -506,6 +506,9 @@ void report_usertime()
 		abort();
 	}
 
+	assert(ts.tv_nsec >= 0);
+	assert(ts.tv_nsec < INT64_C(1000000000));
+
 	stop_time = ts.tv_sec * UINT64_C(1000000000) + ts.tv_nsec;
 
 	assert(stop_time > start_time);
