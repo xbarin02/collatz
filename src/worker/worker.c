@@ -501,7 +501,7 @@ void report_usertime()
 
 	printf("TIME %" PRIu64 " %" PRIu64 "\n", secs, usecs);
 
-	if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
 		printf("[ERROR] clock_gettime\n");
 		abort();
 	}
@@ -675,7 +675,7 @@ int main(int argc, char *argv[])
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
-	if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
 		printf("[ERROR] clock_gettime\n");
 		abort();
 	}
