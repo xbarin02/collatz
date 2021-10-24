@@ -87,6 +87,9 @@ void mpz_get_maximum(mpz_t max, uint128_t n0_)
 			mpz_set(max, n);
 		}
 	}
+
+	mpz_clear(n0);
+	mpz_clear(n);
 }
 #endif
 
