@@ -44,7 +44,7 @@ function build()
 }
 
 CC=gcc
-if type clang > /dev/null 2> /dev/null && clang --version | grep -qE "version (8|9|10|11|12|13)"; then
+if type clang > /dev/null 2> /dev/null && clang --version | grep -qE "version (8|9|10|11|12|13|14)"; then
         echo "INFO: clang available"
         CC=clang
 fi
