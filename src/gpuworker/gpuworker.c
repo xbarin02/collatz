@@ -78,7 +78,7 @@ const void *open_map(const char *path, size_t map_size)
 
 uint64_t g_lut64[LUT_SIZE64];
 
-void init_lut()
+void init_lut(void)
 {
 	int a;
 
