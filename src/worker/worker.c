@@ -129,7 +129,7 @@ static void mpz_pow3(mpz_t r, unsigned long n)
 #endif
 
 /* init lookup table */
-void init_lut()
+void init_lut(void)
 {
 	int alpha;
 
@@ -476,7 +476,7 @@ const void *open_map(const char *path, size_t map_size)
 
 uint64_t start_time;
 
-void report_usertime()
+void report_usertime(void)
 {
 	struct rusage usage;
 	uint64_t usecs, secs;
@@ -566,7 +566,7 @@ void report_epilogue(uint64_t task_id, uint64_t task_size)
 	printf("HALTED\n");
 }
 
-void init()
+void init(void)
 {
 #ifdef USE_SIEVE
 	char path[4096];
