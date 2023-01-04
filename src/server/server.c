@@ -348,7 +348,10 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		uint64_t threads;
 		int tid;
 
-		read_uint64(fd, &threads);
+		if (read_uint64(fd, &threads) < 0) {
+			message(ERR "unable to read number of threads\n");
+			return -1;
+		}
 
 		message(INFO "received multiple requests for %" PRIu64 " threads from address %s\n", threads, ipv4);
 
