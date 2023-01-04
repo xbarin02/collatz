@@ -71,7 +71,7 @@ int message(const char *format, ...)
 
 int init_sockaddr(struct sockaddr_in *name, uint16_t port)
 {
-	assert(name);
+	assert(name != NULL);
 
 	bzero(name, sizeof(struct sockaddr_in));
 
@@ -145,7 +145,7 @@ int read_uint64(int fd, uint64_t *nptr)
 
 	n = ((uint64_t)nh << 32) + nl;
 
-	assert( nptr != NULL );
+	assert(nptr != NULL);
 
 	*nptr = n;
 
@@ -672,7 +672,7 @@ int main(int argc, char *argv[])
 		/* errno is set appropriately. */
 		perror("getrlimit");
 	} else {
-		assert( sizeof(uint64_t) >= sizeof(rlim_t) );
+		assert(sizeof(uint64_t) >= sizeof(rlim_t));
 
 		message(INFO "limit file descriptors: %" PRIu64 " (hard %" PRIu64 ")\n", rlim.rlim_cur, rlim.rlim_max);
 	}
