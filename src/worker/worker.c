@@ -317,7 +317,6 @@ static int is_live_in_sieve3(uint128_t n)
 #endif
 
 #ifdef USE_SIEVE9
-HOT
 static int is_live_in_sieve9(uint128_t n)
 {
 	uint64_t r = 0;

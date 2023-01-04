@@ -3,15 +3,13 @@
 
 #if defined(__GNUC__)
 #	define UNUSED __attribute__ ((unused))
-#	define HOT __attribute__ ((hot))
 #else
 #	define UNUSED
-#	define HOT
 #endif
 
 #include <stdint.h>
 
-UNUSED HOT
+UNUSED
 static int ctzu64(uint64_t n)
 {
 	if (n == 0) {
