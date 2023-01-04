@@ -393,6 +393,10 @@ void precalc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0)
 				alpha = 63;
 			}
 
+			if (alpha >= LUT_SIZE64) {
+				alpha = LUT_SIZE64 - 1;
+			}
+
 			R -= alpha;
 			Salpha += alpha;
 
