@@ -41,12 +41,6 @@ static unsigned long atoul(const char *nptr)
 	return strtoul(nptr, NULL, 10);
 }
 
-UNUSED
-static int min(int a, int b)
-{
-	return a < b ? a : b;
-}
-
 #include <assert.h>
 
 UNUSED

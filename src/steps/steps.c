@@ -43,7 +43,11 @@ static void check(uint128_t n)
 #endif
 		n++;
 
-		alpha = min(ctzu64(n), LUT_SIZE64 - 1);
+		alpha = ctzu64(n);
+
+		if (alpha >= LUT_SIZE64) {
+			alpha = LUT_SIZE64 - 1;
+		}
 
 		g_checksum_alpha += alpha;
 
