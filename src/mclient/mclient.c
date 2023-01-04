@@ -57,7 +57,7 @@ int message(const char *format, ...)
 
 	ctime_r(&now, buf);
 
-	buf[strlen(buf)-1] = 0;
+	buf[strlen(buf) - 1] = 0;
 
 	#pragma omp critical
 	{
