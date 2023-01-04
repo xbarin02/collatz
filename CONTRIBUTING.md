@@ -11,8 +11,3 @@ instructions in `src/*/README` files.
 
 First off, read the [Coding Style](CODINGSTYLE.md) guide.
 Any help is welcome.
-
-## Code of Conduct
-
-This project and everyone participating in it is governed by
-the [Code of Conduct](CODE_OF_CONDUCT.md).
