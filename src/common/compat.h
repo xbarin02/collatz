@@ -3,8 +3,10 @@
 
 #if defined(__GNUC__)
 #	define UNUSED __attribute__ ((unused))
+#	define HOT __attribute__ ((hot))
 #else
 #	define UNUSED
+#	define HOT
 #endif
 
 #include <stdint.h>
