@@ -710,11 +710,11 @@ int main(int argc, char *argv[])
 
 		message(WARN "Invalidating new/buggy/outdated/incomplete/obsolete checksums...\n");
 
-#if 1
+#if 0
 		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
 			uint64_t checksum = g_checksums[n];
 
-			if ((checksum>>24) == 0x2134) {
+			if ((checksum >> 24) == 0x2134) {
 				printf("- resetting the assignment %" PRIu64 " due to buggy/obsolete checksum\n", n);
 
 				SET_UNASSIGNED(n);
@@ -737,6 +737,19 @@ int main(int argc, char *argv[])
 
 					c++;
 				}
+			}
+		}
+
+		for (n = 0; n < ASSIGNMENTS_NO; ++n) {
+			uint64_t usertime = g_usertimes[n];
+
+			if (usertime > 60 * 60) {
+				printf("- resetting the assignment %" PRIu64 " due to invalid time\n", n);
+#if 1
+				SET_UNASSIGNED(n);
+				SET_INCOMPLETE(n);
+#endif
+				c++;
 			}
 		}
 
