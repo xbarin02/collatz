@@ -290,15 +290,17 @@ int main(int argc, char *argv[])
 
 		struct timerec tr_all = timerec_create();
 		struct timerec tr_mod_2_2 = timerec_create();
-		struct timerec tr_mod_2_16 = timerec_create();
-		struct timerec tr_mod_2_16_e = timerec_create();
-		struct timerec tr_mod_2_24_e = timerec_create();
-		struct timerec tr_mod_2_24_3_1_e = timerec_create();
-		struct timerec tr_mod_2_32 = timerec_create();
-		struct timerec tr_mod_2_32_3_1 = timerec_create();
-		struct timerec tr_mod_2_32_3_1_e = timerec_create();
-		struct timerec tr_mod_2_34_3_1_e = timerec_create();
-		struct timerec tr_mod_2_34_3_2_e = timerec_create();
+		struct timerec tr_mod_2_16 = timerec_create(); /* gpu */
+		struct timerec tr_mod_2_16_e = timerec_create(); /* gpu */
+		struct timerec tr_mod_2_24_e = timerec_create(); /* gpu */
+		struct timerec tr_mod_2_24_3_1_e = timerec_create(); /* gpu */
+		struct timerec tr_mod_2_32 = timerec_create(); /* cpu */
+		struct timerec tr_mod_2_32_3_1 = timerec_create(); /* cpu */
+		struct timerec tr_mod_2_32_3_1_e = timerec_create(); /* cpu */
+		struct timerec tr_mod_2_34_3_1_e = timerec_create(); /* cpu */
+		struct timerec tr_mod_2_34_3_2_e = timerec_create(); /* cpu */
+		struct timerec tr_cpu = timerec_create();
+		struct timerec tr_gpu = timerec_create();
 
 		printf("analyzing time records...\n");
 
@@ -317,53 +319,69 @@ int main(int argc, char *argv[])
 				ADD_TIME(tr_all, usertime);
 			}
 
-			if (usertime != 0 && (checksum>>24) == 0x17f0f) {
+			if (usertime != 0 && (checksum >> 24) == 0x17f0f) {
 				ADD_TIME(tr_mod_2_2, usertime);
 			}
 
-			if (usertime != 0 && (checksum>>24) == 0xa0ed) {
+			if (usertime != 0 && (checksum >> 24) == 0xa0ed) {
 				ADD_TIME(tr_mod_2_16, usertime);
+				ADD_TIME(tr_gpu, usertime);
 			}
 
-			if (usertime != 0 && (checksum>>28) == 0x83b) {
+			if (usertime != 0 && (checksum >> 28) == 0x83b) {
 				ADD_TIME(tr_mod_2_16_e, usertime);
+				ADD_TIME(tr_gpu, usertime);
 			}
 
-			if (usertime != 0 && (checksum>>24) == 0x4cfe) {
+			if (usertime != 0 && (checksum >> 24) == 0x4cfe) {
 				ADD_TIME(tr_mod_2_32, usertime);
+				ADD_TIME(tr_cpu, usertime);
 			}
 
-			if (usertime != 0 && (checksum>>24) == 0x3354) {
+			if (usertime != 0 && (checksum >> 24) == 0x3354) {
 				ADD_TIME(tr_mod_2_32_3_1, usertime);
+				ADD_TIME(tr_cpu, usertime);
 			}
 
-			if (usertime != 0 && (checksum>>24) == 0x2a27) {
+			if (usertime != 0 && (checksum >> 24) == 0x2a27) {
 				ADD_TIME(tr_mod_2_32_3_1_e, usertime);
+				ADD_TIME(tr_cpu, usertime);
 			}
 
-			if (usertime != 0 && (checksum>>24) == 0x27d8) {
+			if (usertime != 0 && (checksum >> 24) == 0x27d8) {
 				ADD_TIME(tr_mod_2_34_3_1_e, usertime);
+				ADD_TIME(tr_cpu, usertime);
 			}
 
-			if (usertime != 0 && (checksum>>24) == 0x5ae2) {
+			if (usertime != 0 && (checksum >> 24) == 0x5ae2) {
 				ADD_TIME(tr_mod_2_24_e, usertime);
+				ADD_TIME(tr_gpu, usertime);
 			}
 
-			if (usertime != 0 && (checksum>>24) == 0x5ae1) {
+			if (usertime != 0 && (checksum >> 24) == 0x5ae1) {
 				ADD_TIME(tr_mod_2_24_e, usertime);
+				ADD_TIME(tr_gpu, usertime);
 			}
 
-			if (usertime != 0 && (checksum>>24) == 0x3c96) {
+			if (usertime != 0 && (checksum >> 24) == 0x3c96) {
 				ADD_TIME(tr_mod_2_24_3_1_e, usertime);
+				ADD_TIME(tr_gpu, usertime);
 			}
 
-			if (usertime != 0 && (checksum>>24) == 0x2134) {
+			if (usertime != 0 && (checksum >> 24) == 0x2134) {
 				ADD_TIME(tr_mod_2_34_3_2_e, usertime);
+				ADD_TIME(tr_cpu, usertime);
 			}
 		}
 
 		printf("all user time records:\n");
 		avg_and_print_usertime(tr_all.total, tr_all.count);
+
+		printf("GPU user time records:\n");
+		avg_and_print_usertime(tr_gpu.total, tr_gpu.count);
+
+		printf("CPU user time records:\n");
+		avg_and_print_usertime(tr_cpu.total, tr_cpu.count);
 
 		printf("sieve-2^2 user time records:\n");
 		tr_mod_2_2.avg = avg_and_print_usertime(tr_mod_2_2.total, tr_mod_2_2.count);
