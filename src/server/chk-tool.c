@@ -81,7 +81,7 @@ uint64_t avg_and_print_usertime(uint128_t total, uint64_t count)
 	return average;
 }
 
-void print_checksum_stats_ex(uint64_t mask, size_t shift)
+uint64_t print_checksum_stats_ex(uint64_t mask, size_t shift)
 {
 	uint64_t n;
 	uint64_t min = UINT64_MAX, max = 0;
@@ -122,11 +122,13 @@ void print_checksum_stats_ex(uint64_t mask, size_t shift)
 	);
 
 	printf("\n");
+
+	return count;
 }
 
-void print_checksum_stats(uint64_t mask)
+uint64_t print_checksum_stats(uint64_t mask)
 {
-	print_checksum_stats_ex(mask, 24);
+	return print_checksum_stats_ex(mask, 24);
 }
 
 void init()
@@ -230,37 +232,41 @@ int main(int argc, char *argv[])
 
 	/* checksums */
 	if (show_checksums) {
+		uint64_t cpu_count = 0, gpu_count = 0;
+
 		printf("analyzing checksums...\n");
 
 		printf("sieve-2^2 checksums:\n");
-		print_checksum_stats(0x17f0f);
+		(void)print_checksum_stats(0x17f0f);
 
 		printf("sieve-2^16 checksums:\n");
-		print_checksum_stats(0xa0ed);
+		gpu_count += print_checksum_stats(0xa0ed);
 
 		printf("esieve-2^16 checksums:\n");
-		print_checksum_stats_ex(0x83b, 28);
+		gpu_count += print_checksum_stats_ex(0x83b, 28);
 
 		printf("esieve-2^24 checksums:\n");
-		print_checksum_stats_ex(0x5ae, 28);
+		gpu_count += print_checksum_stats_ex(0x5ae, 28);
 
 		printf("esieve-2^24 sieve-3^1 checksums:\n");
-		print_checksum_stats(0x3c96);
+		gpu_count += print_checksum_stats(0x3c96);
 
 		printf("sieve-2^32 checksums:\n");
-		print_checksum_stats(0x4cfe);
+		cpu_count += print_checksum_stats(0x4cfe);
 
 		printf("sieve-2^32 sieve-3^1 checksums:\n");
-		print_checksum_stats(0x3354);
+		cpu_count += print_checksum_stats(0x3354);
 
 		printf("esieve-2^32 sieve-3^1 checksums:\n");
-		print_checksum_stats(0x2a27);
+		cpu_count += print_checksum_stats(0x2a27);
 
 		printf("esieve-2^34 sieve-3^1 checksums:\n");
-		print_checksum_stats(0x27d8);
+		cpu_count += print_checksum_stats(0x27d8);
 
 		printf("esieve-2^34 sieve-3^2 checksums:\n");
-		print_checksum_stats(0x2134);
+		cpu_count += print_checksum_stats(0x2134);
+
+		printf("Results: %" PRIu64 " work units on CPU, %" PRIu64 " work units on GPU, %" PRIu64 " work units in total\n", cpu_count, gpu_count, cpu_count + gpu_count);
 	}
 
 	/* missing checksums */
