@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <math.h>
 #include "wideint.h"
 #include "compat.h"
 
@@ -172,7 +173,7 @@ int main(int argc, char *argv[])
 			usertime,
 			usertime/60/60, usertime/60%60, usertime%60);
 
-	printf("SPEED %g nums/sec\n", (UINT128_C(1) << task_size) / (double)usertime);
+	printf("SPEED 2^%f nums/sec\n", log2((UINT128_C(1) << task_size) / (double)usertime));
 
 	return 0;
 }
