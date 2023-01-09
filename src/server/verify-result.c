@@ -172,5 +172,7 @@ int main(int argc, char *argv[])
 			usertime,
 			usertime/60/60, usertime/60%60, usertime%60);
 
+	printf("SPEED %g nums/sec\n", (UINT128_C(1) << task_size) / (double)usertime);
+
 	return 0;
 }
