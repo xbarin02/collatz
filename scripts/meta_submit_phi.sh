@@ -5,7 +5,7 @@
 #PBS -M ibarina@fit.vutbr.cz
 #PBS -m n
 #
-#PBS -l select=1:ncpus=64:mem=128gb:scratch_local=1gb,walltime=336:00:00
+#PBS -l select=1:ncpus=64:mem=32gb:scratch_local=1gb,walltime=336:00:00
 #PBS -R eo
 
 HOME=/storage/brno12-cerit/home/ibarina
