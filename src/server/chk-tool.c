@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
 			uint64_t usertime = g_usertimes[n];
 			uint64_t checksum = g_checksums[n];
 
-			if (usertime > 60 * 60) {
+			if (usertime > 2 * 60 * 60) {
 #if 1
 				printf("%" PRIu64 ": %" PRIu64 " (0x%" PRIx64 ")\n", n, usertime, checksum >> 24);
 #endif
