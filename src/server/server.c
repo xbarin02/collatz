@@ -852,7 +852,7 @@ int main(int argc, char *argv[])
 		abort();
 	}
 
-	if (listen(fd, 10) < 0) {
+	if (listen(fd, 2048) < 0) {
 		perror("listen");
 		abort();
 	}
