@@ -249,6 +249,39 @@ int open_socket_and_query_highest_requested(uint64_t *n, uint64_t *task_size)
 	return 0;
 }
 
+/* TODO query_ping with "PNG\0" and single read_uint64 reply */
+int open_socket_and_ping()
+{
+	int fd;
+	uint64_t n;
+	uint64_t task_size;
+
+	fd = open_socket_to_server();
+
+	if (fd < 0) {
+		return -1;
+	}
+
+	if (query_lowest_incomplete(fd) < 0) {
+		close(fd);
+		return -1;
+	}
+
+	if (read_uint64(fd, &n) < 0) {
+		close(fd);
+		return -1;
+	}
+
+	if (read_uint64(fd, &task_size) < 0) {
+		close(fd);
+		return -1;
+	}
+
+	close(fd);
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	int opt;
@@ -260,12 +293,15 @@ int main(int argc, char *argv[])
 
 	message(INFO "server to be used: %s\n", servername);
 
-	while ((opt = getopt(argc, argv, "lh")) != -1) {
+	while ((opt = getopt(argc, argv, "lhp")) != -1) {
 		switch (opt) {
 			case 'l':
 				query = opt;
 				break;
 			case 'h':
+				query = opt;
+				break;
+			case 'p':
 				query = opt;
 				break;
 			default:
@@ -277,6 +313,10 @@ int main(int argc, char *argv[])
 	switch (query) {
 			uint64_t n;
 			uint64_t task_size;
+			struct timespec ts;
+			uint64_t start_time;
+			uint64_t stop_time;
+
 		case 'l':
 			if (open_socket_and_query_lowest_incomplete(&n, &task_size) < 0) {
 				message(ERR "open_socket_and_query_lowest_incomplete failed\n");
@@ -284,11 +324,36 @@ int main(int argc, char *argv[])
 				printf("%" PRIu64 " %" PRIu64 "\n", n, task_size);
 			}
 			break;
+
 		case 'h':
 			if (open_socket_and_query_highest_requested(&n, &task_size) < 0) {
 				message(ERR "open_socket_and_query_highest_requested failed\n");
 			} else {
 				printf("%" PRIu64 " %" PRIu64 "\n", n, task_size);
+			}
+			break;
+
+		case 'p':
+			while (1) {
+				if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+					printf("[ERROR] clock_gettime\n");
+					abort();
+				}
+				start_time = ts.tv_sec * UINT64_C(1000000000) + ts.tv_nsec;
+
+				if (open_socket_and_ping() < 0) {
+					message(ERR "open_socket_and_ping failed\n");
+				}
+
+				if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+					printf("[ERROR] clock_gettime\n");
+					abort();
+				}
+				stop_time = ts.tv_sec * UINT64_C(1000000000) + ts.tv_nsec;
+
+				printf("ping time = %" PRIu64 " nsec = %.2f msec\n", stop_time - start_time, (stop_time - start_time) / 1e6f);
+
+				sleep(1);
 			}
 			break;
 	}
