@@ -405,6 +405,8 @@ int read_message(int fd, int thread_id, const char *ipv4)
 			return -1;
 		}
 
+		message(INFO "received multiple requests (MRQ) for %" PRIu64 " threads from address %s\n", threads, ipv4);
+
 		clientids = malloc(sizeof(uint64_t) * threads);
 
 		if (clientids == NULL) {
