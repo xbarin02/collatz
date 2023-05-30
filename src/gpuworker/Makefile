@@ -5,6 +5,11 @@ BINS=gpuworker
 
 USE_ASYNC_CALL=1
 
+ifeq ($(USE_LUMI), 1)
+	CFLAGS+=-I/opt/rocm/include
+	LDLIBS=-L/opt/rocm/lib -Wl,-rpath,/opt/rocm/lib -lOpenCL
+endif
+
 ifndef $(SIEVE_LOGSIZE)
 	SIEVE_LOGSIZE=16
 endif
