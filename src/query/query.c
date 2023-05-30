@@ -163,6 +163,15 @@ int query_highest_requested(int fd)
 	return 0;
 }
 
+int query_ping(int fd)
+{
+	if (write_(fd, "PNG", 4) < 0) {
+		return -1;
+	}
+
+	return 0;
+}
+
 int open_socket_to_server()
 {
 	int fd;
@@ -249,12 +258,10 @@ int open_socket_and_query_highest_requested(uint64_t *n, uint64_t *task_size)
 	return 0;
 }
 
-/* TODO query_ping with "PNG\0" and single read_uint64 reply */
 int open_socket_and_ping()
 {
 	int fd;
-	uint64_t n;
-	uint64_t task_size;
+	uint64_t payload;
 
 	fd = open_socket_to_server();
 
@@ -262,17 +269,18 @@ int open_socket_and_ping()
 		return -1;
 	}
 
-	if (query_lowest_incomplete(fd) < 0) {
+	if (query_ping(fd) < 0) {
 		close(fd);
 		return -1;
 	}
 
-	if (read_uint64(fd, &n) < 0) {
+	if (read_uint64(fd, &payload) < 0) {
 		close(fd);
 		return -1;
 	}
 
-	if (read_uint64(fd, &task_size) < 0) {
+	if (payload != 0) {
+		message(ERR "payload does not match\n");
 		close(fd);
 		return -1;
 	}
@@ -336,7 +344,7 @@ int main(int argc, char *argv[])
 		case 'p':
 			while (1) {
 				if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
-					printf("[ERROR] clock_gettime\n");
+					message(ERR "clock_gettime failed\n");
 					abort();
 				}
 				start_time = ts.tv_sec * UINT64_C(1000000000) + ts.tv_nsec;
@@ -346,12 +354,12 @@ int main(int argc, char *argv[])
 				}
 
 				if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
-					printf("[ERROR] clock_gettime\n");
+					message(ERR "clock_gettime failed\n");
 					abort();
 				}
 				stop_time = ts.tv_sec * UINT64_C(1000000000) + ts.tv_nsec;
 
-				printf("ping time = %" PRIu64 " nsec = %.2f msec\n", stop_time - start_time, (stop_time - start_time) / 1e6f);
+				message(INFO "ping time = %.2f msec\n", (stop_time - start_time) / 1e6f);
 
 				sleep(1);
 			}

@@ -593,6 +593,10 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		if (write_uint64(fd, TASK_SIZE) < 0) {
 			return -1;
 		}
+	} else if (strcmp(msg, "PNG") == 0) {
+		if (write_uint64(fd, 0) < 0) {
+			return -1;
+		}
 	} else {
 		message(ERR "%s: unknown client message!\n", msg);
 		return -1;
