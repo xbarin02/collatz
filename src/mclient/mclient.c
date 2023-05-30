@@ -565,6 +565,68 @@ int open_socket_and_request_multiple_assignments(int threads, int request_lowest
 	return 0;
 }
 
+int open_socket_and_request_multiple_assignments_batch(int threads, int request_lowest_incomplete, uint64_t task_id[], uint64_t task_size[], const uint64_t clientid[])
+{
+	int fd;
+	int tid;
+	uint64_t task_size_;
+
+	assert(request_lowest_incomplete == 0);
+
+	fd = open_socket_to_server();
+
+	if (fd < 0) {
+		message(ERR "open_socket_to_server() failed\n");
+		return -1;
+	}
+
+	/* client to server */
+
+	if (write_(fd, "MRQ", 4) < 0) {
+		message(ERR "write_() failed\n");
+		return -1;
+	}
+
+	if (write_group_size(fd, threads) < 0) {
+		message(ERR "write_group_size() failed\n");
+		return -1;
+	}
+
+	/* n times: write clid */
+	for (tid = 0; tid < threads; ++tid) {
+		if (write_uint64(fd, clientid[tid]) < 0) {
+			message(ERR "write_uint64() failed\n");
+			return -1;
+		}
+	}
+
+	/* server to client */
+
+	if (read_uint64(fd, &task_size_) < 0) {
+		return -1;
+	}
+
+	if (task_size_ == 0) {
+		return -1;
+	}
+
+	for (tid = 0; tid < threads; ++tid) {
+		task_size[tid] = task_size_;
+	}
+
+	/* n times: read task_id */
+	for (tid = 0; tid < threads; ++tid) {
+		if (read_uint64(fd, task_id + tid) < 0) {
+			message(ERR "read_uint64() failed\n");
+			return -1;
+		}
+	}
+
+	close(fd);
+
+	return 0;
+}
+
 int revoke_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t clientid)
 {
 	if (write_(fd, "INT", 4) < 0) {
