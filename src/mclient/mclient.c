@@ -627,6 +627,15 @@ int open_socket_and_request_multiple_assignments_batch(int threads, int request_
 	return 0;
 }
 
+int open_socket_and_request_multiple_assignments_wrapper(int batch_mode, int threads, int request_lowest_incomplete, uint64_t task_id[], uint64_t task_size[], const uint64_t clientid[])
+{
+	if (batch_mode) {
+		return open_socket_and_request_multiple_assignments_batch(threads, request_lowest_incomplete, task_id, task_size, clientid);
+	} else {
+		return open_socket_and_request_multiple_assignments(threads, request_lowest_incomplete, task_id, task_size, clientid);
+	}
+}
+
 int revoke_assignment(int fd, uint64_t n, uint64_t task_size, uint64_t clientid)
 {
 	if (write_(fd, "INT", 4) < 0) {
@@ -849,6 +858,7 @@ int main(int argc, char *argv[])
 	uint64_t *cycleoff; /* offset of the starting value n0 leading to the highest number of spins */
 	unsigned long alarm_seconds = 0;
 	int gpu_mode = 0;
+	int batch_mode = 0;
 
 	if (getenv("SERVER_NAME")) {
 		servername = getenv("SERVER_NAME");
@@ -856,7 +866,7 @@ int main(int argc, char *argv[])
 
 	message(INFO "server to be used: %s\n", servername);
 
-	while ((opt = getopt(argc, argv, "1la:b:gd")) != -1) {
+	while ((opt = getopt(argc, argv, "1la:b:gdB")) != -1) {
 		switch (opt) {
 			unsigned long seconds;
 			case '1':
@@ -879,6 +889,10 @@ int main(int argc, char *argv[])
 			case 'd':
 				g_force_device_index = 1;
 				message(INFO "force device index!\n");
+				break;
+			case 'B':
+				batch_mode = 1;
+				message(INFO "batch mode activated!\n");
 				break;
 			default:
 				message(ERR "Usage: %s [-1] num_threads\n", argv[0]);
@@ -927,8 +941,8 @@ int main(int argc, char *argv[])
 	signal(SIGUSR2, signal_handler);
 
 	while (!quit) {
-		while (open_socket_and_request_multiple_assignments(threads, request_lowest_incomplete, task_id, task_size, clientid) < 0) {
-			message(ERR "open_socket_and_request_multiple_assignments failed\n");
+		while (open_socket_and_request_multiple_assignments_wrapper(batch_mode, threads, request_lowest_incomplete, task_id, task_size, clientid) < 0) {
+			message(ERR "open_socket_and_request_multiple_assignments_wrapper failed\n");
 			if (quit)
 				goto end;
 			sleep(SLEEP_INTERVAL);
