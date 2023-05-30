@@ -343,13 +343,16 @@ int main(int argc, char *argv[])
 
 		case 'p':
 			while (1) {
+				int status;
+
 				if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
 					message(ERR "clock_gettime failed\n");
 					abort();
 				}
 				start_time = ts.tv_sec * UINT64_C(1000000000) + ts.tv_nsec;
 
-				if (open_socket_and_ping() < 0) {
+				status = open_socket_and_ping();
+				if (status < 0) {
 					message(ERR "open_socket_and_ping failed\n");
 				}
 
@@ -359,7 +362,9 @@ int main(int argc, char *argv[])
 				}
 				stop_time = ts.tv_sec * UINT64_C(1000000000) + ts.tv_nsec;
 
-				message(INFO "ping time = %.2f msec\n", (stop_time - start_time) / 1e6f);
+				if (status >= 0) {
+					message(INFO "ping time = %.2f msec\n", (stop_time - start_time) / 1e6f);
+				}
 
 				sleep(1);
 			}
