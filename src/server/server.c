@@ -392,6 +392,62 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		}
 
 		g_clientids[n] = clid;
+	} else if (strcmp(msg, "MRQ") == 0) {
+		uint64_t threads;
+		int tid;
+		uint64_t *clientids;
+		uint64_t n;
+
+		/* request */
+
+		if (read_uint64(fd, &threads) < 0) {
+			message(ERR "unable to read number of threads\n");
+			return -1;
+		}
+
+		clientids = malloc(sizeof(uint64_t) * threads);
+
+		if (clientids == NULL) {
+			message(ERR "unable to allocate memory\n");
+			return -1;
+		}
+
+		assert(threads < INT_MAX);
+
+		for (tid = 0; tid < (int)threads; ++tid) {
+			if (read_uint64(fd, &clientids[tid]) < 0) {
+				message(ERR "unable to read client ID in MRQ request\n");
+				return -1;
+			}
+		}
+
+		/* response */
+
+		/* write task_size */
+		if (write_uint64(fd, TASK_SIZE) < 0) {
+			message(ERR "unable to write the task size\n");
+			return -1;
+		}
+
+		for (tid = 0; tid < (int)threads; ++tid) {
+			n = get_assignment();
+
+			message(INFO "assignment requested: %" PRIu64 " (MRQ)\n", n);
+
+			if (g_clientids[n] != 0) {
+				message(WARN "assignment %" PRIu64 " was already assigned to another client, re-assigning\n", n);
+			}
+
+			g_clientids[n] = clientids[tid];
+
+			/* write task_id */
+			if (write_uint64(fd, n) < 0) {
+				message(ERR "unable to write task ID\n");
+				return -1;
+			}
+		}
+
+		free(clientids);
 	} else if (strcmp(msg, "RET") == 0) {
 		/* returning assignment */
 		uint64_t n;
