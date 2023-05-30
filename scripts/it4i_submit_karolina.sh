@@ -10,8 +10,7 @@
 
 HOME=$HOME
 
-#TMPDIR=/scratch/project/open-28-77
-TMPDIR=/tmp
+TMPDIR=/scratch/project/open-28-77
 mkdir -p -- "$TMPDIR"
 
 export LANG=C
@@ -77,6 +76,3 @@ popd
 rm -rf -- "$TMP"
 
 echo "Done"
-
-# because otherwise it will freeze here in the interactive session
-#killall ssh
