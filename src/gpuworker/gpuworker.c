@@ -308,6 +308,9 @@ next_platform:
 		cl_event finished;
 		cl_int info = CL_QUEUED;
 #endif
+		const char *arg0;
+		const char *arg1;
+
 		printf("[DEBUG] device_index = %i...\n", device_index);
 
 		context = clCreateContext(NULL, 1, &device_id[device_index], NULL, NULL, &ret);
@@ -385,22 +388,28 @@ next_platform:
 			return -1;
 		}
 
+		arg0 =
+#ifdef USE_SIEVE3
+			"-D USE_SIEVE3";
+#elif defined(USE_SIEVE9)
+			"-D USE_SIEVE9";
+#else
+			"";
+#endif
+
+		arg1 =
+#ifdef USE_LUT50
+			"-D USE_LUT50";
+#else
+			"";
+#endif
+
 		sprintf(options, "%s -D SIEVE_LOGSIZE=%i -D USE_LOCAL_SIEVE=%i %s %s",
 			g_ocl_ver1 ? "" : "-cl-std=CL2.0",
 			SIEVE_LOGSIZE,
 			SIEVE_LOGSIZE > 16 ? 0 : 1,
-#ifdef USE_SIEVE3
-			"-D USE_SIEVE3",
-#elif defined(USE_SIEVE9)
-			"-D USE_SIEVE9",
-#else
-			"",
-#endif
-#ifdef USE_LUT50
-			"-D USE_LUT50"
-#else
-			""
-#endif
+			arg0,
+			arg1
 		);
 
 		printf("[DEBUG] clBuildProgram options: %s\n", options);
