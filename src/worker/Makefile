@@ -28,14 +28,6 @@ ifeq ($(USE_LUT50), 1)
         CFLAGS+=-DUSE_LUT50
 endif
 
-ifeq ($(USE_HSIEVE), 1)
-	CFLAGS+=-DUSE_HSIEVE
-endif
-
-ifeq ($(USE_PRECALC_SIEVE), 1)
-	CFLAGS+=-DUSE_PRECALC_SIEVE
-endif
-
 ifndef $(SIEVE_LOGSIZE)
         SIEVE_LOGSIZE=32
 endif
