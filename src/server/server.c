@@ -702,11 +702,12 @@ int main(int argc, char *argv[])
 	int invalidate_overflows = 0;
 	int invalidate_new = 0;
 	int reset_sb = 0;
+	int invalidate_max_assignments = 0;
 	uint64_t sb;
 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 
-	while ((opt = getopt(argc, argv, "cfizr:")) != -1) {
+	while ((opt = getopt(argc, argv, "cfizr:m")) != -1) {
 		switch (opt) {
 			case 'c':
 				clear_incomplete_assigned = 1;
@@ -723,6 +724,9 @@ int main(int argc, char *argv[])
 			case 'r':
 				reset_sb = 1;
 				sb = atou64(optarg);
+				break;
+			case 'm':
+				invalidate_max_assignments = 1;
 				break;
 			default:
 				message(ERR "Usage: %s [-c] [-f] [-i] [-z] [-r]\n", argv[0]);
@@ -748,6 +752,29 @@ int main(int argc, char *argv[])
 	g_overflows = open_records("overflows.dat");
 	g_clientids = open_records("clientids.dat");
 	g_mxoffsets = open_records("mxoffsets.dat");
+
+	if (invalidate_max_assignments) {
+		FILE *stream;
+		uint64_t n;
+
+		stream = fopen("max-assignments.txt", "r");
+
+		if (stream == NULL) {
+			message(WARN "Unable to open input file (-m argument).\n");
+			goto invalidated;
+		}
+
+		while (1 == fscanf(stream, "%" SCNu64, &n)) {
+			printf("- invalidating the assignment %" PRIu64 " due to -m argument\n", n);
+
+			SET_UNASSIGNED(n);
+			SET_INCOMPLETE(n);
+		}
+
+		fclose(stream);
+
+		invalidated: ;
+	}
 
 	if (invalidate_overflows) {
 		uint64_t n;
