@@ -381,22 +381,10 @@ static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint
 
 		N = (H >> R0) * g_lut64[Salpha] + L;
 
-#if USE_PRECALC_SIEVE
-#	ifdef USE_HSIEVE
+#ifdef USE_HSIEVE
 		if (!is_live_in_hsieve32(N)) {
 			continue;
 		}
-#	endif
-#	ifdef USE_SIEVE3
-		if (!is_live_in_sieve3(N)) {
-			continue;
-		}
-#	endif
-#	ifdef USE_SIEVE9
-		if (!is_live_in_sieve9(N)) {
-			continue;
-		}
-#	endif
 #endif
 
 		check(N, N0);
