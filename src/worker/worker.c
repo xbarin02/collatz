@@ -333,6 +333,22 @@ static int is_live_in_sieve9(uint128_t n)
 }
 #endif
 
+/*
+ * Christian Hercher's idea (multiple odd steps, followed by exactly two even steps)
+ */
+#ifdef USE_HSIEVE
+HOT
+static int is_live_in_hsieve32(uint128_t n)
+{
+	uint64_t r = n % 32;
+
+	if (r == 0 || r == 3 || r == 4 || r == 5 || r == 8 || r == 12 || r == 13 || r == 16 || r == 19 || r == 20 || r == 21 || r == 23 || r == 24 || r == 28 || r == 29)
+		return 0;
+
+	return 1;
+}
+#endif
+
 static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint64_t L, int Salpha)
 {
 	uint128_t h;
@@ -364,6 +380,24 @@ static void calc(uint64_t task_id, uint64_t task_size, uint64_t L0, int R0, uint
 		assert(Salpha < LUT_SIZE64);
 
 		N = (H >> R0) * g_lut64[Salpha] + L;
+
+#if USE_PRECALC_SIEVE
+#	ifdef USE_HSIEVE
+		if (!is_live_in_hsieve32(N)) {
+			continue;
+		}
+#	endif
+#	ifdef USE_SIEVE3
+		if (!is_live_in_sieve3(N)) {
+			continue;
+		}
+#	endif
+#	ifdef USE_SIEVE9
+		if (!is_live_in_sieve9(N)) {
+			continue;
+		}
+#	endif
+#endif
 
 		check(N, N0);
 	}
