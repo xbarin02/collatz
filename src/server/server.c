@@ -542,7 +542,8 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		    (checksum>>24) != 0x2134) {
 			message(ERR "suspicious checksum (%" PRIu64 ", 0x%" PRIx64 "), done in %" PRIu64 " secs, rejecting the result! (assignment %" PRIu64 ")\n",
 				checksum, checksum, user_time, n);
-			return -1;
+			unset_assignment(n);
+			goto end_of_ret;
 		}
 
 		message(INFO "assignment returned: %" PRIu64 " (%" PRIu64 " overflows, time %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ", checksum 0x%016" PRIx64 ")\n",
@@ -571,6 +572,8 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		g_mxoffsets[n] = mxoffset;
 
 		g_clientids[n] = 0;
+
+		end_of_ret: ;
 	} else if (strcmp(msg, "req") == 0) {
 		/* requested lowest incomplete assignment */
 		uint64_t n;
