@@ -11,7 +11,8 @@
 
 HOME=$HOME
 
-TMPDIR=/scratch/project/open-28-77
+#TMPDIR=/scratch/project/open-28-77
+TMPDIR=/tmp
 mkdir -p -- "$TMPDIR"
 
 export LANG=C
