@@ -3,9 +3,9 @@
 #SBATCH --account=project_465000586
 #SBATCH --partition=standard-g
 #SBATCH --gpus=8
-#SBATCH --array=1-10
-#xSBATCH --output=array_%A_%a.out
-#xSBATCH --error=array_%A_%a.err
+#SBATCH --array=1-100%24
+#SBATCH --output=/dev/null
+#SBATCH --error=/dev/null
 #SBATCH --time=03:00:00
 #SBATCH --nodes=1
 #SBATCH --mem=4G
@@ -67,7 +67,7 @@ popd
 cd mclient
 
 # 120 minutes for mclient; 4 hours minus 100 secs for the gpuworker
-stdbuf -o0 -e0 ./mclient -a 14300 -b 7200 -g -d 8
+stdbuf -o0 -e0 ./mclient -a 14300 -b 7200 -g -d -B 8
 
 popd
 rm -rf -- "$TMP"
