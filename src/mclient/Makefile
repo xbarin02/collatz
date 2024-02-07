@@ -1,5 +1,5 @@
-CFLAGS+=-std=c89 -pedantic -Wall -Wextra -fopenmp -march=native -O3 -D_XOPEN_SOURCE -D_GNU_SOURCE
-LDFLAGS+=-fopenmp
+CFLAGS+=-std=c2x -Wall -Wextra -Wno-strict-prototypes -Xclang -fopenmp -march=native -O3 -D_XOPEN_SOURCE -D_GNU_SOURCE
+LDFLAGS+=-lomp
 LDLIBS+=
 BINS=mclient
 

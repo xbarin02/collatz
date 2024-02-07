@@ -1,11 +1,11 @@
-CFLAGS+=-std=c89 -pedantic -Wall -Wextra -fopenmp -march=native -O3 -D_XOPEN_SOURCE -D_GNU_SOURCE
-LDFLAGS+=-fopenmp
+CFLAGS+=-std=c2x -pedantic -Wall -Wextra -Xclang -fopenmp -march=native -O3 -D_XOPEN_SOURCE -D_GNU_SOURCE
+LDFLAGS+=-lomp
 LDLIBS+=-lm
 BINS=server chk-tool verify-result find-maxima
 
 ifeq ($(USE_LIBGMP), 1)
-	CFLAGS+=-D_USE_GMP
-	LDLIBS+=-lgmp
+	CFLAGS+=-I/opt/homebrew/include -D_USE_GMP
+	LDLIBS+=-L/opt/homebrew/lib -lgmp
 endif
 
 ifeq ($(USE_LIBM), 1)

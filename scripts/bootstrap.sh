@@ -9,8 +9,8 @@ export SERVER_NAME=pcbarina.fit.vutbr.cz
 echo "hostname=$(hostname)"
 echo "pwd=$(pwd)"
 echo "HOME=$HOME"
-echo "cpu model name=$(cat /proc/cpuinfo | grep "model name" | head -n1)"
-echo "cpus=$(cat /proc/cpuinfo | grep processor | wc -l)"
+echo "cpu model name=$(sysctl -a | grep machdep.cpu.brand_string)"
+echo "cpus=$(sysctl -a | grep machdep.cpu.thread_count | sed 's/^.*: //')"
 echo "TMPDIR=$TMPDIR"
 
 set -u
@@ -31,9 +31,9 @@ if type clang > /dev/null 2> /dev/null && clang --version | grep -qE "version (8
 fi
 
 # don't forget git clone git@github.com:xbarin02/collatz.git into $HOME
-SRCDIR=$HOME/collatz/
-MAPDIR=$HOME/collatz-sieve/
-TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
+SRCDIR=$HOME/Documents/Projects/Collatz/collatz/
+MAPDIR=$HOME/Documents/Projects/Collatz/collatz-sieve/
+TMP=$(mktemp -d "${TMPDIR:-/tmp}"collatz.XXXXXXXX)
 
 echo "SRCDIR=$SRCDIR"
 echo "TMP=$TMP"
@@ -63,7 +63,7 @@ pushd -- "$TMP"
 
 cp -r "${SRCDIR}" .
 
-cd collatz/src
+cd src
 
 HOSTNAME=$(hostname -s | tr '[:upper:]' '[:lower:]')
 
@@ -74,16 +74,16 @@ fi
 
 # build mclient & worker
 make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 USE_PRECALC=1 SIEVE_LOGSIZE=34 USE_SIEVE3=0 USE_SIEVE9=1 USE_LUT50=1
-make -C gpuworker clean all CC=$CC TASK_UNITS=${TASK_UNITS} SIEVE_LOGSIZE=24 USE_SIEVE3=1 || echo "unable to build gpuworker"
+#make -C gpuworker clean all CC=$CC TASK_UNITS=${TASK_UNITS} SIEVE_LOGSIZE=24 USE_SIEVE3=1 || echo "unable to build gpuworker"
 make -C mclient clean all
 
 pushd "$MAPDIR"
-./unpack.sh esieve-34.lut50 "$TMP"/collatz/src/worker
-./unpack.sh esieve-24 "$TMP"/collatz/src/gpuworker
+./unpack.sh esieve-34.lut50 "$TMP"/src/worker
+#./unpack.sh esieve-24 "$TMP"/src/gpuworker
 popd
 
 cd mclient
 
-CLEANUP_DIR=$TMP screen -d -m ./spawn.sh $*
+export CLEANUP_DIR=$TMP && screen -d -m /opt/homebrew/bin/bash ./spawn.sh $*
 
 popd

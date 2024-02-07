@@ -6,3 +6,29 @@ make CC=gcc
 or
 
 make CC=clang
+
+MAC OS (M1/M2 chip)
+=====
+
+git checkout macos-build
+./scripts/bootstrap.sh
+
+prerequisites:
+
+1. install bash 4+ from homebrew:
+
+brew install bash
+
+2. install openmp for Mac M1/M2
+
+https://mac.r-project.org/openmp/
+
+Links:
+
+https://apple.stackexchange.com/questions/352769/does-macos-have-a-command-to-retrieve-detailed-cpu-information-like-proc-cpuinf
+https://stackoverflow.com/questions/26284110/strdup-confused-about-warnings-implicit-declaration-makes-pointer-with
+https://stackoverflow.com/questions/56512690/how-to-get-bashpid-in-bash-version-3
+https://apple.stackexchange.com/questions/193411/update-bash-to-version-4-0-on-osx
+https://github.com/Homebrew/homebrew-core/issues/106393
+
+I was not able to compile gpuworker, which is probably to be expected for non-NVIDIA chip

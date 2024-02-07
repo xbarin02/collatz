@@ -1,4 +1,4 @@
-CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -D_XOPEN_SOURCE=500 -DCL_TARGET_OPENCL_VERSION=220 -DCL_USE_DEPRECATED_OPENCL_1_2_APIS
+CFLAGS+=-std=gnu99 -pedantic -Wall -Wextra -Wno-long-long -march=native -O3 -D_XOPEN_SOURCE=500 -DCL_TARGET_OPENCL_VERSION=220 -DCL_USE_DEPRECATED_OPENCL_1_2_APIS
 LDFLAGS+=
 LDLIBS+=-lOpenCL
 BINS=gpuworker
@@ -21,8 +21,8 @@ endif
 CFLAGS+=-DTASK_UNITS=$(TASK_UNITS)
 
 ifeq ($(USE_LIBGMP), 1)
-	CFLAGS+=-D_USE_GMP
-	LDLIBS+=-lgmp
+	CFLAGS+=-I/opt/homebrew/include -D_USE_GMP
+	LDLIBS+=-L/opt/homebrew/lib -lgmp
 endif
 
 ifeq ($(USE_SIEVE3), 1)

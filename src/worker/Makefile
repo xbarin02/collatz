@@ -1,11 +1,11 @@
-CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -D_XOPEN_SOURCE=500
-LDFLAGS=-Wl,--as-needed
+CFLAGS+=-std=c2x -v -pedantic -Wall -Wextra -Wno-long-long -march=native -O3 -D_XOPEN_SOURCE=500
+LDFLAGS=
 LDLIBS+=
 BINS=worker
 
 ifeq ($(USE_LIBGMP), 1)
-	CFLAGS+=-D_USE_GMP
-	LDLIBS+=-lgmp
+	CFLAGS+=-I/opt/homebrew/include -D_USE_GMP
+	LDLIBS+=-L/opt/homebrew/lib -lgmp
 endif
 
 ifeq ($(USE_SIEVE), 1)

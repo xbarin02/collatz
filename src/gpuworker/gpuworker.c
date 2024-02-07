@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <string.h>
-#include <CL/cl.h>
+#include <OpenCL/cl.h>
 
 /* used by mmap */
 #include <sys/types.h>
@@ -719,9 +719,9 @@ int main(int argc, char *argv[])
 				alarm(seconds = atoul(optarg));
 				printf("ALARM %lu\n", seconds);
 				break;
-			case 'k':
-				kernel = strdup(optarg);
-				break;
+			//case 'k':
+			//	kernel = strdup(optarg);
+			//	break;
 			case '1':
 				g_ocl_ver1 = 1;
 				break;
