@@ -79,8 +79,9 @@ make -C mclient clean all
 
 pushd "$MAPDIR"
 ./unpack.sh esieve-34.lut50 "$TMP"/collatz/src/worker
-./unpack.sh esieve-24 "$TMP"/collatz/src/gpuworker
+./unpack.sh hesieve-24 "$TMP"/collatz/src/gpuworker
 popd
+mv gpuworker/hesieve-24.map gpuworker/esieve-24.map
 
 cd mclient
 
