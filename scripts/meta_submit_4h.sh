@@ -10,6 +10,8 @@
 
 HOME=/storage/brno2/home/ibarina/
 
+cd ~
+
 TMPDIR=$SCRATCHDIR
 
 export LANG=C
@@ -69,8 +71,9 @@ make -C worker clean all USE_LIBGMP=1 CC=$CC USE_SIEVE=1 SIEVE_LOGSIZE=34 USE_PR
 make -C mclient clean all
 
 pushd $MAPDIR
-./unpack.sh esieve-34.lut50 "$TMP"/collatz/src/worker
+./unpack.sh hesieve-34.lut50 "$TMP"/collatz/src/worker
 popd
+mv worker/hesieve-34.lut50.map worker/esieve-34.lut50.map
 
 cd mclient
 
