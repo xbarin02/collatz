@@ -276,7 +276,7 @@ int main(int argc, char *argv[])
 		cpu_count += print_checksum_stats(0x1785);
 
 		printf("h2-esieve-2^24 sieve-3^1 checksums:\n");
-		gpu_count += print_checksum_stats(0x2e0e);
+		gpu_count += print_checksum_stats_ex(0x2e0, 28);
 
 		printf("Results: %" PRIu64 " work units on CPU, %" PRIu64 " work units on GPU, %" PRIu64 " work units in total\n", cpu_count, gpu_count, cpu_count + gpu_count);
 	}
@@ -410,7 +410,7 @@ int main(int argc, char *argv[])
 				ADD_TIME(tr_cpu, usertime);
 			}
 
-			if (usertime != 0 && (checksum >> 24) == 0x2e0e) {
+			if (usertime != 0 && (checksum >> 28) == 0x2e0) {
 				ADD_TIME(tr_mod_2_24_3_1_h2_e, usertime);
 				ADD_TIME(tr_gpu, usertime);
 			}
