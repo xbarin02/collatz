@@ -275,6 +275,9 @@ int main(int argc, char *argv[])
 		printf("h2-esieve-2^34 sieve-3^2 checksums:\n");
 		cpu_count += print_checksum_stats(0x1785);
 
+		printf("h2-esieve-2^24 sieve-3^1 checksums:\n");
+		gpu_count += print_checksum_stats(0x2e0e);
+
 		printf("Results: %" PRIu64 " work units on CPU, %" PRIu64 " work units on GPU, %" PRIu64 " work units in total\n", cpu_count, gpu_count, cpu_count + gpu_count);
 	}
 
@@ -317,6 +320,7 @@ int main(int argc, char *argv[])
 		struct timerec tr_mod_2_34_3_2_h_e = timerec_create(); /* cpu */
 		struct timerec tr_mod_2_34_3_2_h2_e = timerec_create(); /* cpu */
 		struct timerec tr_mod_2_24_3_1_h_e = timerec_create(); /* gpu */
+		struct timerec tr_mod_2_24_3_1_h2_e = timerec_create(); /* gpu */
 		struct timerec tr_cpu = timerec_create();
 		struct timerec tr_gpu = timerec_create();
 
@@ -405,6 +409,11 @@ int main(int argc, char *argv[])
 				ADD_TIME(tr_mod_2_34_3_2_h2_e, usertime);
 				ADD_TIME(tr_cpu, usertime);
 			}
+
+			if (usertime != 0 && (checksum >> 24) == 0x2e0e) {
+				ADD_TIME(tr_mod_2_24_3_1_h2_e, usertime);
+				ADD_TIME(tr_gpu, usertime);
+			}
 		}
 
 		printf("all user time records:\n");
@@ -433,6 +442,9 @@ int main(int argc, char *argv[])
 
 		printf("h-esieve-2^24 sieve-3^1 user time records:\n");
 		avg_and_print_usertime(tr_mod_2_24_3_1_h_e.total, tr_mod_2_24_3_1_h_e.count);
+
+		printf("h2-esieve-2^24 sieve-3^1 user time records:\n");
+		avg_and_print_usertime(tr_mod_2_24_3_1_h2_e.total, tr_mod_2_24_3_1_h2_e.count);
 
 		printf("sieve-2^32 user time records:\n");
 		avg_and_print_usertime(tr_mod_2_32.total, tr_mod_2_32.count);

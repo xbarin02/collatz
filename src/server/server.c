@@ -541,6 +541,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		    (checksum>>28) != 0x1ac  && /* 2^34 h-e-sieve 3^2 */
 		    (checksum>>24) != 0x3238 && /* 2^24 h-e-sieve 3^1 */
 		    (checksum>>24) != 0x1785 && /* 2^34 h2-e-sieve 3^2 */
+		    (checksum>>24) != 0x2e0e && /* 2^24 h2-e-sieve 3^1 */
 		    (checksum>>24) != 0x27d8 &&
 		    (checksum>>24) != 0x2134) {
 			message(ERR "suspicious checksum (%" PRIu64 ", 0x%" PRIx64 "), done in %" PRIu64 " secs, rejecting the result! (assignment %" PRIu64 ")\n",
