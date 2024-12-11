@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=collatz
-#SBATCH --account=project_465000586
+#SBATCH --account=project_465001431
 #SBATCH --partition=standard-g
 #SBATCH --gpus=8
 #SBATCH --array=1-100%24
