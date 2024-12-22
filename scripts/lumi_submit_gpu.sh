@@ -61,8 +61,9 @@ module load PrgEnv-gnu
 make -C mclient clean all
 
 pushd $MAPDIR
-./unpack.sh esieve-24 $TMP/collatz/src/gpuworker
+./unpack.sh h2esieve-24 "$TMP"/collatz/src/gpuworker
 popd
+mv gpuworker/h2esieve-24.map gpuworker/esieve-24.map
 
 cd mclient
 
