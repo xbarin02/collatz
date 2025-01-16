@@ -30,6 +30,8 @@ int main(int argc, char *argv[])
 			/* odd step */
 			mpz_mul_ui(n, n, 3UL);
 			mpz_add_ui(n, n, 1UL);
+
+			mpz_fdiv_q_ui(n, n, 2UL);
 		} else {
 			/* even step */
 			mpz_fdiv_q_ui(n, n, 2UL);

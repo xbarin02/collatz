@@ -1,6 +1,6 @@
 # Convergence verification of the Collatz problem
 
-[![Build Status](https://travis-ci.com/xbarin02/collatz.svg?branch=master)](https://travis-ci.com/xbarin02/collatz)
+[![Build Status](https://app.travis-ci.com/xbarin02/collatz.svg?branch=master)](https://app.travis-ci.com/xbarin02/collatz)
 
 ## Details
 
