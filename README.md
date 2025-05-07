@@ -19,3 +19,4 @@ This project is licensed under the terms of the [MIT license](LICENSE.md).
 ## References
 
 - Barina, D. Convergence verification of the Collatz problem. _J Supercomput_ 77, 2681–2688 (2021). https://doi.org/10.1007/s11227-020-03368-x
+- Barina, D. Improved verification limit for the convergence of the Collatz conjecture. _J Supercomput_ 81, 810 (2025). https://doi.org/10.1007/s11227-025-07337-0
