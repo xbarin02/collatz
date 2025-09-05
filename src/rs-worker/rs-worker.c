@@ -1,6 +1,11 @@
 #include "wideint.h"
+#include "compat.h"
 #include <assert.h>
 #include <stdio.h>
+#include <inttypes.h>
+#ifdef _USE_GMP
+#	include <gmp.h>
+#endif
 
 uint128_t pow3u128(uint128_t n)
 {
@@ -101,11 +106,176 @@ int arr_increment(int *arr)
 	return 0;
 }
 
+#ifdef _USE_GMP
+/* 3^n */
+static void mpz_pow3(mpz_t r, unsigned long n)
+{
+	mpz_ui_pow_ui(r, 3UL, n);
+}
+#endif
+
+#ifdef _USE_GMP
+/* count trailing zeros */
+static mp_bitcnt_t mpz_ctz(const mpz_t n)
+{
+	return mpz_scan1(n, 0);
+}
+#endif
+
+#ifdef _USE_GMP
+void mpz_init_set_u128(mpz_t rop, uint128_t op)
+{
+	uint64_t nh = (uint64_t)(op >> 64);
+	uint64_t nl = (uint64_t)(op);
+
+	assert(sizeof(unsigned long) == sizeof(uint64_t));
+
+	mpz_init_set_ui(rop, (unsigned long)nh);
+	mpz_mul_2exp(rop, rop, (mp_bitcnt_t)64);
+	mpz_add_ui(rop, rop, (unsigned long)nl);
+}
+#endif
+
+#define LUT_SIZE64 41
+
+uint64_t g_lut64[LUT_SIZE64];
+uint128_t g_max_ns[LUT_SIZE64];
+
+static uint64_t g_checksum_alpha = 0;
+
+/* init lookup table */
+void init_lut(void)
+{
+	int alpha;
+
+	for (alpha = 0; alpha < LUT_SIZE64; ++alpha) {
+		g_lut64[alpha] = pow3u64((uint64_t)alpha);
+
+		g_max_ns[alpha] = UINT128_MAX >> 2 * alpha;
+	}
+}
+
+void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
+{
+#ifdef _USE_GMP
+	mp_bitcnt_t alpha, beta;
+	mpz_t n;
+	mpz_t n0;
+	mpz_t a;
+
+	g_overflow_counter++;
+
+	assert(alpha_ >= 0);
+	alpha = (mp_bitcnt_t)alpha_;
+
+	mpz_init(a);
+	mpz_init_set_u128(n, n_);
+	mpz_init_set_u128(n0, n0_);
+
+	do {
+		if (alpha > ULONG_MAX) {
+			alpha = ULONG_MAX;
+		}
+
+		/* n *= lut[alpha] */
+		mpz_pow3(a, (unsigned long)alpha);
+
+		mpz_mul(n, n, a);
+
+		/* n-- */
+		mpz_sub_ui(n, n, 1UL);
+
+		beta = mpz_ctz(n);
+
+		/* n >>= ctz(n) */
+		mpz_fdiv_q_2exp(n, n, beta);
+
+		/* all betas were factored out */
+
+		if (mpz_cmp_ui(n, 1UL) == 0) {
+			break;
+		}
+
+		/* n++ */
+		mpz_add_ui(n, n, 1UL);
+
+		alpha = mpz_ctz(n);
+
+		g_checksum_alpha += alpha;
+
+		/* n >>= alpha */
+		mpz_fdiv_q_2exp(n, n, alpha);
+	} while (1);
+
+	mpz_clear(a);
+	mpz_clear(n);
+	mpz_clear(n0);
+
+	return;
+#else
+	(void)n0_;
+	(void)n_;
+	(void)alpha_;
+
+	printf("ABORTED_DUE_TO_OVERFLOW\n");
+
+	abort();
+#endif
+}
+
+void check(uint128_t n, uint128_t n0)
+{
+	assert(n != UINT128_MAX);
+
+	if (!(n & 1)) {
+		goto even;
+	}
+
+	do {
+		n++;
+
+		do {
+			int alpha = ctzu64(n);
+
+			if (alpha >= LUT_SIZE64) {
+				alpha = LUT_SIZE64 - 1;
+			}
+
+			g_checksum_alpha += alpha;
+
+			n >>= alpha;
+
+			if (n > g_max_ns[alpha]) {
+				mpz_check2(n0, n, alpha);
+				return;
+			}
+
+			n *= g_lut64[alpha];
+		} while (!(n & 1));
+
+		n--;
+
+	even:
+		do {
+			int beta = ctzu64(n);
+
+			n >>= beta;
+		} while (!(n & 1));
+
+		if (n == 1) {
+			return;
+		}
+	} while (1);
+}
+
 int main()
 {
 	uint128_t n;
 
 	int arr[ARR_LEN];
+
+	init_lut();
+
 	arr_init(arr);
 
 	while (1) {
@@ -116,10 +286,16 @@ int main()
 		printf("check the trajectory of ");
 		print(n);
 
+		check(n, n);
+
+		printf("  ...done\n");
+
 		if (arr_increment(arr) > 0) {
 			break;
 		}
 	}
+
+	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
 
 	return 0;
 }
