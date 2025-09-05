@@ -142,6 +142,7 @@ uint64_t g_lut64[LUT_SIZE64];
 uint128_t g_max_ns[LUT_SIZE64];
 
 static uint64_t g_checksum_alpha = 0;
+static uint64_t g_overflow_counter = 0;
 
 /* init lookup table */
 void init_lut(void)
@@ -295,6 +296,7 @@ int main()
 		}
 	}
 
+	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
 
 	return 0;
