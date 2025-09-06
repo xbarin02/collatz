@@ -156,12 +156,11 @@ void init_lut(void)
 	}
 }
 
-void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
+void mpz_check2(uint128_t n_, int alpha_)
 {
 #ifdef _USE_GMP
 	mp_bitcnt_t alpha, beta;
 	mpz_t n;
-	mpz_t n0;
 	mpz_t a;
 
 	g_overflow_counter++;
@@ -171,7 +170,6 @@ void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 
 	mpz_init(a);
 	mpz_init_set_u128(n, n_);
-	mpz_init_set_u128(n0, n0_);
 
 	do {
 		if (alpha > ULONG_MAX) {
@@ -210,7 +208,6 @@ void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 
 	mpz_clear(a);
 	mpz_clear(n);
-	mpz_clear(n0);
 
 	return;
 #else
@@ -224,7 +221,7 @@ void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_)
 #endif
 }
 
-void check(uint128_t n, uint128_t n0)
+void check(uint128_t n)
 {
 	assert(n != UINT128_MAX);
 
@@ -247,7 +244,7 @@ void check(uint128_t n, uint128_t n0)
 			n >>= alpha;
 
 			if (n > g_max_ns[alpha]) {
-				mpz_check2(n0, n, alpha);
+				mpz_check2(n, alpha);
 				return;
 			}
 
@@ -275,23 +272,27 @@ int main()
 
 	int arr[ARR_LEN];
 
+	int i = 0;
+
 	init_lut();
 
 	arr_init(arr);
 
 	while (1) {
-		assert(pow3u128(44) <= (UINT128_MAX - b_evaluate(arr) - 3) / 4);
+		assert(pow3u128(ARR_LEN + 1) <= (UINT128_MAX - b_evaluate(arr) - 3) / 4);
 
-		n = 4 * pow3u128(44) + 3 + b_evaluate(arr);
+		n = 4 * pow3u128(ARR_LEN + 1) + 3 + b_evaluate(arr);
 
-		printf("check the trajectory of ");
-		print(n);
+		if (i++ == 0) {
+			printf("smallest number: ");
+			print(n);
+		}
 
-		check(n, n);
-
-		printf("  ...done\n");
+		check(n);
 
 		if (arr_increment(arr) > 0) {
+			printf("largest number: ");
+			print(n);
 			break;
 		}
 	}
