@@ -320,6 +320,8 @@ int main()
 	printf("NUMBER_OF_TESTS %" PRIu64 "\n", i);
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
+	printf("LIMIT: (all number below this are verified) ");
+	print(4 * pow3u128(ARR_LEN + 1) + 4 * pow3u128(ARR_LEN) + 2);
 	printf("SUCCESS\n");
 
 	return 0;
