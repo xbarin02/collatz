@@ -290,6 +290,9 @@ int main()
 
 	printf("TARGET %i\n", ARR_LEN);
 
+	printf("LIMIT (all numbers below this were already verified) ");
+	print(4 * pow3u128(ARR_LEN + 1) + 2);
+
 	while (1) {
 		assert(pow3u128(ARR_LEN + 1) <= (UINT128_MAX - b_evaluate(arr) - 3) / 4);
 
@@ -320,7 +323,7 @@ int main()
 	printf("NUMBER_OF_TESTS %" PRIu64 "\n", i);
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
-	printf("LIMIT: (all number below this are verified) ");
+	printf("NEW_LIMIT (all numbers below this are now verified) ");
 	print(4 * pow3u128(ARR_LEN + 1) + 4 * pow3u128(ARR_LEN) + 2);
 	printf("SUCCESS\n");
 
