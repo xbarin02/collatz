@@ -288,6 +288,8 @@ int main()
 
 	arr_init(arr);
 
+	printf("TARGET %i\n", ARR_LEN);
+
 	while (1) {
 		assert(pow3u128(ARR_LEN + 1) <= (UINT128_MAX - b_evaluate(arr) - 3) / 4);
 
