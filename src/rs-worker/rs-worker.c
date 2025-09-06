@@ -272,7 +272,7 @@ int main()
 
 	int arr[ARR_LEN];
 
-	int i = 0;
+	uint64_t i = 0;
 
 	struct timespec ts;
 	uint64_t start_time, stop_time;
@@ -317,7 +317,7 @@ int main()
 	stop_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
 
 	printf("REALTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time + 500000000) / 1000000000, (stop_time - start_time + 500) / 1000);
-	printf("NUMBER_OF_TESTS %i\n", i);
+	printf("NUMBER_OF_TESTS %" PRIu64 "\n", i);
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
 
