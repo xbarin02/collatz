@@ -320,6 +320,7 @@ int main()
 	printf("NUMBER_OF_TESTS %" PRIu64 "\n", i);
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
+	printf("SUCCESS\n");
 
 	return 0;
 }
