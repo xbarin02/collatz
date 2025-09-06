@@ -1,8 +1,9 @@
 #include "wideint.h"
 #include "compat.h"
 #include <assert.h>
-#include <stdio.h>
 #include <inttypes.h>
+#include <time.h>
+#include <stdio.h>
 #ifdef _USE_GMP
 #	include <gmp.h>
 #endif
@@ -274,6 +275,16 @@ int main()
 
 	int i = 0;
 
+	struct timespec ts;
+	uint64_t start_time, stop_time;
+
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+		printf("[ERROR] clock_gettime\n");
+		abort();
+	}
+
+	start_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
+
 	init_lut();
 
 	arr_init(arr);
@@ -297,6 +308,14 @@ int main()
 		}
 	}
 
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+		printf("[ERROR] clock_gettime\n");
+		abort();
+	}
+
+	stop_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
+
+	printf("REALTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time + 500000000) / 1000000000, (stop_time - start_time + 500) / 1000);
 	printf("NUMBER_OF_TESTS %i\n", i);
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
