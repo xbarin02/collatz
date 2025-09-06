@@ -7,6 +7,8 @@
 #	include <gmp.h>
 #endif
 
+#define ARR_LEN 43
+
 uint128_t pow3u128(uint128_t n)
 {
 	uint128_t r = 1;
@@ -53,8 +55,6 @@ void print(uint128_t n)
 
 	puts(r_buff);
 }
-
-#define ARR_LEN 43
 
 void arr_init(int *arr)
 {
@@ -291,12 +291,13 @@ int main()
 		check(n);
 
 		if (arr_increment(arr) > 0) {
-			printf("largest number: ");
+			printf("largest number : ");
 			print(n);
 			break;
 		}
 	}
 
+	printf("NUMBER_OF_TESTS %i\n", i);
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
 
