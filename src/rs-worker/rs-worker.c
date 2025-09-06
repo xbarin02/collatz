@@ -212,7 +212,6 @@ void mpz_check2(uint128_t n_, int alpha_)
 
 	return;
 #else
-	(void)n0_;
 	(void)n_;
 	(void)alpha_;
 
