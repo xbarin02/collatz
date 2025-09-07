@@ -208,6 +208,7 @@ void mpz_check2(uint128_t n_, int alpha_, uint64_t *l_checksum_alpha)
 #else
 	(void)n_;
 	(void)alpha_;
+	(void)l_checksum_alpha;
 
 	printf("ABORTED_DUE_TO_OVERFLOW\n");
 
@@ -336,7 +337,7 @@ int main()
 		int tid = omp_get_thread_num();
 		uint128_t n;
 
-		uint64_t arr_min = tid << low_bits;
+		uint64_t arr_min = (uint64_t)tid << low_bits;
 
 		arr[tid] = arr_min;
 
