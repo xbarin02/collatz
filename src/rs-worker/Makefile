@@ -1,5 +1,5 @@
-CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -D_XOPEN_SOURCE=500
-LDFLAGS=-Wl,--as-needed
+CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -D_XOPEN_SOURCE=500 -fopenmp
+LDFLAGS=-Wl,--as-needed -fopenmp
 LDLIBS+=
 BINS=rs-worker
 

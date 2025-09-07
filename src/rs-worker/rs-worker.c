@@ -7,6 +7,9 @@
 #ifdef _USE_GMP
 #	include <gmp.h>
 #endif
+#ifdef _OPENMP
+	#include <omp.h>
+#endif
 
 #define TARGET 43
 
@@ -132,7 +135,7 @@ void mpz_init_set_u128(mpz_t rop, uint128_t op)
 uint64_t g_lut64[LUT_SIZE64];
 uint128_t g_max_ns[LUT_SIZE64];
 
-static uint64_t g_checksum_alpha = 0;
+static uint64_t g_checksum_alpha[1024];
 static uint64_t g_overflow_counter = 0;
 
 /* init lookup table */
@@ -147,13 +150,14 @@ void init_lut(void)
 	}
 }
 
-void mpz_check2(uint128_t n_, int alpha_)
+void mpz_check2(uint128_t n_, int alpha_, uint64_t *l_checksum_alpha)
 {
 #ifdef _USE_GMP
 	mp_bitcnt_t alpha, beta;
 	mpz_t n;
 	mpz_t a;
 
+	#pragma omp critical
 	g_overflow_counter++;
 
 	assert(alpha_ >= 0);
@@ -191,7 +195,7 @@ void mpz_check2(uint128_t n_, int alpha_)
 
 		alpha = mpz_ctz(n);
 
-		g_checksum_alpha += alpha;
+		*l_checksum_alpha += alpha;
 
 		/* n >>= alpha */
 		mpz_fdiv_q_2exp(n, n, alpha);
@@ -211,8 +215,10 @@ void mpz_check2(uint128_t n_, int alpha_)
 #endif
 }
 
-void check(uint128_t n)
+void check(uint128_t n, uint64_t *l_checksum_alpha)
 {
+	int Salpha = 0;
+
 	assert(n != UINT128_MAX);
 
 	if (!(n & 1)) {
@@ -229,12 +235,13 @@ void check(uint128_t n)
 				alpha = LUT_SIZE64 - 1;
 			}
 
-			g_checksum_alpha += alpha;
+			Salpha += alpha;
 
 			n >>= alpha;
 
 			if (n > g_max_ns[alpha]) {
-				mpz_check2(n, alpha);
+				*l_checksum_alpha += Salpha;
+				mpz_check2(n, alpha, l_checksum_alpha);
 				return;
 			}
 
@@ -251,19 +258,51 @@ void check(uint128_t n)
 		} while (!(n & 1));
 
 		if (n == 1) {
+			*l_checksum_alpha += Salpha;
 			return;
 		}
 	} while (1);
 }
 
+size_t floor_log2(int n)
+{
+	size_t r = 0;
+
+	assert(n != 0);
+
+	while (n >>= 1) {
+		r++;
+	}
+
+	return r;
+}
+
 int main()
 {
-	uint128_t n;
-	uint64_t arr;
-	uint64_t i = 0;
-
 	struct timespec ts;
 	uint64_t start_time, stop_time;
+
+	int threads;
+	uint64_t *arr;
+	int t;
+	uint64_t checksum = 0;
+	uint64_t total_i = 0;
+	int low_bits;
+
+	#pragma omp parallel
+	{
+		#pragma omp master
+		threads = omp_get_num_threads();
+	}
+
+	assert((threads & (threads - 1)) == 0);
+
+	low_bits = TARGET - floor_log2(threads);
+	printf("low_bits = %i\n", low_bits);
+
+	arr = malloc(sizeof(uint64_t) * threads);
+
+	assert(arr != NULL);
 
 	pow3_init();
 
@@ -276,30 +315,57 @@ int main()
 
 	init_lut();
 
-	arr_init(&arr);
+	for (t = 0; t < threads; ++t) {
+		arr_init(arr + t);
+	}
+
+	for (t = 0; t < 1024; ++t) {
+		g_checksum_alpha[t] = 0;
+	}
 
 	printf("TARGET %i\n", TARGET);
 
 	printf("LIMIT (all numbers below this must be already verified) ");
 	print(4 * g_pow3[TARGET + 1] + 2);
 
-	while (1) {
-		assert(g_pow3[TARGET + 1] <= (UINT128_MAX - b_evaluate(arr) - 3) / 4);
+	printf("threads = %i\n", threads);
 
-		n = 4 * g_pow3[TARGET + 1] + 3 + b_evaluate(arr);
+	#pragma omp parallel num_threads(threads) reduction(+:checksum) reduction(+:total_i)
+	{
+		uint64_t i = 0;
+		int tid = omp_get_thread_num();
+		uint128_t n;
 
-		if (i++ == 0) {
-			printf("smallest number: ");
-			print(n);
+		uint64_t arr_min = tid << low_bits;
+
+		arr[tid] = arr_min;
+
+		while (1) {
+			assert(g_pow3[TARGET + 1] <= (UINT128_MAX - b_evaluate(arr[tid]) - 3) / 4);
+
+			n = 4 * g_pow3[TARGET + 1] + 3 + b_evaluate(arr[tid]);
+
+			if (i++ == 0 && tid == 0) {
+				printf("smallest number: ");
+				print(n);
+			}
+
+			check(n, g_checksum_alpha + tid);
+
+			arr_increment(&arr[tid]);
+
+			if ((arr[tid] & ((UINT64_C(1) << low_bits) - 1)) == 0) {
+				if (tid == threads - 1) {
+					printf("largest number : ");
+					print(n);
+				}
+
+				break;
+			}
 		}
 
-		check(n);
-
-		if (arr_increment(&arr) > 0) {
-			printf("largest number : ");
-			print(n);
-			break;
-		}
+		checksum += *(g_checksum_alpha + tid);
+		total_i += i;
 	}
 
 	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
@@ -310,9 +376,9 @@ int main()
 	stop_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
 
 	printf("REALTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time + 500000000) / 1000000000, (stop_time - start_time + 500) / 1000);
-	printf("NUMBER_OF_TESTS %" PRIu64 "\n", i);
+	printf("NUMBER_OF_TESTS %" PRIu64 "\n", total_i);
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
-	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
+	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", checksum, UINT64_C(0));
 	printf("NEW_LIMIT (all numbers below this are now verified) ");
 	print(4 * g_pow3[TARGET + 1] + 4 * g_pow3[TARGET] + 2);
 	printf("SUCCESS\n");
