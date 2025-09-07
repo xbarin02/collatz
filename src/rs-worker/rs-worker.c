@@ -8,7 +8,7 @@
 #	include <gmp.h>
 #endif
 
-#define ARR_LEN 43
+#define TARGER 43
 
 uint128_t pow3u128(uint128_t n)
 {
@@ -61,7 +61,7 @@ void arr_init(int *arr)
 {
 	int i = 0;
 
-	for (; i < ARR_LEN; ++i) {
+	for (; i < TARGER; ++i) {
 		arr[i] = 0;
 	}
 }
@@ -71,7 +71,7 @@ uint128_t b_evaluate(int *arr)
 	int exp = 0;
 	uint128_t b = 0;
 
-	for (; exp < ARR_LEN; ++exp) {
+	for (; exp < TARGER; ++exp) {
 		assert(4 * (uint128_t)arr[exp] <= (UINT128_MAX - b) / pow3u128(exp));
 
 		b += 4 * pow3u128(exp) * arr[exp];
@@ -85,7 +85,7 @@ int arr_increment(int *arr)
 	int exp = 0;
 	int c = 1; /* carry in */
 
-	for (; exp < ARR_LEN; ++exp) {
+	for (; exp < TARGER; ++exp) {
 		if (c) {
 			if (arr[exp] == 1) {
 				arr[exp] = 0;
@@ -270,7 +270,7 @@ int main()
 {
 	uint128_t n;
 
-	int arr[ARR_LEN];
+	int arr[TARGER];
 
 	uint64_t i = 0;
 
@@ -288,15 +288,15 @@ int main()
 
 	arr_init(arr);
 
-	printf("TARGET %i\n", ARR_LEN);
+	printf("TARGET %i\n", TARGER);
 
 	printf("LIMIT (all numbers below this were already verified) ");
-	print(4 * pow3u128(ARR_LEN + 1) + 2);
+	print(4 * pow3u128(TARGER + 1) + 2);
 
 	while (1) {
-		assert(pow3u128(ARR_LEN + 1) <= (UINT128_MAX - b_evaluate(arr) - 3) / 4);
+		assert(pow3u128(TARGER + 1) <= (UINT128_MAX - b_evaluate(arr) - 3) / 4);
 
-		n = 4 * pow3u128(ARR_LEN + 1) + 3 + b_evaluate(arr);
+		n = 4 * pow3u128(TARGER + 1) + 3 + b_evaluate(arr);
 
 		if (i++ == 0) {
 			printf("smallest number: ");
@@ -324,7 +324,7 @@ int main()
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
 	printf("NEW_LIMIT (all numbers below this are now verified) ");
-	print(4 * pow3u128(ARR_LEN + 1) + 4 * pow3u128(ARR_LEN) + 2);
+	print(4 * pow3u128(TARGER + 1) + 4 * pow3u128(TARGER) + 2);
 	printf("SUCCESS\n");
 
 	return 0;
