@@ -68,9 +68,11 @@ uint128_t b_evaluate(uint64_t arr)
 	uint128_t b = 0;
 
 	for (; exp < TARGET; ++exp) {
-		assert(4 * !!(arr & (1 << exp)) <= (UINT128_MAX - b) / pow3u128(exp));
+		assert(4 * (arr & 1) <= (UINT128_MAX - b) / pow3u128(exp));
 
-		b += 4 * pow3u128(exp) * !!(arr & (1 << exp));
+		b += 4 * pow3u128(exp) * (arr & 1);
+
+		arr >>= 1;
 	}
 
 	return b;
