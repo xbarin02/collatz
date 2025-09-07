@@ -82,7 +82,7 @@ int arr_increment(uint64_t *arr)
 	(*arr)++;
 
 	/* return carry out */
-	return !!((1 << TARGET) & *arr);
+	return !!((UINT64_C(1) << TARGET) & *arr);
 }
 
 #ifdef _USE_GMP
