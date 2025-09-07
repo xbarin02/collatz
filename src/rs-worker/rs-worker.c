@@ -299,6 +299,8 @@ int main()
 	assert((threads & (threads - 1)) == 0);
 
 	low_bits = TARGET - floor_log2(threads);
+
+	assert(low_bits >= 0);
 	printf("low_bits = %i\n", low_bits);
 
 	arr = malloc(sizeof(uint64_t) * threads);
