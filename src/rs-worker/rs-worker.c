@@ -8,7 +8,7 @@
 #	include <gmp.h>
 #endif
 
-#define TARGER 43
+#define TARGET 43
 
 uint128_t pow3u128(uint128_t n)
 {
@@ -57,54 +57,32 @@ void print(uint128_t n)
 	puts(r_buff);
 }
 
-void arr_init(int *arr)
+void arr_init(uint64_t *arr)
 {
-	int i = 0;
-
-	for (; i < TARGER; ++i) {
-		arr[i] = 0;
-	}
+	*arr = 0;
 }
 
-uint128_t b_evaluate(int *arr)
+uint128_t b_evaluate(uint64_t arr)
 {
 	int exp = 0;
 	uint128_t b = 0;
 
-	for (; exp < TARGER; ++exp) {
-		assert(4 * (uint128_t)arr[exp] <= (UINT128_MAX - b) / pow3u128(exp));
+	for (; exp < TARGET; ++exp) {
+		assert(4 * !!(arr & (1 << exp)) <= (UINT128_MAX - b) / pow3u128(exp));
 
-		b += 4 * pow3u128(exp) * arr[exp];
+		b += 4 * pow3u128(exp) * !!(arr & (1 << exp));
 	}
 
 	return b;
 }
 
-int arr_increment(int *arr)
+int arr_increment(uint64_t *arr)
 {
-	int exp = 0;
-	int c = 1; /* carry in */
+	/* increment */
+	(*arr)++;
 
-	for (; exp < TARGER; ++exp) {
-		if (c) {
-			if (arr[exp] == 1) {
-				arr[exp] = 0;
-				c = 1;
-			} else {
-				arr[exp] = 1;
-				c = 0;
-			}
-		} else {
-			break;
-		}
-	}
-
-	/* carry out */
-	if (c) {
-		return 1;
-	}
-
-	return 0;
+	/* return carry out */
+	return !!((1 << TARGET) & *arr);
 }
 
 #ifdef _USE_GMP
@@ -270,7 +248,7 @@ int main()
 {
 	uint128_t n;
 
-	int arr[TARGER];
+	uint64_t arr;
 
 	uint64_t i = 0;
 
@@ -286,17 +264,17 @@ int main()
 
 	init_lut();
 
-	arr_init(arr);
+	arr_init(&arr);
 
-	printf("TARGET %i\n", TARGER);
+	printf("TARGET %i\n", TARGET);
 
 	printf("LIMIT (all numbers below this must be already verified) ");
-	print(4 * pow3u128(TARGER + 1) + 2);
+	print(4 * pow3u128(TARGET + 1) + 2);
 
 	while (1) {
-		assert(pow3u128(TARGER + 1) <= (UINT128_MAX - b_evaluate(arr) - 3) / 4);
+		assert(pow3u128(TARGET + 1) <= (UINT128_MAX - b_evaluate(arr) - 3) / 4);
 
-		n = 4 * pow3u128(TARGER + 1) + 3 + b_evaluate(arr);
+		n = 4 * pow3u128(TARGET + 1) + 3 + b_evaluate(arr);
 
 		if (i++ == 0) {
 			printf("smallest number: ");
@@ -305,7 +283,7 @@ int main()
 
 		check(n);
 
-		if (arr_increment(arr) > 0) {
+		if (arr_increment(&arr) > 0) {
 			printf("largest number : ");
 			print(n);
 			break;
@@ -324,7 +302,7 @@ int main()
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
 	printf("NEW_LIMIT (all numbers below this are now verified) ");
-	print(4 * pow3u128(TARGER + 1) + 4 * pow3u128(TARGER) + 2);
+	print(4 * pow3u128(TARGET + 1) + 4 * pow3u128(TARGET) + 2);
 	printf("SUCCESS\n");
 
 	return 0;
