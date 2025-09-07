@@ -30,6 +30,16 @@ uint128_t pow3u128(uint128_t n)
 	return r;
 }
 
+uint128_t g_pow3[64];
+
+void pow3_init()
+{
+	int i = 0;
+	for (; i < 64; ++i) {
+		g_pow3[i] = pow3u128(i);
+	}
+}
+
 void print(uint128_t n)
 {
 	char buff[40];
@@ -68,9 +78,9 @@ uint128_t b_evaluate(uint64_t arr)
 	uint128_t b = 0;
 
 	for (; exp < TARGET; ++exp) {
-		assert(4 * (arr & 1) <= (UINT128_MAX - b) / pow3u128(exp));
+		assert(4 * (arr & 1) <= (UINT128_MAX - b) / g_pow3[exp]);
 
-		b += 4 * pow3u128(exp) * (arr & 1);
+		b += 4 * g_pow3[exp] * (arr & 1);
 
 		arr >>= 1;
 	}
@@ -249,13 +259,13 @@ void check(uint128_t n)
 int main()
 {
 	uint128_t n;
-
 	uint64_t arr;
-
 	uint64_t i = 0;
 
 	struct timespec ts;
 	uint64_t start_time, stop_time;
+
+	pow3_init();
 
 	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
 		printf("[ERROR] clock_gettime\n");
@@ -271,12 +281,12 @@ int main()
 	printf("TARGET %i\n", TARGET);
 
 	printf("LIMIT (all numbers below this must be already verified) ");
-	print(4 * pow3u128(TARGET + 1) + 2);
+	print(4 * g_pow3[TARGET + 1] + 2);
 
 	while (1) {
-		assert(pow3u128(TARGET + 1) <= (UINT128_MAX - b_evaluate(arr) - 3) / 4);
+		assert(g_pow3[TARGET + 1] <= (UINT128_MAX - b_evaluate(arr) - 3) / 4);
 
-		n = 4 * pow3u128(TARGET + 1) + 3 + b_evaluate(arr);
+		n = 4 * g_pow3[TARGET + 1] + 3 + b_evaluate(arr);
 
 		if (i++ == 0) {
 			printf("smallest number: ");
@@ -304,7 +314,7 @@ int main()
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
 	printf("NEW_LIMIT (all numbers below this are now verified) ");
-	print(4 * pow3u128(TARGET + 1) + 4 * pow3u128(TARGET) + 2);
+	print(4 * g_pow3[TARGET + 1] + 4 * g_pow3[TARGET] + 2);
 	printf("SUCCESS\n");
 
 	return 0;
