@@ -290,7 +290,7 @@ int main()
 
 	printf("TARGET %i\n", TARGER);
 
-	printf("LIMIT (all numbers below this were already verified) ");
+	printf("LIMIT (all numbers below this must be already verified) ");
 	print(4 * pow3u128(TARGER + 1) + 2);
 
 	while (1) {
