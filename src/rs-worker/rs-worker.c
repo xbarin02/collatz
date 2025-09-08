@@ -150,11 +150,12 @@ void init_lut(void)
 	}
 }
 
-void mpz_check2(uint128_t n_, int alpha_, uint64_t *l_checksum_alpha)
+void mpz_check2(uint128_t n0_, uint128_t n_, int alpha_, uint64_t *l_checksum_alpha)
 {
 #ifdef _USE_GMP
 	mp_bitcnt_t alpha, beta;
 	mpz_t n;
+	mpz_t n0;
 	mpz_t a;
 
 	#pragma omp critical
@@ -165,6 +166,7 @@ void mpz_check2(uint128_t n_, int alpha_, uint64_t *l_checksum_alpha)
 
 	mpz_init(a);
 	mpz_init_set_u128(n, n_);
+	mpz_init_set_u128(n0, n0_);
 
 	do {
 		if (alpha > ULONG_MAX) {
@@ -186,7 +188,7 @@ void mpz_check2(uint128_t n_, int alpha_, uint64_t *l_checksum_alpha)
 
 		/* all betas were factored out */
 
-		if (mpz_cmp_ui(n, 1UL) == 0) {
+		if (mpz_cmp(n, n0) < 0) {
 			break;
 		}
 
@@ -203,9 +205,11 @@ void mpz_check2(uint128_t n_, int alpha_, uint64_t *l_checksum_alpha)
 
 	mpz_clear(a);
 	mpz_clear(n);
+	mpz_clear(n0);
 
 	return;
 #else
+	(void)n0_;
 	(void)n_;
 	(void)alpha_;
 	(void)l_checksum_alpha;
@@ -216,7 +220,7 @@ void mpz_check2(uint128_t n_, int alpha_, uint64_t *l_checksum_alpha)
 #endif
 }
 
-void check(uint128_t n, uint64_t *l_checksum_alpha)
+void check(uint128_t n, uint128_t n0, uint64_t *l_checksum_alpha)
 {
 	int Salpha = 0;
 
@@ -242,7 +246,7 @@ void check(uint128_t n, uint64_t *l_checksum_alpha)
 
 			if (n > g_max_ns[alpha]) {
 				*l_checksum_alpha += Salpha;
-				mpz_check2(n, alpha, l_checksum_alpha);
+				mpz_check2(n0, n, alpha, l_checksum_alpha);
 				return;
 			}
 
@@ -258,7 +262,7 @@ void check(uint128_t n, uint64_t *l_checksum_alpha)
 			n >>= beta;
 		} while (!(n & 1));
 
-		if (n == 1) {
+		if (n < n0) {
 			*l_checksum_alpha += Salpha;
 			return;
 		}
@@ -353,7 +357,7 @@ int main()
 				print(n);
 			}
 
-			check(n, g_checksum_alpha + tid);
+			check(n, n, g_checksum_alpha + tid);
 
 			arr_increment(&arr[tid]);
 
