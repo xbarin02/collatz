@@ -390,5 +390,7 @@ int main()
 	print(4 * g_pow3[TARGET + 1] + 4 * g_pow3[TARGET] + 2);
 	printf("SUCCESS\n");
 
+	free(arr);
+
 	return 0;
 }
