@@ -8,7 +8,7 @@
 #	include <gmp.h>
 #endif
 
-#define TARGET 10
+#define TARGET 43
 
 uint128_t pow3u128(uint128_t n)
 {
@@ -268,6 +268,8 @@ int main()
 
 	struct timespec ts;
 	uint64_t start_time, stop_time;
+
+	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
 	pow3_init();
 

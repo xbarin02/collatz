@@ -294,6 +294,8 @@ int main()
 	uint64_t total_i = 0;
 	int low_bits;
 
+	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
 	#pragma omp parallel
 	{
 		#pragma omp master
