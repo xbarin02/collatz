@@ -61,13 +61,10 @@ uint pow3(size_t n)
 {
 	uint r = 1;
 	uint b = 3;
+	uint e = 1;
 
-	while (n) {
-		if (n & 1) {
-			r *= b;
-		}
-		b *= b;
-		n >>= 1;
+	for (; e <= n; ++e) {
+		r *= b;
 	}
 
 	return r;

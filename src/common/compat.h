@@ -48,15 +48,13 @@ static uint64_t pow3u64(uint64_t n)
 {
 	uint64_t r = 1;
 	uint64_t b = 3;
+	uint64_t e = 1;
 
 	assert(n < 41);
 
-	while (n) {
-		if (n & 1) {
-			r *= b;
-		}
-		b *= b;
-		n >>= 1;
+	for (; e <= n; ++e) {
+		assert(r <= UINT64_MAX / b);
+		r *= b;
 	}
 
 	return r;
