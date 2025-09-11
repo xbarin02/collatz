@@ -339,6 +339,9 @@ int main()
 
 	printf("threads = %i\n", threads);
 
+	assert(TARGET <= 64);
+	assert(floor_log2(threads) + low_bits <= 64);
+
 	#pragma omp parallel num_threads(threads) reduction(+:checksum) reduction(+:total_i)
 	{
 		uint64_t i = 0;
