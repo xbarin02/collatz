@@ -8,7 +8,7 @@
 #	include <gmp.h>
 #endif
 
-#define TARGET 43
+#define TARGET 44
 
 uint128_t pow3u128(uint128_t n)
 {
@@ -287,12 +287,12 @@ int main()
 	printf("TARGET %i\n", TARGET);
 
 	printf("LIMIT (all numbers below this must be already verified) ");
-	print(4 * g_pow3[TARGET + 1] + 2);
+	print(4 * g_pow3[TARGET] + 2);
 
 	while (1) {
-		assert(g_pow3[TARGET + 1] <= (UINT128_MAX - b_evaluate(arr) - 3) / 4);
+		assert(g_pow3[TARGET] <= (UINT128_MAX - b_evaluate(arr) - 3) / 4);
 
-		n = 4 * g_pow3[TARGET + 1] + 3 + b_evaluate(arr);
+		n = 4 * g_pow3[TARGET] + 3 + b_evaluate(arr);
 
 		if (i++ == 0) {
 			printf("smallest number: ");
@@ -320,7 +320,7 @@ int main()
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", g_checksum_alpha, UINT64_C(0));
 	printf("NEW_LIMIT (all numbers below this are now verified) ");
-	print(4 * g_pow3[TARGET + 1] + 4 * g_pow3[TARGET] + 2);
+	print(4 * g_pow3[TARGET + 1] + 2);
 	printf("SUCCESS\n");
 
 	return 0;
