@@ -91,13 +91,10 @@ uint128_t b_evaluate(uint64_t arr)
 	return b;
 }
 
-int arr_increment(uint64_t *arr)
+void arr_increment(uint64_t *arr)
 {
 	/* increment */
 	(*arr)++;
-
-	/* return carry out */
-	return !!((UINT64_C(1) << TARGET) & *arr);
 }
 
 #ifdef _USE_GMP
