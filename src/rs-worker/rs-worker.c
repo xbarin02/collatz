@@ -11,7 +11,9 @@
 	#include <omp.h>
 #endif
 
-#define TARGET 44
+#ifndef TARGET
+#	define TARGET 44
+#endif
 
 uint128_t pow3u128(uint128_t n)
 {
