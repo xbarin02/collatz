@@ -93,12 +93,6 @@ uint128_t b_evaluate(uint64_t arr)
 	return b;
 }
 
-void arr_increment(uint64_t *arr)
-{
-	/* increment */
-	(*arr)++;
-}
-
 #ifdef _USE_GMP
 /* 3^n */
 static void mpz_pow3(mpz_t r, unsigned long n)
