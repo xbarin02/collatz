@@ -291,7 +291,7 @@ int main()
 	int t;
 	uint64_t checksum = 0;
 	uint64_t total_i = 0;
-	int low_bits;
+	int low_bits, high_bits;
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
@@ -303,7 +303,8 @@ int main()
 
 	assert((threads & (threads - 1)) == 0);
 
-	low_bits = TARGET - floor_log2(threads);
+	high_bits = floor_log2(threads);
+	low_bits = TARGET - high_bits;
 
 	assert(low_bits >= 0);
 	printf("low_bits = %i\n", low_bits);
@@ -339,7 +340,7 @@ int main()
 	printf("threads = %i\n", threads);
 
 	assert(TARGET <= 64);
-	assert(floor_log2(threads) + low_bits <= 64);
+	assert(high_bits + low_bits <= 64);
 
 	#pragma omp parallel num_threads(threads) reduction(+:checksum) reduction(+:total_i)
 	{
@@ -347,7 +348,9 @@ int main()
 		int tid = omp_get_thread_num();
 		uint128_t n;
 
-		uint64_t arr_min = (uint64_t)tid << low_bits;
+		/* arr[tid] = [ 0..0 | low_bits | tid ] */
+
+		uint64_t arr_min = (uint64_t)tid;
 
 		arr[tid] = arr_min;
 
@@ -363,9 +366,9 @@ int main()
 
 			check(n, n, g_checksum_alpha + tid);
 
-			arr_increment(&arr[tid]);
+			arr[tid] += UINT64_C(1) << high_bits;
 
-			if ((arr[tid] & ((UINT64_C(1) << low_bits) - 1)) == 0) {
+			if ((arr[tid] & (((UINT64_C(1) << low_bits) - 1) << high_bits)) == 0) {
 				if (tid == threads - 1) {
 					printf("largest number : ");
 					print(n);
