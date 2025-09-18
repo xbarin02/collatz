@@ -13,6 +13,14 @@ ifeq ($(DEBUG), 1)
         LDLIBS+=-rdynamic
 endif
 
+ifeq ($(USE_SIEVE), 1)
+	CFLAGS+=-DUSE_SIEVE
+endif
+
+ifeq ($(USE_LUT50), 1)
+        CFLAGS+=-DUSE_LUT50
+endif
+
 CFLAGS+=$(EXTRA_CFLAGS)
 LDFLAGS+=$(EXTRA_LDFLAGS)
 LDLIBS+=$(EXTRA_LDLIBS)

@@ -11,9 +11,138 @@
 	#include <omp.h>
 #endif
 
+#ifdef USE_SIEVE
+#	include <sys/types.h>
+#	include <sys/stat.h>
+#	include <fcntl.h>
+#	include <sys/mman.h>
+#	include <unistd.h>
+#endif
+
 #ifndef TARGET
 #	define TARGET 44
 #endif
+
+#ifdef USE_LUT50
+static const uint64_t dict[] = {
+	0x0000000000000000,
+	0x0000000000000080,
+	0x0000000008000000,
+	0x0000000008000080,
+	0x0000000080000000,
+	0x0000000088000000,
+	0x0000008000000000,
+	0x0000008000000080,
+	0x0000008008000000,
+	0x0000008008000080,
+	0x0000008080000000,
+	0x0000008088000000,
+	0x0000800000000000,
+	0x0000800000000080,
+	0x0000800008000000,
+	0x0000800008000080,
+	0x0000800080000000,
+	0x0000800088000000,
+	0x0000808000000000,
+	0x0000808000000080,
+	0x0000808008000000,
+	0x0000808008000080,
+	0x0800000000000000,
+	0x0800008000000000,
+	0x0800800000000000,
+	0x0800808000000000,
+	0x8000000000000000,
+	0x8000000000000080,
+	0x8000000008000000,
+	0x8000000008000080,
+	0x8000000080000000,
+	0x8000000088000000,
+	0x8000008000000000,
+	0x8000008000000080,
+	0x8000008008000000,
+	0x8000008008000080,
+	0x8000008080000000,
+	0x8000008088000000,
+	0x8000800000000000,
+	0x8000800000000080,
+	0x8000800008000000,
+	0x8000800008000080,
+	0x8000808000000000,
+	0x8000808000000080,
+	0x8000808008000000,
+	0x8000808008000080,
+	0x8800000000000000,
+	0x8800008000000000,
+	0x8800800000000000,
+	0x8800808000000000
+};
+#endif
+
+#ifdef USE_SIEVE
+#	ifndef SIEVE_LOGSIZE
+#		define SIEVE_LOGSIZE 24
+#	endif
+#	define SIEVE_MASK ((1UL << SIEVE_LOGSIZE) - 1)
+#	ifdef USE_LUT50
+#		define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8 / 8)
+#		define GET_INDEX(n) (g_map_sieve[((n) & SIEVE_MASK) >> (3 + 3)])
+#		define IS_LIVE(n) ((dict[GET_INDEX(n)] >> ((n) & 63)) & 1)
+#	else
+#		define SIEVE_SIZE ((1UL << SIEVE_LOGSIZE) / 8)
+#		define IS_LIVE(n) ((g_map_sieve[((n) & SIEVE_MASK) >> 3] >> (((n) & SIEVE_MASK) & 7)) & 1)
+#	endif
+#endif
+
+#ifdef USE_SIEVE
+const unsigned char *g_map_sieve;
+#endif
+
+#ifdef USE_SIEVE
+const void *open_map(const char *path, size_t map_size)
+{
+	int fd = open(path, O_RDONLY, 0600);
+	void *ptr;
+
+	if (map_size == 0) {
+		map_size = 1;
+	}
+
+	if (fd < 0) {
+		perror("open");
+		abort();
+	}
+
+	ptr = mmap(NULL, map_size, PROT_READ, MAP_SHARED, fd, 0);
+
+	if (ptr == MAP_FAILED) {
+		perror("mmap");
+		abort();
+	}
+
+	close(fd);
+
+	return ptr;
+}
+#endif
+
+void init(void)
+{
+#ifdef USE_SIEVE
+	char path[4096];
+	size_t k = SIEVE_LOGSIZE;
+	size_t map_size = SIEVE_SIZE;
+
+#ifdef USE_LUT50
+	sprintf(path, "esieve-%lu.lut50.map", (unsigned long)k);
+#else
+	sprintf(path, "esieve-%lu.map", (unsigned long)k);
+#endif
+
+	g_map_sieve = open_map(path, map_size);
+
+	printf("using sieve 2^%lu...\n", (unsigned long)k);
+#endif
+}
 
 uint128_t pow3u128(uint128_t n)
 {
@@ -318,6 +447,8 @@ int main()
 
 	init_lut();
 
+	init(); /* sieve */
+
 	for (t = 0; t < threads; ++t) {
 		arr_init(arr + t);
 	}
@@ -358,7 +489,13 @@ int main()
 				print(n);
 			}
 
-			check(n, n, g_checksum_alpha + tid);
+			if (1
+#	ifdef USE_SIEVE
+				&& IS_LIVE(n)
+#	endif
+			) {
+				check(n, n, g_checksum_alpha + tid);
+			}
 
 			arr[tid] += UINT64_C(1) << high_bits;
 
