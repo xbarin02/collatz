@@ -430,7 +430,7 @@ int main()
 	low_bits = TARGET - high_bits;
 
 	assert(low_bits >= 0);
-	printf("low_bits = %i\n", low_bits);
+	/* printf("low_bits = %i\n", low_bits); */
 
 	arr = malloc(sizeof(uint64_t) * threads);
 
@@ -459,7 +459,7 @@ int main()
 
 	printf("TARGET %i\n", TARGET);
 
-	printf("LIMIT (all numbers below this must be already verified) ");
+	printf("OLD_LIMIT (all numbers below this must be already verified) ");
 	print(4 * g_pow3[TARGET] + 2);
 
 	printf("threads = %i\n", threads);
@@ -522,6 +522,7 @@ int main()
 
 	printf("REALTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time + 500000000) / 1000000000, (stop_time - start_time + 500) / 1000);
 	printf("NUMBER_OF_TESTS %" PRIu64 "\n", total_i);
+	assert(total_i == (UINT64_C(1) << TARGET));
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", checksum, UINT64_C(0));
 	printf("NEW_LIMIT (all numbers below this are now verified) ");
