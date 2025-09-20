@@ -522,6 +522,9 @@ int main()
 
 	printf("REALTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time + 500000000) / 1000000000, (stop_time - start_time + 500) / 1000);
 	printf("NUMBER_OF_TESTS %" PRIu64 "\n", total_i);
+
+	printf("SPEED %f nsecs/number\n", (stop_time - start_time) /* nsec */ / (double)(UINT64_C(1) << TARGET));
+
 	assert(total_i == (UINT64_C(1) << TARGET));
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
 	printf("CHECKSUM %" PRIu64 " %" PRIu64 "\n", checksum, UINT64_C(0));
