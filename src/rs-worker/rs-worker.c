@@ -8,7 +8,7 @@
 #	include <gmp.h>
 #endif
 #ifdef _OPENMP
-	#include <omp.h>
+#	include <omp.h>
 #endif
 
 #ifdef USE_SIEVE
@@ -524,6 +524,8 @@ int main()
 	printf("NUMBER_OF_TESTS %" PRIu64 "\n", total_i);
 
 	printf("SPEED %f nsecs/number\n", (stop_time - start_time) /* nsec */ / (double)(UINT64_C(1) << TARGET));
+
+	printf("SPEED %f numbers/nsec\n", (double)(UINT64_C(1) << TARGET) / (stop_time - start_time) /* nsec */);
 
 	assert(total_i == (UINT64_C(1) << TARGET));
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
