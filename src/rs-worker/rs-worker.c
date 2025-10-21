@@ -475,7 +475,7 @@ int main()
 
 		/* arr[tid] = [ 0..0 | low_bits | tid ] */
 
-		uint64_t arr_min = (uint64_t)tid;
+		uint64_t arr_min = (uint64_t)tid << low_bits;
 
 		arr[tid] = arr_min;
 
@@ -497,9 +497,9 @@ int main()
 				check(n, n, g_checksum_alpha + tid);
 			}
 
-			arr[tid] += UINT64_C(1) << high_bits;
+			arr[tid]++;
 
-			if ((arr[tid] & (((UINT64_C(1) << low_bits) - 1) << high_bits)) == 0) {
+			if ((arr[tid] & ((UINT64_C(1) << low_bits) - 1)) == 0) {
 				if (tid == threads - 1) {
 					printf("largest number : ");
 					print(n);
