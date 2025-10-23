@@ -530,6 +530,7 @@ int main()
 	printf("SPEED %f nsecs/number\n", (stop_time - start_time) /* nsec */ / (double)(UINT64_C(1) << TARGET));
 
 	printf("SPEED %f numbers/nsec\n", (double)(UINT64_C(1) << TARGET) / (stop_time - start_time) /* nsec */);
+	printf("SPEED %g numbers/sec\n", (double)(UINT64_C(1) << TARGET) / (stop_time - start_time) /* nsec */ * 1000 * 1000 * 1000);
 
 	assert(total_i == (UINT64_C(1) << TARGET));
 	printf("OVERFLOW 128 %" PRIu64 "\n", g_overflow_counter);
