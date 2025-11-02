@@ -1,7 +1,7 @@
 CFLAGS+=-std=c89 -pedantic -Wall -Wextra -march=native -O3 -D_XOPEN_SOURCE=500 -fopenmp
 LDFLAGS=-Wl,--as-needed -fopenmp
 LDLIBS+=
-BINS=rs-worker rs-worker-1thread
+BINS=rs-worker rs-worker-1thread rs-worker-sc
 
 ifeq ($(USE_LIBGMP), 1)
 	CFLAGS+=-D_USE_GMP
