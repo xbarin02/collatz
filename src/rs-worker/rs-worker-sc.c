@@ -488,7 +488,7 @@ int main(int argc, char *argv[])
 	printf("OLD_LIMIT ");
 	print(4 * g_pow3[g_target] + 2);
 
-	printf("NO_PROCS = %i\n", g_no_procs);
+	printf("NO_PROCS %i\n", g_no_procs);
 
 	assert(g_target <= 64);
 	assert(high_bits + low_bits <= 64);
