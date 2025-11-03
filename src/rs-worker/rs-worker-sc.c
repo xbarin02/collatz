@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include <time.h>
 #include <stdio.h>
+#include <unistd.h>
 #ifdef _USE_GMP
 #	include <gmp.h>
 #endif
@@ -408,8 +409,9 @@ int parse_args(int argc, char *argv[])
 {
 	int opt;
 
-	while ((opt = getopt(argc, argv, "t:n:N:i:")) != -1) {
+	while ((opt = getopt(argc, argv, "t:n:N:i:a:")) != -1) {
 		switch (opt) {
+			unsigned long seconds;
 			case 't':
 				g_target = atoi(optarg);
 				assert(g_target > 0);
@@ -425,6 +427,10 @@ int parse_args(int argc, char *argv[])
 			case 'i':
 				g_tid = atoi(optarg);
 				assert(g_tid >= 0);
+				break;
+			case 'a':
+				alarm(seconds = atoul(optarg));
+				printf("ALARM %lu\n", seconds);
 				break;
 			default:
 				fprintf(stderr, "Usage: %s [-t target] [-n no_procs] [-i task_id]\n", argv[0]);
