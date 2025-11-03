@@ -143,7 +143,9 @@ void init(void)
 
 	g_map_sieve = open_map(path, map_size);
 
-	printf("using sieve 2^%lu...\n", (unsigned long)k);
+	printf("SIEVE %lu\n", (unsigned long)k);
+#else
+	printf("SIEVE 0\n");
 #endif
 }
 
