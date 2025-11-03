@@ -408,7 +408,7 @@ int parse_args(int argc, char *argv[])
 {
 	int opt;
 
-	while ((opt = getopt(argc, argv, "t:n:i:")) != -1) {
+	while ((opt = getopt(argc, argv, "t:n:N:i:")) != -1) {
 		switch (opt) {
 			case 't':
 				g_target = atoi(optarg);
@@ -416,6 +416,10 @@ int parse_args(int argc, char *argv[])
 				break;
 			case 'n':
 				g_no_procs = atoi(optarg);
+				assert(g_no_procs > 0);
+				break;
+			case 'N':
+				g_no_procs = 1UL << atoi(optarg);
 				assert(g_no_procs > 0);
 				break;
 			case 'i':
