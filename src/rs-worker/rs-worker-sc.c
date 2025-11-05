@@ -545,7 +545,7 @@ int main(int argc, char *argv[])
 
 	stop_time = ts.tv_sec * 1000000000 + ts.tv_nsec;
 
-	printf("REALTIME %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time + 500000000) / 1000000000, (stop_time - start_time + 500) / 1000);
+	printf("REALTIME %" PRIu64 " %" PRIu64 " %" PRIu64 "\n", (stop_time - start_time + 500000000) / 1000000000, (stop_time - start_time + 500) / 1000, (stop_time - start_time + 500000) / 1000000);
 	printf("NUMBER_OF_TESTS %" PRIu64 "\n", total_i);
 
 	printf("SPEED %f nsecs/number\n", (stop_time - start_time) /* nsec */ / (double)(UINT64_C(1) << g_target));
