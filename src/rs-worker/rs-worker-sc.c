@@ -143,9 +143,9 @@ void init(void)
 
 	g_map_sieve = open_map(path, map_size);
 
-	printf("SIEVE %lu\n", (unsigned long)k);
+	printf("SIEVE_LOGSIZE %lu\n", (unsigned long)k);
 #else
-	printf("SIEVE 0\n");
+	printf("SIEVE_LOGSIZE 0\n");
 #endif
 }
 
