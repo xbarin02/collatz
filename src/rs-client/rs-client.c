@@ -242,7 +242,7 @@ int run_assignment(uint64_t target, uint64_t log2_no_procs, uint64_t task_id, ui
 	char line[4096];
 	char ln_part[4][64];
 	FILE *output;
-	int success = 0;
+	int success = 0, fail = 0;
 	const char *path = taskpath_cpu;
 	char *dirc = strdup(path);
 	char *basec = strdup(path);
@@ -361,14 +361,22 @@ int run_assignment(uint64_t target, uint64_t log2_no_procs, uint64_t task_id, ui
 
 			if ((UINT64_C(1) << log2_no_procs) != no_proc) {
 				message(WARN "worker misinterpreted the number of processes (-N argument)\n");
+				fail = 1;
 			}
 		} else if (c == 2 && strcmp(ln_part[0], "TARGET") == 0) {
 			uint64_t target_ = atou64(ln_part[1]);
 
 			if (target != target_) {
 				message(WARN "worker misinterpreted the target (-t argument)\n");
+				fail = 1;
 			}
-		
+		} else if (c == 2 && strcmp(ln_part[0], "TASK_ID") == 0) {
+			uint64_t task_id_ = atou64(ln_part[1]);
+
+			if (task_id != task_id_) {
+				message(WARN "worker misinterpreted the task id (-i argument)\n");
+				fail = 1;
+			}
 		} else if (c == 2 && strcmp(ln_part[0], "NUMBER_OF_TESTS") == 0) {
 			/* TODO */
 		} else if (c == 2 && strcmp(ln_part[0], "SIEVE_LOGSIZE") == 0) {
@@ -378,6 +386,11 @@ int run_assignment(uint64_t target, uint64_t log2_no_procs, uint64_t task_id, ui
 
 			assert(p_sieve_logsize != NULL);
 			*p_sieve_logsize = (uint64_t)sieve_logsize;
+
+			if (sieve_logsize != 0) {
+				message(WARN "worker uses wrong sieve\n");
+				fail = 1;
+			}
 		} else if (c == 1 && strcmp(ln_part[0], "ABORTED_DUE_TO_OVERFLOW") == 0) {
 			message(ERR "overflow occurred! (try compiling with libgmp)\n");
 		} else {
@@ -389,7 +402,7 @@ int run_assignment(uint64_t target, uint64_t log2_no_procs, uint64_t task_id, ui
 	r = pclose(output);
 
 	if (!success) {
-		message(WARN "worker terminated and did not print HALTED\n");
+		message(WARN "worker terminated and did not print SUCCESS\n");
 	}
 
 	if (r == -1) {
@@ -399,7 +412,7 @@ int run_assignment(uint64_t target, uint64_t log2_no_procs, uint64_t task_id, ui
 
 	if (WIFEXITED(r)) {
 		/* the child terminated normally */
-		if (success) {
+		if (success && !fail) {
 			/* return success status only if the worker issued HALTED line */
 			return 0;
 		}
