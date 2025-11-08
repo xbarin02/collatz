@@ -490,6 +490,8 @@ int main(int argc, char *argv[])
 
 	printf("NO_PROCS %i\n", g_no_procs);
 
+	printf("TASK_ID %i\n", g_tid);
+
 	assert(g_target <= 64);
 	assert(high_bits + low_bits <= 64);
 
