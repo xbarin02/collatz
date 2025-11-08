@@ -357,9 +357,9 @@ int run_assignment(uint64_t target, uint64_t log2_no_procs, uint64_t task_id, ui
 				message(WARN "worker misinterpreted the alarm\n");
 			}
 		} else if (c == 2 && strcmp(ln_part[0], "NO_PROCS") == 0) {
-			uint64_t no_proc = atou64(ln_part[1]);
+			uint64_t log2_no_procs_ = atou64(ln_part[1]);
 
-			if ((UINT64_C(1) << log2_no_procs) != no_proc) {
+			if ((UINT64_C(1) << log2_no_procs) != log2_no_procs_) {
 				message(WARN "worker misinterpreted the number of processes (-N argument)\n");
 				fail = 1;
 			}
@@ -627,7 +627,7 @@ int open_socket_and_revoke_multiple_assignments(int threads, uint64_t target[], 
 	return 0;
 }
 
-int return_assignment(int fd, uint64_t target, uint64_t log2_no_procs, uint64_t task_id, uint64_t overflow, uint64_t usertime, uint64_t checksum)
+int return_assignment(int fd, uint64_t target, uint64_t log2_no_procs, uint64_t task_id, uint64_t overflow, uint64_t realtime, uint64_t checksum)
 {
 	char msg[4];
 
@@ -655,7 +655,7 @@ int return_assignment(int fd, uint64_t target, uint64_t log2_no_procs, uint64_t 
 		return -1;
 	}
 
-	if (write_uint64(fd, usertime) < 0) {
+	if (write_uint64(fd, realtime) < 0) {
 		return -1;
 	}
 
@@ -666,7 +666,7 @@ int return_assignment(int fd, uint64_t target, uint64_t log2_no_procs, uint64_t 
 	return 0;
 }
 
-int open_socket_and_return_multiple_assignments(int threads, uint64_t target[], uint64_t log2_no_procs[], uint64_t task_id[], uint64_t overflow[], uint64_t usertime[], uint64_t checksum[])
+int open_socket_and_return_multiple_assignments(int threads, uint64_t target[], uint64_t log2_no_procs[], uint64_t task_id[], uint64_t overflow[], uint64_t realtime[], uint64_t checksum[])
 {
 	int fd;
 	int tid;
@@ -684,7 +684,7 @@ int open_socket_and_return_multiple_assignments(int threads, uint64_t target[], 
 	}
 
 	for (tid = 0; tid < threads; ++tid) {
-		if (return_assignment(fd, target[tid], log2_no_procs[tid], task_id[tid], overflow[tid], usertime[tid], checksum[tid]) < 0) {
+		if (return_assignment(fd, target[tid], log2_no_procs[tid], task_id[tid], overflow[tid], realtime[tid], checksum[tid]) < 0) {
 			message(ERR "return_assignment failed (%i/%i)\n", tid, threads);
 			close(fd);
 			return -1;
@@ -715,7 +715,7 @@ int open_urandom_and_read_clientid(uint64_t *clientid)
 	return 0;
 }
 
-int run_assignments_in_parallel(int threads, const uint64_t target[], const uint64_t log2_no_procs[], const uint64_t task_id[], uint64_t overflow[], uint64_t usertime[], uint64_t checksum[], uint64_t sieve_logsize[], unsigned long alarm_seconds)
+int run_assignments_in_parallel(int threads, const uint64_t target[], const uint64_t log2_no_procs[], const uint64_t task_id[], uint64_t overflow[], uint64_t realtime[], uint64_t checksum[], uint64_t sieve_logsize[], unsigned long alarm_seconds)
 {
 	int *success;
 	int tid;
@@ -736,11 +736,11 @@ int run_assignments_in_parallel(int threads, const uint64_t target[], const uint
 
 		/* initialization, since the worker is not mandated to fill these */
 		overflow[tid] = 0;
-		usertime[tid] = 0;
+		realtime[tid] = 0;
 		checksum[tid] = 0;
 		sieve_logsize[tid] = 0;
 
-		success[tid] = run_assignment(target[tid], log2_no_procs[tid], task_id[tid], overflow+tid, usertime+tid, checksum+tid, sieve_logsize+tid, alarm_seconds);
+		success[tid] = run_assignment(target[tid], log2_no_procs[tid], task_id[tid], overflow+tid, realtime+tid, checksum+tid, sieve_logsize+tid, alarm_seconds);
 
 		if (success[tid] < 0) {
 			message(ERR "thread %i: run_assignment failed\n", tid);
@@ -769,7 +769,7 @@ int main(int argc, char *argv[])
 	uint64_t *log2_no_procs;
 	uint64_t *task_id;
 	uint64_t *overflow;
-	uint64_t *usertime;
+	uint64_t *realtime;
 	uint64_t *checksum;
 	uint64_t *sieve_logsize;
 	unsigned long alarm_seconds = 0;
@@ -827,11 +827,11 @@ int main(int argc, char *argv[])
 	log2_no_procs = malloc(sizeof(uint64_t) * threads);
 	task_id = malloc(sizeof(uint64_t) * threads);
 	overflow = malloc(sizeof(uint64_t) * threads);
-	usertime = malloc(sizeof(uint64_t) * threads);
+	realtime = malloc(sizeof(uint64_t) * threads);
 	checksum = malloc(sizeof(uint64_t) * threads);
 	sieve_logsize = malloc(sizeof(uint64_t) * threads); 
 
-	if (target == NULL || log2_no_procs == NULL || task_id == NULL || overflow == NULL || usertime == NULL || checksum == NULL || sieve_logsize == NULL) {
+	if (target == NULL || log2_no_procs == NULL || task_id == NULL || overflow == NULL || realtime == NULL || checksum == NULL || sieve_logsize == NULL) {
 		message(ERR "memory allocation failed!\n");
 		return EXIT_FAILURE;
 	}
@@ -850,7 +850,7 @@ int main(int argc, char *argv[])
 			sleep(SLEEP_INTERVAL);
 		}
 
-		if (run_assignments_in_parallel(threads, target, log2_no_procs, task_id, overflow, usertime, checksum, sieve_logsize, alarm_seconds) < 0) {
+		if (run_assignments_in_parallel(threads, target, log2_no_procs, task_id, overflow, realtime, checksum, sieve_logsize, alarm_seconds) < 0) {
 			while (open_socket_and_revoke_multiple_assignments(threads, target, log2_no_procs, task_id) < 0) {
 				message(ERR "open_socket_and_revoke_multiple_assignments failed\n");
 				sleep(SLEEP_INTERVAL);
@@ -866,7 +866,7 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		while (open_socket_and_return_multiple_assignments(threads, target, log2_no_procs, task_id, overflow, usertime, checksum) < 0) {
+		while (open_socket_and_return_multiple_assignments(threads, target, log2_no_procs, task_id, overflow, realtime, checksum) < 0) {
 			message(ERR "open_socket_and_return_multiple_assignments failed\n");
 			sleep(SLEEP_INTERVAL);
 		}
@@ -884,7 +884,7 @@ int main(int argc, char *argv[])
 	free(log2_no_procs);
 	free(task_id);
 	free(overflow);
-	free(usertime);
+	free(realtime);
 	free(checksum);
 	free(sieve_logsize);
 
