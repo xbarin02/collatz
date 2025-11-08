@@ -696,25 +696,6 @@ int open_socket_and_return_multiple_assignments(int threads, uint64_t target[], 
 	return 0;
 }
 
-int open_urandom_and_read_clientid(uint64_t *clientid)
-{
-	int fd = open("/dev/urandom", O_RDONLY);
-
-	if (fd < 0) {
-		return -1;
-	}
-
-	assert(clientid != NULL);
-
-	if (read_(fd, (char *)clientid, sizeof(uint64_t)) < 0) {
-		return -1;
-	}
-
-	close(fd);
-
-	return 0;
-}
-
 int run_assignments_in_parallel(int threads, const uint64_t target[], const uint64_t log2_no_procs[], const uint64_t task_id[], uint64_t overflow[], uint64_t realtime[], uint64_t checksum[], uint64_t sieve_logsize[], unsigned long alarm_seconds)
 {
 	int *success;
