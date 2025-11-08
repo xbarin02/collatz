@@ -48,7 +48,7 @@ fi
 # https://stackoverflow.com/questions/6481005/how-to-obtain-the-number-of-cpus-cores-in-linux-from-the-command-line
 THREADS=$(awk '{ if ($0~/^physical id/) { p=$NF }; if ($0~/^core id/) { cores[p$NF]=p$NF }; if ($0~/processor/) { cpu++ } } END { for (key in cores) { n++ } } END { if (n) {print n} else {print cpu} }' /proc/cpuinfo)
 # '
-CLIENT=./mclient
+CLIENT=./rs-client
 
 if test -x "${CLIENT}"; then
 	if test "$*" != ""; then
