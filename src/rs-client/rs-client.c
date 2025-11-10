@@ -629,6 +629,11 @@ int return_assignment(int fd, uint64_t target, uint64_t log2_no_procs, uint64_t 
 {
 	char msg[4];
 
+	if (target == 0 && log2_no_procs == 0 && task_id == 0) {
+		message(WARN "nothing to return\n");
+		return 0;
+	}
+
 	strcpy(msg, "RET");
 
 	msg[3] = 0;
@@ -722,6 +727,7 @@ int run_assignments_in_parallel(int threads, const uint64_t target[], const uint
 		if (target[tid] == 0 && log2_no_procs[tid] == 0 && task_id[tid] == 0) {
 			message(WARN "empty assignment!\n");
 			success[tid] = 0;
+			sleep(SLEEP_INTERVAL);
 		} else {
 			success[tid] = run_assignment(target[tid], log2_no_procs[tid], task_id[tid], overflow+tid, realtime+tid, checksum+tid, sieve_logsize+tid, alarm_seconds);
 		}
