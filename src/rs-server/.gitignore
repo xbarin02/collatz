@@ -1,0 +1,6 @@
+rs-server
+*~
+*.gcda
+*.map
+*.log
+*.dat
