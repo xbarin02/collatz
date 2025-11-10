@@ -333,8 +333,8 @@ int run_assignment(uint64_t target, uint64_t log2_no_procs, uint64_t task_id, ui
 				assert(p_overflow != NULL);
 				*p_overflow = overflow;
 			}
-		} else if (c == 3 && strcmp(ln_part[0], "REALTIME") == 0) {
-			uint64_t realtime = atou64(ln_part[2]);
+		} else if (c == 4 && strcmp(ln_part[0], "REALTIME") == 0) {
+			uint64_t realtime = atou64(ln_part[3]);
 
 			assert(p_realtime != NULL);
 
