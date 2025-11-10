@@ -368,6 +368,24 @@ int read_message(int fd, int thread_id, const char *ipv4)
 
 		task_id = get_assignment();
 
+		if (task_id >= (UINT64_C(1) << LOG2_NO_PROCS)) {
+			message(WARN "out of assignments, serving empty assignment!\n");
+
+			if (write_uint64(fd, 0) < 0) {
+				return -1;
+			}
+
+			if (write_uint64(fd, 0) < 0) {
+				return -1;
+			}
+
+			if (write_uint64(fd, 0) < 0) {
+				return -1;
+			}
+
+			goto REQ_end;
+		}
+
 		message(INFO "assignment requested: %" PRIu64 "\n", task_id);
 
 		if (write_uint64(fd, (uint64_t)TARGET) < 0) {
@@ -381,6 +399,9 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		if (write_uint64(fd, task_id) < 0) {
 			return -1;
 		}
+
+		REQ_end:
+			;
 	} else if (strcmp(msg, "MRQ") == 0) {
 		uint64_t threads;
 		int tid;
@@ -402,6 +423,24 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		for (tid = 0; tid < (int)threads; ++tid) {
 			task_id = get_assignment();
 
+			if (task_id >= (UINT64_C(1) << LOG2_NO_PROCS)) {
+				message(WARN "out of assignments, serving empty assignment!\n");
+
+				if (write_uint64(fd, 0) < 0) {
+					return -1;
+				}
+
+				if (write_uint64(fd, 0) < 0) {
+					return -1;
+				}
+
+				if (write_uint64(fd, 0) < 0) {
+					return -1;
+				}
+
+				goto MRQ_end;
+			}
+
 			message(INFO "assignment requested: %" PRIu64 " (MRQ)\n", task_id);
 
 			if (write_uint64(fd, (uint64_t)TARGET) < 0) {
@@ -417,6 +456,9 @@ int read_message(int fd, int thread_id, const char *ipv4)
 				message(ERR "unable to write task ID\n");
 				return -1;
 			}
+
+			MRQ_end:
+				;
 		}
 	} else if (strcmp(msg, "RET") == 0) {
 		/* returning assignment */
@@ -666,14 +708,9 @@ int main(int argc, char *argv[])
 				c0++;
 			}
 
-			/* complete ==> zero clid */
-			if (IS_COMPLETE(n)) {
+			if (IS_COMPLETE(n) && g_checksums[n] == 0) {
+				SET_INCOMPLETE(n);
 				c1++;
-			}
-
-			/* not assigned ==> no clid */
-			if (!IS_ASSIGNED(n)) {
-				c2++;
 			}
 		}
 
