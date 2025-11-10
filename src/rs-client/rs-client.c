@@ -379,6 +379,12 @@ int run_assignment(uint64_t target, uint64_t log2_no_procs, uint64_t task_id, ui
 			}
 		} else if (c == 2 && strcmp(ln_part[0], "NUMBER_OF_TESTS") == 0) {
 			/* TODO */
+		} else if (c == 2 && strcmp(ln_part[0], "OLD_LIMIT") == 0) {
+			/* TODO */
+		} else if (c == 2 && strcmp(ln_part[0], "NEW_LIMIT") == 0) {
+			/* TODO */
+		} else if (c == 3 && strcmp(ln_part[0], "SPEED") == 0) {
+			/* TODO */
 		} else if (c == 2 && strcmp(ln_part[0], "SIEVE_LOGSIZE") == 0) {
 			unsigned long sieve_logsize = atoul(ln_part[1]);
 
@@ -535,15 +541,7 @@ int open_socket_and_request_multiple_assignments_batch(int threads, int request_
 		message(ERR "write_uint64() failed\n");
 		return -1;
 	}
-#if 0
-	/* n times: write clid */
-	for (tid = 0; tid < threads; ++tid) {
-		if (write_uint64(fd, clientid[tid]) < 0) {
-			message(ERR "write_uint64() failed\n");
-			return -1;
-		}
-	}
-#endif
+
 	/* server to client */
 
 	/* n times: read task_id, ... */
