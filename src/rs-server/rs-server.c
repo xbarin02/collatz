@@ -173,7 +173,7 @@ int write_uint64(int fd, uint64_t n)
 	return 0;
 }
 
-#define TARGET 40
+#define TARGET 35
 #define DELTA 28
 #define LOG2_NO_PROCS ((TARGET) - (DELTA))
 #define ASSIGNMENTS_NO (UINT64_C(1) << (LOG2_NO_PROCS))
@@ -224,6 +224,10 @@ int set_complete(uint64_t n)
 uint64_t get_assignment()
 {
 	uint64_t n = g_lowest_unassigned;
+
+	if (n == (UINT64_C(1) << LOG2_NO_PROCS)) {
+		return n;
+	}
 
 	SET_ASSIGNED(n);
 
@@ -670,6 +674,8 @@ int main(int argc, char *argv[])
 	}
 
 	message(INFO "starting server...\n");
+
+	message(INFO "TARGET = %i, assignments %" PRIu64 "\n", TARGET, UINT64_C(1) << LOG2_NO_PROCS);
 
 	g_map_assigned = open_map("assigned.map");
 	g_map_complete = open_map("complete.map");
