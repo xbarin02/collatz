@@ -262,6 +262,10 @@ uint64_t get_missed_assignment(int thread_id)
 		}
 	}
 
+	if (n == (UINT64_C(1) << LOG2_NO_PROCS)) {
+		return n;
+	}
+
 	SET_ASSIGNED(n);
 
 	/* advance g_lowest_unassigned */
@@ -548,6 +552,24 @@ int read_message(int fd, int thread_id, const char *ipv4)
 
 		task_id = get_missed_assignment(thread_id);
 
+		if (task_id >= (UINT64_C(1) << LOG2_NO_PROCS)) {
+			message(WARN "out of assignments, serving empty assignment!\n");
+
+			if (write_uint64(fd, 0) < 0) {
+				return -1;
+			}
+
+			if (write_uint64(fd, 0) < 0) {
+				return -1;
+			}
+
+			if (write_uint64(fd, 0) < 0) {
+				return -1;
+			}
+
+			goto req_end;
+		}
+
 		message(INFO "assignment requested: %" PRIu64 " (lowest incomplete +%i)\n", task_id, thread_id);
 
 		if (write_uint64(fd, (uint64_t)TARGET) < 0) {
@@ -561,6 +583,9 @@ int read_message(int fd, int thread_id, const char *ipv4)
 		if (write_uint64(fd, task_id) < 0) {
 			return -1;
 		}
+
+		req_end:
+			;
 	} else if (strcmp(msg, "INT") == 0) {
 		/* interrupted or unable to solve, unreserve the assignment */
 		uint64_t target = 0;
