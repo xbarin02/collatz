@@ -24,15 +24,15 @@ fi
 
 umask 077
 
-CC=gcc
-if type clang > /dev/null 2> /dev/null && clang --version | grep -qE "version (8|9|10|11|12|13|14|15|16|17|18|19|20)"; then
-        echo "INFO: clang available"
-        CC=clang
-fi
+# CC=gcc
+# if type clang > /dev/null 2> /dev/null && clang --version | grep -qE "version (8|9|10|11|12|13|14|15|16|17|18|19|20)"; then
+#         echo "INFO: clang available"
+#         CC=clang
+# fi
 
 # don't forget git clone git@github.com:xbarin02/collatz.git into $HOME
 SRCDIR=$HOME/collatz/
-MAPDIR=$HOME/collatz-sieve/
+# MAPDIR=$HOME/collatz-sieve/
 TMP=$(mktemp -d collatz.XXXXXXXX --tmpdir)
 
 echo "SRCDIR=$SRCDIR"
@@ -48,15 +48,15 @@ else
 	popd
 fi
 
-if ! test -d "$MAPDIR"; then
-	pushd "$HOME"
-	git clone git@github.com:xbarin02/collatz-sieve.git
-	popd
-else
-	pushd "$MAPDIR"
-	git pull || echo "cannot sync repo"
-	popd
-fi
+# if ! test -d "$MAPDIR"; then
+# 	pushd "$HOME"
+# 	git clone git@github.com:xbarin02/collatz-sieve.git
+# 	popd
+# else
+# 	pushd "$MAPDIR"
+# 	git pull || echo "cannot sync repo"
+# 	popd
+# fi
 
 mkdir -p -- "$TMP"
 pushd -- "$TMP"
