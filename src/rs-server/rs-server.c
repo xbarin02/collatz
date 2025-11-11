@@ -644,6 +644,8 @@ int main(int argc, char *argv[])
 	int fix_records = 0;
 	int invalidate_overflows = 0;
 
+	assert(LOG2_NO_PROCS >= 0);
+
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 
 	while ((opt = getopt(argc, argv, "cfizr:m")) != -1) {
