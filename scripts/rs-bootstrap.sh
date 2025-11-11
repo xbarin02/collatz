@@ -73,7 +73,7 @@ if [[ "$HOSTNAME" =~ ^pco204-..$ ]]; then
 fi
 
 # build mclient & worker
-make -C rs-worker clean all USE_LIBGMP=1 CC=$CC
+make -C rs-worker clean all USE_LIBGMP=1 #CC=$CC
 make -C rs-client clean all
 
 cd rs-client
