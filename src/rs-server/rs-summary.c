@@ -53,6 +53,7 @@ int main(/*int argc, char *argv[]*/)
 
 	printf("TARGET = %i\n", TARGET);
 	printf("ASSIGNMENTS_NO = %" PRIu64 "\n", ASSIGNMENTS_NO);
+	printf("LOG2_NO_PROCS = %i\n", LOG2_NO_PROCS);
 
 	g_checksums = open_records("checksums.dat");
 	g_usertimes = open_records("usertimes.dat");
