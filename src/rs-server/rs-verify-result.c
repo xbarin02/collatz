@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
 	uint64_t usertime;
 
 	printf("TASK_ID %" PRIu64 "\n", task_id);
+	assert(task_id < ASSIGNMENTS_NO);
 
 	g_checksums = open_records("checksums.dat");
 	g_usertimes = open_records("usertimes.dat");
