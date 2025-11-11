@@ -1,7 +1,7 @@
 CFLAGS+=-std=c89 -pedantic -Wall -Wextra -fopenmp -march=native -O3 -D_XOPEN_SOURCE -D_GNU_SOURCE
 LDFLAGS+=-fopenmp
 LDLIBS+=-lm
-BINS=rs-server rs-query rs-verify-result
+BINS=rs-server rs-query rs-verify-result rs-summary
 
 ifeq ($(USE_LIBGMP), 1)
 	CFLAGS+=-D_USE_GMP

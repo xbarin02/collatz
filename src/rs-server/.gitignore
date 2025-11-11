@@ -1,6 +1,7 @@
 rs-server
 rs-query
 rs-verify-result
+rs-summary
 *~
 *.gcda
 *.map
