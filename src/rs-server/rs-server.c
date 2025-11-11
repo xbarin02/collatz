@@ -173,9 +173,8 @@ int write_uint64(int fd, uint64_t n)
 	return 0;
 }
 
-#define TARGET 35
-#define DELTA 28
-#define LOG2_NO_PROCS ((TARGET) - (DELTA))
+#include "rs-config.h"
+
 #define ASSIGNMENTS_NO (UINT64_C(1) << (LOG2_NO_PROCS))
 
 #define MAP_SIZE (ASSIGNMENTS_NO >> 3)
