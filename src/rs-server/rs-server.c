@@ -239,6 +239,10 @@ uint64_t get_assignment()
 
 void unset_assignment(uint64_t n)
 {
+	if (n == (UINT64_C(1) << LOG2_NO_PROCS)) {
+		return;
+	}
+
 	if (IS_COMPLETE(n)) {
 		message(WARN "assignment %" PRIu64 " is already complete, invalid interrupt request!\n", n);
 	}
@@ -257,7 +261,7 @@ uint64_t get_missed_assignment(int thread_id)
 
 	for (t = 0; t < thread_id; ++t) {
 		n++;
-		while (IS_COMPLETE(n)) {
+		while (n < ASSIGNMENTS_NO && IS_COMPLETE(n)) {
 			n++;
 		}
 	}
@@ -749,10 +753,10 @@ int main(int argc, char *argv[])
 		message(WARN "These corrections have been made: %" PRIu64 " %" PRIu64 " %" PRIu64 "\n", c0, c1, c2);
 	}
 
-	for (g_lowest_unassigned = 0; IS_ASSIGNED(g_lowest_unassigned); ++g_lowest_unassigned)
+	for (g_lowest_unassigned = 0; g_lowest_unassigned < ASSIGNMENTS_NO && IS_ASSIGNED(g_lowest_unassigned); ++g_lowest_unassigned)
 		;
 
-	for (g_lowest_incomplete = 0; IS_COMPLETE(g_lowest_incomplete); ++g_lowest_incomplete)
+	for (g_lowest_incomplete = 0; g_lowest_incomplete < ASSIGNMENTS_NO && IS_COMPLETE(g_lowest_incomplete); ++g_lowest_incomplete)
 		;
 
 	if (clear_incomplete_assigned) {
