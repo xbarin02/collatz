@@ -213,7 +213,7 @@ int set_complete(uint64_t n)
 
 	/* advance g_lowest_incomplete pointer */
 	if (n == g_lowest_incomplete) {
-		for (; IS_COMPLETE(g_lowest_incomplete); ++g_lowest_incomplete)
+		for (; g_lowest_incomplete < ASSIGNMENTS_NO && IS_COMPLETE(g_lowest_incomplete); ++g_lowest_incomplete)
 			;
 	}
 
@@ -231,7 +231,7 @@ uint64_t get_assignment()
 	SET_ASSIGNED(n);
 
 	/* advance g_lowest_unassigned */
-	for (; IS_ASSIGNED(g_lowest_unassigned); ++g_lowest_unassigned)
+	for (; g_lowest_unassigned < ASSIGNMENTS_NO && IS_ASSIGNED(g_lowest_unassigned); ++g_lowest_unassigned)
 		;
 
 	return n;
