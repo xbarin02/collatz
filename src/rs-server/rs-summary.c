@@ -51,6 +51,7 @@ int main(/*int argc, char *argv[]*/)
 	uint64_t checksum = 0;
 	uint64_t usertime = 0;
 	int complete = 1;
+	uint64_t num_complete = 0;
 
 	printf("TARGET = %i\n", TARGET);
 	printf("ASSIGNMENTS_NO = %" PRIu64 "\n", ASSIGNMENTS_NO);
@@ -68,6 +69,8 @@ int main(/*int argc, char *argv[]*/)
 
 		if (!checksum_) {
 			complete = 0;
+		} else {
+			num_complete++;
 		}
 	}
 
@@ -78,6 +81,7 @@ int main(/*int argc, char *argv[]*/)
 			(usertime + 500)/1000/60/60, (usertime + 500)/1000/60%60, (usertime + 500)/1000%60);
 
 	printf("all assignments are complete: %i\n", complete);
+	printf("number of completed assignments: %" PRIu64 "\n", num_complete);
 
 	return 0;
 }
