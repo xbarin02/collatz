@@ -3,6 +3,11 @@ LDFLAGS+=-fopenmp
 LDLIBS+=-lm
 BINS=rs-server rs-query rs-verify-result rs-summary
 
+ifeq ($(DEBUG), 1)
+        CFLAGS+=-Og -g -DDEBUG
+        LDLIBS+=-rdynamic
+endif
+
 ifeq ($(USE_LIBGMP), 1)
 	CFLAGS+=-D_USE_GMP
 	LDLIBS+=-lgmp
