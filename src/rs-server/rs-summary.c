@@ -81,11 +81,11 @@ int main(/*int argc, char *argv[]*/)
 
 	printf("TOTAL CHECKSUM %" PRIu64 "\n", checksum);
 	printf("TOTAL TIME %" PRIu64 " ms\n", usertime);
-	printf("TOTAL TIME %" PRIu64 " (%" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")\n",
+	printf("TOTAL TIME %" PRIu64 " secs (%" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")\n",
 		(usertime + 500)/1000,
 		(usertime + 500)/1000/60/60, (usertime + 500)/1000/60%60, (usertime + 500)/1000%60);
 
-	printf("avg. time: %f (%" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")\n", usertime / (double)num_time / 1000,
+	printf("avg. time: %f secs (%" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")\n", usertime / (double)num_time / 1000,
 		(usertime + 500)/1000/num_time/60/60, (usertime + 500)/1000/num_time/60%60, (usertime + 500)/1000/num_time%60
 	);
 
