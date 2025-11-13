@@ -145,7 +145,7 @@ int main(/*int argc, char *argv[]*/)
 		}
 	}
 
-	printf("OLD_LIMIT (all numbers below this must be already verified) ");
+	printf("OLD LIMIT (all numbers below this must be already verified) ");
 	print(4 * g_pow3[TARGET + 0] + 2);
 
 	printf("NEW LIMIT (all numbers below this are now verified) ");
