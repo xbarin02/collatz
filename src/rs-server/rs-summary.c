@@ -44,12 +44,14 @@ const uint64_t *open_records(const char *path)
 
 const uint64_t *g_checksums = 0;
 const uint64_t *g_usertimes = 0;
+const uint64_t *g_overflows = 0;
 
 int main(/*int argc, char *argv[]*/)
 {
 	uint64_t task_id;
 	uint64_t checksum = 0;
 	uint64_t usertime = 0;
+	uint64_t overflow = 0;
 	int complete = 1;
 	uint64_t num_complete = 0;
 	uint64_t num_time = 0;
@@ -60,13 +62,16 @@ int main(/*int argc, char *argv[]*/)
 
 	g_checksums = open_records("checksums.dat");
 	g_usertimes = open_records("usertimes.dat");
+	g_overflows = open_records("overflows.dat");
 
 	for (task_id = 0; task_id < ASSIGNMENTS_NO; ++task_id) {
 		uint64_t checksum_ = g_checksums[task_id];
 		uint64_t usertime_ = g_usertimes[task_id];
+		uint64_t overflow_ = g_overflows[task_id];
 
 		checksum += checksum_;
 		usertime += usertime_;
+		overflow += overflow_;
 
 		if (!checksum_) {
 			complete = 0;
@@ -88,6 +93,8 @@ int main(/*int argc, char *argv[]*/)
 	printf("avg. time: %f secs (%" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")\n", usertime / (double)num_time / 1000,
 		(usertime + 500)/1000/num_time/60/60, (usertime + 500)/1000/num_time/60%60, (usertime + 500)/1000/num_time%60
 	);
+
+	printf("overflows: %" PRIu64 "\n", overflow);
 
 	printf("all assignments are complete: %i\n", complete);
 	printf("number of completed assignments: %" PRIu64 "\n", num_complete);
