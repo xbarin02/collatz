@@ -157,9 +157,11 @@ int main(/*int argc, char *argv[]*/)
 		(usertime + 500)/1000,
 		(usertime + 500)/1000/60/60, (usertime + 500)/1000/60%60, (usertime + 500)/1000%60);
 
-	printf("avg. time: %f secs (%" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")\n", usertime / (double)num_time / 1000,
-		(usertime + 500)/1000/num_time/60/60, (usertime + 500)/1000/num_time/60%60, (usertime + 500)/1000/num_time%60
-	);
+	if (num_time != 0) {
+		printf("avg. time: %f secs (%" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")\n", usertime / (double)num_time / 1000,
+			(usertime + 500)/1000/num_time/60/60, (usertime + 500)/1000/num_time/60%60, (usertime + 500)/1000/num_time%60
+		);
+	}
 
 	printf("overflows: %" PRIu64 "\n", overflow);
 
