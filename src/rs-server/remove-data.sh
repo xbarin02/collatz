@@ -1,3 +1,5 @@
 #!/bin/bash
 
-rm -- *.dat *.map
+rm -f -- *.dat *.map *.log
+
+make clean
