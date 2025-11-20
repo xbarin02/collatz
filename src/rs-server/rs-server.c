@@ -397,7 +397,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 			goto REQ_end;
 		}
 
-		message(INFO "assignment requested: %" PRIu64 "\n", task_id);
+		message(INFO "assignment requested: %" PRIu64 " / %" PRIu64 "\n", task_id, ASSIGNMENTS_NO - 1);
 
 		if (write_uint64(fd, (uint64_t)TARGET) < 0) {
 			return -1;
@@ -452,7 +452,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 				goto MRQ_end;
 			}
 
-			message(INFO "assignment requested: %" PRIu64 " (MRQ)\n", task_id);
+			message(INFO "assignment requested: %" PRIu64 " / %" PRIu64 " (MRQ)\n", task_id, ASSIGNMENTS_NO - 1);
 
 			if (write_uint64(fd, (uint64_t)TARGET) < 0) {
 				return -1;
@@ -574,7 +574,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 			goto req_end;
 		}
 
-		message(INFO "assignment requested: %" PRIu64 " (lowest incomplete +%i)\n", task_id, thread_id);
+		message(INFO "assignment requested: %" PRIu64 " / %" PRIu64 " (lowest incomplete +%i)\n", task_id, ASSIGNMENTS_NO - 1, thread_id);
 
 		if (write_uint64(fd, (uint64_t)TARGET) < 0) {
 			return -1;
@@ -623,7 +623,7 @@ int read_message(int fd, int thread_id, const char *ipv4)
 			return -1;
 		}
 
-		message(INFO "assignment interrupted: %" PRIu64 "\n", task_id);
+		message(INFO "assignment interrupted: %" PRIu64 " / %" PRIu64 "\n", task_id, ASSIGNMENTS_NO - 1);
 
 		unset_assignment(task_id);
 	} else if (strcmp(msg, "LOI") == 0) {
