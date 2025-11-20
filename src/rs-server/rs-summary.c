@@ -179,7 +179,7 @@ int main(/*int argc, char *argv[]*/)
 
 	printf("overflows: %" PRIu64 "\n", overflow);
 
-	printf("all assignments are complete: %i\n", complete);
+	printf("all assignments are complete: %s\n", complete ? "yes" : "no");
 	printf("number of completed assignments: %" PRIu64 "\n", num_complete);
 
 	return 0;
