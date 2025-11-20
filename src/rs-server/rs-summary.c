@@ -114,6 +114,9 @@ int main(/*int argc, char *argv[]*/)
 	int complete = 1;
 	uint64_t num_complete = 0;
 	uint64_t num_time = 0;
+	uint64_t hours;
+	uint64_t days;
+	uint64_t years;
 
 	pow3_init();
 
@@ -153,13 +156,24 @@ int main(/*int argc, char *argv[]*/)
 
 	printf("TOTAL CHECKSUM %" PRIu64 "\n", checksum);
 	printf("TOTAL TIME %" PRIu64 " ms\n", usertime);
-	printf("TOTAL TIME %" PRIu64 " secs (%" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")\n",
+
+	hours = (usertime + 500)/1000/60/60;
+	days = hours/24%365;
+	years = hours/24/365;
+	printf("TOTAL TIME %" PRIu64 " secs (%" PRIu64 "y %" PRIu64 "d %" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")\n",
 		(usertime + 500)/1000,
-		(usertime + 500)/1000/60/60, (usertime + 500)/1000/60%60, (usertime + 500)/1000%60);
+		years,
+		days,
+		(usertime + 500)/1000/60/60%24, /* hrs */
+		(usertime + 500)/1000/60%60, /* mins */
+		(usertime + 500)/1000%60); /* secs */
 
 	if (num_time != 0) {
-		printf("avg. time: %f secs (%" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")\n", usertime / (double)num_time / 1000,
-			(usertime + 500)/1000/num_time/60/60, (usertime + 500)/1000/num_time/60%60, (usertime + 500)/1000/num_time%60
+		printf("avg. time: %f secs (%" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")\n",
+			usertime / (double)num_time / 1000,
+			(usertime + 500)/1000/num_time/60/60, /* hrs */
+			(usertime + 500)/1000/num_time/60%60, /* mins */
+			(usertime + 500)/1000/num_time%60 /* secs */
 		);
 	}
 
