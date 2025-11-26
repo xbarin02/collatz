@@ -105,6 +105,20 @@ const uint64_t *g_checksums = 0;
 const uint64_t *g_usertimes = 0;
 const uint64_t *g_overflows = 0;
 
+#ifdef _USE_GMP
+void mpz_init_set_u128(mpz_t rop, uint128_t op)
+{
+	uint64_t nh = (uint64_t)(op >> 64);
+	uint64_t nl = (uint64_t)(op);
+
+	assert(sizeof(unsigned long) == sizeof(uint64_t));
+
+	mpz_init_set_ui(rop, (unsigned long)nh);
+	mpz_mul_2exp(rop, rop, (mp_bitcnt_t)64);
+	mpz_add_ui(rop, rop, (unsigned long)nl);
+}
+#endif
+
 int main(/*int argc, char *argv[]*/)
 {
 	uint64_t task_id;
@@ -153,6 +167,31 @@ int main(/*int argc, char *argv[]*/)
 
 	printf("NEW LIMIT (all numbers below this are now verified) ");
 	print(4 * g_pow3[TARGET + 1] + 2);
+#ifdef _USE_GMP
+	{
+		mpz_t x;
+		double log_x;
+		signed long int ex;
+		double di;
+		int exp;
+		mpf_t res, mpf_x;
+
+		mpz_init_set_u128(x, 4 * g_pow3[TARGET + 1] + 2);
+
+		di = mpz_get_d_2exp(&ex, x);
+		log_x = log(di) + log(2) * (double)ex;
+
+		exp = (int)floor(log_x / log(2));
+
+		mpf_init(res);
+		mpf_init(mpf_x);
+		mpf_set_z(mpf_x, x);
+
+		mpf_div_2exp(res, mpf_x, exp);
+
+		gmp_printf("NEW LIMIT EXP %Ff * 2^{%i}\n", res, exp);
+	}
+#endif
 
 	printf("TOTAL CHECKSUM %" PRIu64 "\n", checksum);
 	printf("TOTAL TIME %" PRIu64 " ms\n", usertime);
