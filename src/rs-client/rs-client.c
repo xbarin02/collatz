@@ -771,7 +771,7 @@ int main(int argc, char *argv[])
 
 	message(INFO "server to be used: %s\n", servername);
 
-	while ((opt = getopt(argc, argv, "1la:b:gdB")) != -1) {
+	while ((opt = getopt(argc, argv, "1la:b:dB")) != -1) {
 		switch (opt) {
 			unsigned long seconds;
 			case '1':
