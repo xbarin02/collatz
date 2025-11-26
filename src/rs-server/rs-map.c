@@ -64,7 +64,7 @@ int main()
 	}
 
 	printf("active assignements = %" PRIu64 "\n", active);
-	printf("complete assignements = %" PRIu64 " / %" PRIu64 " = %f%%\n", completed, ASSIGNMENTS_NO, completed/(double)ASSIGNMENTS_NO);
+	printf("complete assignements = %" PRIu64 " / %" PRIu64 " = %f%%\n", completed, ASSIGNMENTS_NO, completed / (double)ASSIGNMENTS_NO * 100);
 
 /*
 	munmap(g_map_assigned, MAP_SIZE);
