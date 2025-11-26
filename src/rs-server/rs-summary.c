@@ -190,6 +190,10 @@ int main(/*int argc, char *argv[]*/)
 		mpf_div_2exp(res, mpf_x, exp);
 
 		gmp_printf("NEW LIMIT EXP %Ff * 2^{%i}\n", res, exp);
+
+		mpz_clear(x);
+		mpf_clear(res);
+		mpf_clear(mpf_x);
 	}
 #endif
 
