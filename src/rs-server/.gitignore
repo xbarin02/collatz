@@ -2,6 +2,7 @@ rs-server
 rs-query
 rs-verify-result
 rs-summary
+rs-map
 *~
 *.gcda
 *.map

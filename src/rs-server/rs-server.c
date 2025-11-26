@@ -177,7 +177,7 @@ int write_uint64(int fd, uint64_t n)
 
 #define ASSIGNMENTS_NO (UINT64_C(1) << (LOG2_NO_PROCS))
 
-#define MAP_SIZE (ASSIGNMENTS_NO >> 3)
+#define MAP_SIZE ((ASSIGNMENTS_NO + 7) >> 3)
 #define RECORDS_SIZE (ASSIGNMENTS_NO * 8)
 
 #define IS_ASSIGNED(n) ( ( g_map_assigned[ (n)>>3 ] >> ((n)&7) ) & 1 )
