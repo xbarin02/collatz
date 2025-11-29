@@ -44,7 +44,7 @@ uint128_t pow3u128(uint128_t n)
 	return r;
 }
 
-void pow3_init()
+void pow3_init(void)
 {
 	int i = 0;
 	for (; i < 64; ++i) {
@@ -119,7 +119,8 @@ void mpz_init_set_u128(mpz_t rop, uint128_t op)
 }
 #endif
 
-int main(/*int argc, char *argv[]*/)
+/*int argc, char *argv[]*/
+int main(void)
 {
 	uint64_t task_id;
 	uint64_t checksum = 0;

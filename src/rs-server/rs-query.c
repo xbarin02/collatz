@@ -169,7 +169,7 @@ int query_ping(int fd)
 	return 0;
 }
 
-int open_socket_to_server()
+int open_socket_to_server(void)
 {
 	int fd;
 	struct sockaddr_in server_addr;
@@ -265,7 +265,7 @@ int open_socket_and_query_highest_requested(uint64_t *target, uint64_t *log2_no_
 	return 0;
 }
 
-int open_socket_and_ping()
+int open_socket_and_ping(void)
 {
 	int fd;
 	uint64_t payload;

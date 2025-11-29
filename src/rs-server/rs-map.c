@@ -44,7 +44,7 @@ const void *open_map(const char *path)
 	return (const uint64_t *)ptr;
 }
 
-int main()
+int main(void)
 {
 	uint64_t n;
 	uint64_t completed = 0;
