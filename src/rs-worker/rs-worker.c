@@ -166,7 +166,7 @@ uint128_t pow3u128(uint128_t n)
 
 uint128_t g_pow3[64];
 
-void pow3_init()
+void pow3_init(void)
 {
 	int i = 0;
 	for (; i < 64; ++i) {
@@ -408,7 +408,7 @@ size_t floor_log2(int n)
 	return r;
 }
 
-int main()
+int main(void)
 {
 	struct timespec ts;
 	uint64_t start_time, stop_time;
