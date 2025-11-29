@@ -72,7 +72,7 @@ int message(const char *format, ...)
 	return n;
 }
 
-int threads_get_thread_id()
+int threads_get_thread_id(void)
 {
 #ifdef _OPENMP
 	return omp_get_thread_num();
@@ -198,7 +198,7 @@ int write_uint64(int fd, uint64_t n)
 	return 0;
 }
 
-int open_socket_to_server()
+int open_socket_to_server(void)
 {
 	int fd;
 	struct sockaddr_in server_addr;
