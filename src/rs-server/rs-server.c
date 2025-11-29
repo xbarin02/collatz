@@ -220,7 +220,7 @@ int set_complete(uint64_t n)
 	return 0;
 }
 
-uint64_t get_assignment()
+uint64_t get_assignment(void)
 {
 	uint64_t n = g_lowest_unassigned;
 

@@ -1,9 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#ifdef _OPENMP
-	#include <omp.h>
-#endif
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
