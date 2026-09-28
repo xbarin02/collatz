@@ -27,7 +27,7 @@
 #define SLEEP_INTERVAL 10
 
 const char *servername = "localhost";
-const uint16_t serverport = 5007;
+const uint16_t serverport = 5008;
 
 const char *taskpath_cpu = "../rs-worker/rs-worker-sc";
 
